@@ -1,0 +1,21 @@
+{
+    "connections": [
+        {
+            "src": {
+                "process": "",
+                "port": "",
+                "data": ""
+            },
+            "tgt": {
+                "process": "",
+                "port": "",
+                "data": ""
+            }
+        }
+    ],
+    "processes": {
+        "main": {
+            "component": "Add"
+        }
+    }
+}
