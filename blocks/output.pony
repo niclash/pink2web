@@ -36,7 +36,7 @@ class OutputImpl[TYPE: Any val]
     _description
 
   fun to_json() : JsonObject ref^ =>
-    var json:JsonObject ref = JsonObject
+    var json:JsonObject = JsonObject
     json.data("name") = _name
     json.data("description") = _description
     json

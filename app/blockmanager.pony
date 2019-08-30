@@ -33,10 +33,21 @@ actor BlockManager is JsonVisitable
       _log(Error) and _log.log("Unable to connect " + src_block + " to " + dest_block )
     end
     
-  be json_visit( visitor:JsonVisitor tag ) =>
+  be json_visit( visitor:JsonVisitor val ) =>
     let jsn:JsonObject iso = recover JsonObject end
     visitor.got( consume jsn )
     
+  be list_types( visitor:JsonVisitor val ) =>
+    var names: Array[JsonType] iso = recover Array[JsonType] end
+    for name in _types.keys() do
+      names.push(name)
+    end
+    visitor.got( JsonArray.from_array( consume names ) )
+
+  be describe_type( typename: String val, visitor:JsonVisitor val ) =>
+    let jsn:JsonObject iso = recover JsonObject end
+    visitor.got( consume jsn )
+
     
 class DummyFactory is BlockFactory
   fun createBlock( name: String val ): Block tag =>

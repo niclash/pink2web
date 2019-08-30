@@ -31,8 +31,8 @@ actor AddBlock is (Block & JsonVisitable)
     let value : F64 val = _input1.value() + _input2.value()
     _output.set( value )
     
-  be json_visit( visitor: JsonVisitor tag ) =>
-    var json = JsonObject
+  be json_visit( visitor: JsonVisitor val ) =>
+    var json:JsonObject = JsonObject
     json.data("in1") = _input1.to_json()
     json.data("in2") = _input2.to_json()
     json.data("out") = _output.to_json()
