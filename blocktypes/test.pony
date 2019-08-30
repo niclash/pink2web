@@ -1,5 +1,6 @@
+use "json"
 use "ponytest"
-use "logger"
+use "../blocks"
 
 actor Tests is TestList 
   
@@ -54,17 +55,18 @@ class TestInput[TYPE: Comparable[TYPE] val] is Input[TYPE]
     
   fun value() : this->TYPE =>
     _value
-
+    
+  fun to_json() : JsonObject ref =>
+    JsonObject
 
 class iso _AddBlockTest is UnitTest
   fun name(): String => "test AddBlock"
 
   fun apply(h: TestHelper) =>
     let block = TestBlock(recover iso TestInput[F64](18.0, h, 0.0) end)
-    let logger:Logger[String val] val = recover val StringLogger(Fine, h.env.out) end
-    let b1 = AddBlock( "block1", logger )
-    let b2 = AddBlock( "block2", logger )
-    let b3 = AddBlock( "block3", logger )
+    let b1 = AddBlock( "block1" )
+    let b2 = AddBlock( "block2" )
+    let b3 = AddBlock( "block3" )
     
     b1.connect( "output", b3, "input1" )
     b2.connect( "output", b3, "input2" )

@@ -1,0 +1,28 @@
+{
+    "protocol": "component",
+    "command": "component",
+    "payload": {
+        "name": "Add",
+        "description": "Adding 4 inputs",
+        "subgraph": false,
+        "icon": "coffee",
+        "inPorts": [
+            {
+                "id": "in",
+                "type": "double",
+                "description": "Input port",
+                "addressable": true,
+                "required": false
+            }
+        ],
+        "outPorts": [
+            {
+                "id": "out",
+                "type": "double",
+                "description": "Output port",
+                "addressable": false,
+                "required": false
+            }
+        ]
+    }
+}

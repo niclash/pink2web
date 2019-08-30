@@ -1,0 +1,20 @@
+{
+  "deps": [
+    {
+      "type": "github",
+      "repo": "ponylang/http"
+    },
+    {
+      "type": "github",
+      "repo": "ponylang/net-ssl"
+    },
+    {
+      "type": "github",
+      "repo": "ponylang/regex"
+    },
+    {
+      "type": "github",
+      "repo": "ponylang/regex"
+    }
+  ]
+}

@@ -1,29 +1,29 @@
-use "logger"
+use "json"
 
-interface Input[TYPE: Any val]
+interface Input[TYPE: Any val]  is ToJson
   fun ref set( newValue: TYPE)
   fun value() : this->TYPE
-
+  fun description() : String val =>
+    ""
 
 class InputImpl[TYPE: Any val]
   var _name: String val
   var _value: TYPE
-  var _log: Logger[String] val
+  var _description: String val
 
-  new create(name: String val, initialValue: TYPE, logger:Logger[String val] val) =>
+  new create(name: String val, initialValue: TYPE, descr: String val) =>
     _name = name
+    _description = descr
     _value = consume initialValue
-    _log = logger
 
   fun value() : this->TYPE =>
     _value
 
   fun ref set( newValue: TYPE) =>
-    match newValue
-    |
-        let v:Stringable => _log(Fine) and _log.log( _name + " = " + v.string() )
-    else
-        _log(Fine) and _log.log( _name + " = <non-printable value>" )
-    end
     _value = consume newValue
 
+  fun description() : String val =>
+    _description
+
+  fun to_json() : JsonObject ref^ =>
+    JsonObject
