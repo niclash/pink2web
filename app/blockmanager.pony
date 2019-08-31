@@ -45,14 +45,25 @@ actor BlockManager is JsonVisitable
     visitor.got( JsonArray.from_array( consume names ) )
 
   be describe_type( typename: String val, visitor:JsonVisitor val ) =>
-    let jsn:JsonObject iso = recover JsonObject end
-    visitor.got( consume jsn )
-
+    try
+      let factory:BlockFactory = _types(typename)?
+      
+      let jsn:JsonObject iso = recover JsonObject end
+      visitor.got( consume jsn )
+    else
+      let jsn:JsonObject iso = recover JsonObject end
+      visitor.got( consume jsn )
+    end
     
 class DummyFactory is BlockFactory
+  
   fun createBlock( name: String val ): Block tag =>
       DummyBlock(name)
       
+  fun describe(): JsonObject val =>
+    recover JsonObject end
+  
+  
 actor DummyBlock is Block
   let _name: String val
   

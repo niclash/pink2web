@@ -25,7 +25,7 @@ actor Main
   fun handle_cli() ? =>
     let cs = CommandSpec.parent("pink2web", "Flow Based Programming engine", [ 
         ],  [ 
-            list_command()?; run_command()? 
+            list_command()?; run_command()?; describe_command()? 
         ] )? .> add_help()?
 
     let cmd =
@@ -34,6 +34,7 @@ actor Main
             match c.fullname()
             | "pink2web/list/types" => list_types()
             | "pink2web/run/process" => run_process(c.arg("filename" ).string() )?
+            | "pink2web/describe/type" => describe_type(c.arg("typename" ).string() )
             end
       | let ch: CommandHelp =>
           ch.print_help(_env.out)
@@ -55,7 +56,9 @@ actor Main
   fun describe_command() : CommandSpec ? =>
     CommandSpec.parent("describe", "", [
     ],[
-      CommandSpec.leaf( "type", "List types", [], ["typename"] )?
+      CommandSpec.leaf( "type", "List types", [], [
+        ArgSpec.string("typename", "Name of type to be described.", None )
+      ] )?
     ])?
     
   fun run_command() : CommandSpec ?=>
@@ -70,6 +73,10 @@ actor Main
   fun list_types() =>
     let visitor: JsonVisitor val = PrintJsonVisitor(_env.out)
     _manager.list_types( visitor )
+    
+  fun describe_type(typ:String) =>
+    let visitor: JsonVisitor val = PrintJsonVisitor(_env.out)
+    _manager.describe_type( typ, visitor )
     
   fun run_process(filename:String) ? =>
      let loader = Loader(_manager, _log, _env.root as AmbientAuth)

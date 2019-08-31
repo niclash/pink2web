@@ -1,3 +1,4 @@
+use "collections"
 use "json"
 use "../blocks"
 
@@ -38,6 +39,25 @@ actor AddBlock is (Block & JsonVisitable)
     json.data("out") = _output.to_json()
     visitor.got( json )
     
-class ref AddBlockFactory is BlockFactory
+class AddBlockFactory is BlockFactory
+  let _descriptor: JsonObject val
+  
+  new val create() =>
+    _descriptor = recover
+      let inp:Array[JsonType] = Array[JsonType]
+      let outp:Array[JsonType] = Array[JsonType]
+      let m:Map[String,JsonType] = Map[String,JsonType]
+      m("name") = "add"
+      m("description") = "[output] = [input1] + [input2]"
+      m("subgraph") = false
+      m("icon") = "plus"
+      m("inports") = JsonArray.from_array( inp )
+      m("outports") = JsonArray.from_array( outp )
+      JsonObject.from_map(consume m)
+    end
+
   fun createBlock( name: String val ):Block tag =>
     AddBlock( name )
+    
+  fun describe() : JsonObject val =>
+    _descriptor
