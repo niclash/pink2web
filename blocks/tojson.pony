@@ -4,7 +4,5 @@ interface ToJson
   fun to_json() : JsonObject ref^
   
 trait JsonVisitable
-  be json_visit( visitor: JsonVisitor val )
+  be visit( { (JsonType): None } )
   
-interface JsonVisitor
-  fun got( value: JsonType )

@@ -33,7 +33,7 @@ actor TestBlock is Block
   be refresh() =>
     None
     
-  be json_visit( visitor: JsonVisitor val ) =>
+  be visit( visitor: JsonVisitor val ) =>
     None
     
   be updateWithName[TYPE: Any val](input: String val, newValue: TYPE  val) =>
