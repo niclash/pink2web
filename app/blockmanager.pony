@@ -44,23 +44,36 @@ actor BlockManager is JsonVisitable
     end
     visitor.got( JsonArray.from_array( consume names ) )
 
+  be describe_topology( visitor:JsonVisitor val ) =>
+    var topology = JsonObject
+    for (name,block) in _blocks.pairs() do
+//       try
+        let node = JsonObject
+        node.data("name") = name
+//         block.
+//         let factory:BlockFactory = _types(typename)?
+        
+//       end
+    end
+    visitor.got( topology )
+    
   be describe_type( typename: String val, visitor:JsonVisitor val ) =>
     try
       let factory:BlockFactory = _types(typename)?
-      
-      let jsn:JsonObject iso = recover JsonObject end
-      visitor.got( consume jsn )
+      visitor.got( factory.describe() )
     else
-      let jsn:JsonObject iso = recover JsonObject end
-      visitor.got( consume jsn )
+      let json:JsonObject = JsonObject
+      json.data("error") = "unknown type " + typename
+      visitor.got( json )
     end
-    
+
+
 class DummyFactory is BlockFactory
   
   fun createBlock( name: String val ): Block tag =>
       DummyBlock(name)
       
-  fun describe(): JsonObject val =>
+  fun describe(): JsonObject =>
     recover JsonObject end
   
   
@@ -79,3 +92,5 @@ actor DummyBlock is Block
   be refresh() =>
     None
 
+  be json_visit( visitor: JsonVisitor val ) =>
+    None

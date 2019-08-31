@@ -1,5 +1,5 @@
 
-interface Block
+interface Block is JsonVisitable
 
   be connect( output: String val, to_block: Block tag, to_input: String val)
   

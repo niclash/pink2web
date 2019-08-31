@@ -2,7 +2,7 @@ use "collections"
 use "json"
 use "../blocks"
 
-actor AddBlock is (Block & JsonVisitable)
+actor AddBlock is Block
   let _input1: Input[F64] ref
   let _input2: Input[F64] ref
   let _output: Output[F64] ref
@@ -40,24 +40,29 @@ actor AddBlock is (Block & JsonVisitable)
     visitor.got( json )
     
 class AddBlockFactory is BlockFactory
-  let _descriptor: JsonObject val
-  
-  new val create() =>
-    _descriptor = recover
-      let inp:Array[JsonType] = Array[JsonType]
-      let outp:Array[JsonType] = Array[JsonType]
-      let m:Map[String,JsonType] = Map[String,JsonType]
-      m("name") = "add"
-      m("description") = "[output] = [input1] + [input2]"
-      m("subgraph") = false
-      m("icon") = "plus"
-      m("inports") = JsonArray.from_array( inp )
-      m("outports") = JsonArray.from_array( outp )
-      JsonObject.from_map(consume m)
-    end
-
   fun createBlock( name: String val ):Block tag =>
     AddBlock( name )
     
-  fun describe() : JsonObject val =>
-    _descriptor
+  fun describe() : JsonObject ref^ =>
+    var json = JsonObject
+    let inp = JsonArray
+    inp.data.push( port("input1", "number", "input 1", false, false ) )
+    inp.data.push( port("input2", "number", "input 2", false, false ) )
+    let outp = JsonArray
+    outp.data.push( port("output", "number", "output", false, false ) )
+    json.data("name") = "add"
+    json.data("description") = "[output] = [input1] + [input2]"
+    json.data("subgraph") = false
+    json.data("icon") = "plus"
+    json.data("inports") = inp
+    json.data("outports") = outp
+    json
+
+  fun port( id: String, typ: String, description:String, addressable:Bool, required:Bool ): JsonObject ref^ =>
+    let json = JsonObject
+    json.data("id") = id
+    json.data("type") = typ
+    json.data("description") = description
+    json.data("addressable") = addressable
+    json.data("required") = required
+    json
