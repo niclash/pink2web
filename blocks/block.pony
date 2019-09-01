@@ -6,3 +6,7 @@ interface Block is JsonVisitable
   be update[TYPE: Any val](input: String val, newValue: TYPE  val)
 
   be refresh()
+
+  be start()
+
+  be stop()

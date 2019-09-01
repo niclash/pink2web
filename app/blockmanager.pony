@@ -15,12 +15,23 @@ actor BlockManager is JsonVisitable
     _blocks = Map[String,Block tag]
     _dummyFactory = DummyFactory
     _types = Map[String,BlockFactory]
-    _types("add") = AddBlockFactory
+    _types("Add") = AddBlockFactory
+
+  be start() =>
+    for block in _blocks.values() do
+      block.start()
+    end
+    
+  be stop() =>
+    for block in _blocks.values() do
+      block.stop()
+    end
+    
 
   be create_block( block_type: String val, name: String val ) =>
     _log(Info) and _log.log("create_block " + name + " of type " + block_type )
-    var factory = _types.get_or_else(block_type, _dummyFactory)
-    var block:Block tag = factory.createBlock( name )
+    let factory = _types.get_or_else(block_type, _dummyFactory)
+    let block:Block tag = factory.createBlock( name, _log )
     _blocks( name ) = block
 
   be connect( src_block: String val, src_output: String val, dest_block: String val, dest_input: String val ) =>
@@ -33,45 +44,45 @@ actor BlockManager is JsonVisitable
       _log(Error) and _log.log("Unable to connect " + src_block + " to " + dest_block )
     end
     
-  be json_visit( visitor:JsonVisitor val ) =>
+  be visit( lambda:{ (JsonType) } val ) =>
     let jsn:JsonObject iso = recover JsonObject end
-    visitor.got( consume jsn )
+    lambda( consume jsn )
     
-  be list_types( visitor:JsonVisitor val ) =>
+  be list_types( lambda:{ (JsonType) } val ) =>
     var names: Array[JsonType] iso = recover Array[JsonType] end
     for name in _types.keys() do
       names.push(name)
     end
-    visitor.got( JsonArray.from_array( consume names ) )
+    lambda( JsonArray.from_array( consume names ) )
 
-  be describe_topology( visitor:JsonVisitor val ) =>
-    var topology = JsonObject
+  be describe_topology( lambda:{ (JsonType) } val ) =>
+    let root = JsonObject
     for (name,block) in _blocks.pairs() do
-//       try
+      let typename = block.visit( { (res) => 
         let node = JsonObject
         node.data("name") = name
-//         block.
-//         let factory:BlockFactory = _types(typename)?
-        
-//       end
+        node.data("descriptor") = res 
+        lambda( consume node )
+      } )
     end
-    visitor.got( topology )
     
-  be describe_type( typename: String val, visitor:JsonVisitor val ) =>
+    
+  be describe_type( typename: String val, lambda:{ (JsonType) } val) =>
     try
       let factory:BlockFactory = _types(typename)?
-      visitor.got( factory.describe() )
+      lambda( factory.describe() )
     else
       let json:JsonObject = JsonObject
       json.data("error") = "unknown type " + typename
-      visitor.got( json )
+      lambda( json )
     end
 
 
 class DummyFactory is BlockFactory
   
-  fun createBlock( name: String val ): Block tag =>
-      DummyBlock(name)
+  fun createBlock( name: String val, logger:Logger[String] ): Block tag =>
+    logger(Error) and logger.log("Unknown type for \"" + name + "\". Unable to create.")
+    DummyBlock(name, logger)
       
   fun describe(): JsonObject =>
     recover JsonObject end
@@ -79,9 +90,15 @@ class DummyFactory is BlockFactory
   
 actor DummyBlock is Block
   let _name: String val
+  let _log:Logger[String]
   
-  new create( name: String val) =>
+  new create( name: String val, logger:Logger[String]) =>
     _name = name
+    _log = logger
+  
+  be start() => None  
+  
+  be stop() => None  
   
   be connect( output: String val, to_block: Block tag, to_input: String val) =>
     None
@@ -92,5 +109,8 @@ actor DummyBlock is Block
   be refresh() =>
     None
 
-  be json_visit( visitor: JsonVisitor val ) =>
-    None
+  be visit( lambda:{ (JsonType) } val ) =>
+    _log(Fine) and _log.log("visit")
+    var json:JsonObject = JsonObject
+    lambda( json )
+

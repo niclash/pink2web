@@ -1,4 +1,5 @@
 use "json"
+use "logger"
 use "ponytest"
 use "../blocks"
 
@@ -19,6 +20,10 @@ actor TestBlock is Block
   new create(input: Input[F64] iso) =>
     _input = consume input
 
+  be start() => None
+  
+  be stop() => None
+  
   be connect( output: String val, to_block: Block tag, to_input: String val) =>
     None // ignore
   
@@ -33,7 +38,7 @@ actor TestBlock is Block
   be refresh() =>
     None
     
-  be visit( visitor: JsonVisitor val ) =>
+  be visit( lambda:{ (JsonType): None } tag ) =>
     None
     
   be updateWithName[TYPE: Any val](input: String val, newValue: TYPE  val) =>
@@ -66,10 +71,11 @@ class iso _AddBlockTest is UnitTest
   fun name(): String => "test AddBlock"
 
   fun apply(h: TestHelper) =>
+    let logger:Logger[String] = StringLogger(Fine, h.env.out)
     let block = TestBlock(recover iso TestInput[F64](18.0, h, 0.0) end)
-    let b1 = AddBlock( "block1" )
-    let b2 = AddBlock( "block2" )
-    let b3 = AddBlock( "block3" )
+    let b1 = AddBlock( "block1", logger )
+    let b2 = AddBlock( "block2", logger )
+    let b3 = AddBlock( "block3", logger )
     
     b1.connect( "output", b3, "input1" )
     b2.connect( "output", b3, "input2" )

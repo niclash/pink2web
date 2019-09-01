@@ -1,20 +1,53 @@
 {
     "connections": [
         {
-            "src": {
-                "process": "",
-                "port": "",
-                "data": ""
-            },
-            "tgt": {
-                "process": "",
-                "port": "",
-                "data": ""
-            }
+            "src": { "process": "in1","port": "output","data": "" },
+            "tgt": {"process": "in3","port": "input1","data": ""}
+        },
+        {
+            "src": { "process": "in2","port": "output","data": "" },
+            "tgt": {"process": "in3","port": "input2","data": ""}
+        },
+        {
+            "src": { "process": "in4","port": "output","data": "" },
+            "tgt": {"process": "in6","port": "input1","data": ""}
+        },
+        {
+            "src": { "process": "in5","port": "output","data": "" },
+            "tgt": {"process": "in6","port": "input2","data": ""}
+        },
+        {
+            "src": { "process": "in3","port": "output","data": "" },
+            "tgt": {"process": "in7","port": "input1","data": ""}
+        },
+        {
+            "src": { "process": "in6","port": "output","data": "" },
+            "tgt": {"process": "in7","port": "input2","data": ""}
         }
     ],
     "processes": {
-        "main": {
+        "in1": {
+            "component": "Add"
+        },
+        "in2": {
+            "component": "Add"
+        },
+        "in3": {
+            "component": "Add"
+        },
+        "in4": {
+            "component": "Add"
+        },
+        "in5": {
+            "component": "Add"
+        },
+        "in6": {
+            "component": "Add"
+        },
+        "in7": {
+            "component": "Add"
+        },
+        "in8": {
             "component": "Add"
         }
     }

@@ -9,10 +9,12 @@ actor Main
   let _log: Logger[String] val
   let _manager: BlockManager tag
   let _env: Env
+  let _out: OutStream
   
   new create( env: Env ) =>
     _env = env
-    _log = StringLogger( Fine, env.out )
+    _out = _env.out
+    _log = StringLogger( Info, env.out )    
     _manager = BlockManager(_log)
     try
       handle_cli()?
@@ -35,6 +37,7 @@ actor Main
             | "pink2web/list/types" => list_types()
             | "pink2web/run/process" => run_process(c.arg("filename" ).string() )?
             | "pink2web/describe/type" => describe_type(c.arg("typename" ).string() )
+            | "pink2web/describe/topology" => describe_topology(c.arg("filename" ).string() )?
             end
       | let ch: CommandHelp =>
           ch.print_help(_env.out)
@@ -54,10 +57,13 @@ actor Main
     ])?
     
   fun describe_command() : CommandSpec ? =>
-    CommandSpec.parent("describe", "", [
+    CommandSpec.parent("describe", "Describe a part of the system", [
     ],[
       CommandSpec.leaf( "type", "List types", [], [
         ArgSpec.string("typename", "Name of type to be described.", None )
+      ] )?
+      CommandSpec.leaf( "topology", "List types", [], [
+        ArgSpec.string("filename", "Name of toppology to be described.", None )
       ] )?
     ])?
     
@@ -71,25 +77,31 @@ actor Main
     ])?
 
   fun list_types() =>
-    let visitor: JsonVisitor val = PrintJsonVisitor(_env.out)
-    _manager.list_types( visitor )
+     let printer: PrintJson val = PrintJson(_env.out)
+    _manager.list_types( { (jt) => printer.print( jt ) } )
     
   fun describe_type(typ:String) =>
-    let visitor: JsonVisitor val = PrintJsonVisitor(_env.out)
-    _manager.describe_type( typ, visitor )
+     let printer: PrintJson val = PrintJson(_env.out)
+    _manager.describe_type( typ, { (jt) => printer.print( jt ) } )
+    
+  fun describe_topology(filename:String) ? =>
+     let printer: PrintJson val = PrintJson(_env.out)
+     let loader = Loader(_manager, _log, _env.root as AmbientAuth)
+     loader.load( filename )
+    _manager.describe_topology( { (jt) => printer.print( jt ) } )
     
   fun run_process(filename:String) ? =>
      let loader = Loader(_manager, _log, _env.root as AmbientAuth)
      loader.load( filename )
+     _manager.start()
 
-
-class val PrintJsonVisitor is JsonVisitor
-  let _out: OutStream
-  
-  new val create( out: OutStream) =>
-    _out = out
+class val PrintJson
+   let _out: OutStream
+   
+   new val create( out: OutStream) =>
+     _out = out
     
-  fun got( types: JsonType ) =>
+  fun print( types: JsonType ) =>
     match consume types
     |  let s: JsonObject=>
       _out.print( s.string() )
@@ -106,4 +118,5 @@ class val PrintJsonVisitor is JsonVisitor
     |  let s: F64 =>
       _out.print( s.string()  )
     end
+
  
