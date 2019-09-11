@@ -5,20 +5,20 @@ use "../blocks"
 use "../system"
 
 actor AddBlock is Block
-  let _input1: Input[F64] ref
-  let _input2: Input[F64] ref
-  let _output: Output[F64] ref
   let _name: String val
+  let _input1: Input[Number] ref
+  let _input2: Input[Number] ref
+  let _output: Output[F64] ref
   let _context:SystemContext val
   var _started:Bool = false
   
-  new create(name: String, context:SystemContext val ) =>
+  new create(name: String, in1:InputDescriptor[Number], in2:InputDescriptor[Number], out:OutputDescriptor[Number], context:SystemContext val ) =>
+    context(Fine) and context.log("create("+name+")")
     _context = context
-    _context(Fine) and _context.log("create("+name+")")
     _name = name
-    _input1 = InputImpl[F64]( name + ".input1", 0.0, "Input 1")
-    _input2 = InputImpl[F64]( name + ".input2", 0.0, "Input 2")
-    _output = OutputImpl[F64](name + ".output", 0.0, "Output")
+    _input1 = InputImpl[Number]( name, in1, 0.0)
+    _input2 = InputImpl[Number]( name, in2, 0.0)
+    _output = OutputImpl[F64]( name, out, 0.0 )
 
   be start() =>
     _context(Fine) and _context.log("start()")
@@ -34,7 +34,7 @@ actor AddBlock is Block
     end
     refresh()
 
-  be update[TYPE: Any val](input: String val, newValue: TYPE  val) =>
+  be update[TYPE: Linkable val](input: String val, newValue: TYPE  val) =>
     _context(Fine) and _context.log("update()")
     match newValue
     | let v: F64 => 
@@ -60,31 +60,37 @@ actor AddBlock is Block
     json.data("output") = _output.to_json()
     lambda( json )
     
-class AddBlockFactory is BlockFactory
-  fun createBlock( name: String val, context:SystemContext val ):Block tag =>
-    context(Fine) and context.log("create Add")
-    AddBlock( name, context )
+class val AddBlockFactory is (BlockFactory & BlockTypeDescriptor)
+  let _inp:Array[InputDescriptor[Number val] val] val
+  let _outp:Array[OutputDescriptor[Number val] val] val
+  
+  new val create() =>
+    _inp = Array[InputDescriptor[Number val] val]
+    _outp = Array[OutputDescriptor[Number val] val]
     
-  fun describe() : JsonObject ref^ =>
-    var json = JsonObject
-    let inp = JsonArray
-    inp.data.push( port("input1", "number", "input 1", false, false ) )
-    inp.data.push( port("input2", "number", "input 2", false, false ) )
-    let outp = JsonArray
-    outp.data.push( port("output", "number", "output", false, false ) )
-    json.data("name") = "add"
-    json.data("description") = "[output] = [input1] + [input2]"
-    json.data("subgraph") = false
-    json.data("icon") = "plus"
-    json.data("inports") = inp
-    json.data("outports") = outp
-    json
+    let in1 = InputDescriptor[Number]("input1", "number", "first term in addition", false, true )
+    let in2 = InputDescriptor[Number]("input2", "number", "second term in addition", false, true )
+    _inp.push( in1 )
+    _inp.push( in2 )
+    let out = OutputDescriptor[Number]("output", "number", "output=input1+input2", false, true )
+    _outp.push( out )
 
-  fun port( id: String, typ: String, description:String, addressable:Bool, required:Bool ): JsonObject ref^ =>
-    let json = JsonObject
-    json.data("id") = id
-    json.data("type") = typ
-    json.data("description") = description
-    json.data("addressable") = addressable
-    json.data("required") = required
-    json
+  fun block_type_descriptor() : BlockTypeDescriptor val =>
+    this
+
+  fun inputs(): Array[InputDescriptor[Any val] val] val =>
+    _inp
+
+  fun outputs(): Array[OutputDescriptor[Any val] val] val =>
+    _outp
+    
+  fun name() =>
+    "Add"
+    
+  fun description() =>
+    "Adds two input and outputs the sum."
+    
+  fun create_block( instance_name: String val, context:SystemContext val):Block tag =>
+    context(Fine) and context.log("create Add")
+    AddBlock( instance_name, _inp(0), _inp(1), _outp(0), context )
+    

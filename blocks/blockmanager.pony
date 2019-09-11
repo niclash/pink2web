@@ -1,13 +1,12 @@
 use "collections"
 use "json"
 use "logger"
-use "../system"
-use "../blocks"
 use "../blocktypes"
+use "../system"
 
 actor BlockManager is JsonVisitable
   let _types: Map[String,BlockFactory]
-  let _blocks: Map[String,Block tag]
+  let _blocks: Map[String,Block tag] 
   let _dummyFactory: BlockFactory val
   let _context: SystemContext val
   
@@ -32,7 +31,7 @@ actor BlockManager is JsonVisitable
   be create_block( block_type: String val, name: String val ) =>
     _context(Info) and _context.log("create_block " + name + " of type " + block_type )
     let factory = _types.get_or_else(block_type, _dummyFactory)
-    let block:Block tag = factory.createBlock( name, _context )
+    let block:Block tag = factory.create_block( name, _context )
     _blocks( name ) = block
 
   be connect( src_block: String val, src_output: String val, dest_block: String val, dest_input: String val ) =>
@@ -79,13 +78,28 @@ actor BlockManager is JsonVisitable
     end
 
 
-class DummyFactory is BlockFactory
+class DummyFactory is (BlockFactory & BlockTypeDescriptor)
   
-  fun createBlock( name: String val, context:SystemContext val ): Block tag =>
-    context(Error) and context.log("Unknown type for \"" + name + "\". Unable to create.")
+  fun create_block( container_name: String val, context:SystemContext val): Block tag =>
+    context(Error) and context.log("Unknown type for \"" + container_name + "\". Unable to create.")
     DummyBlock(name, context)
       
-  fun describe(): JsonObject =>
+  fun inputs():  Array[InputDescriptor[Any val] val] val =>
+    Array[InputDescriptor[Any]](0)
+    
+  fun outputs():  Array[OutputDescriptor[Any val] val] val =>
+    Array[OutputDescriptor[Any]](0)
+    
+  fun name() =>
+    "dummy"
+    
+  fun description() =>
+    "dummy block created when missing type information is found in json files."
+    
+  fun block_type_descriptor() =>
+    this
+    
+  fun describe(): JsonObject ref^ =>
     recover JsonObject end
   
   
@@ -104,7 +118,7 @@ actor DummyBlock is Block
   be connect( output: String val, to_block: Block tag, to_input: String val) =>
     None
   
-  be update[TYPE: Any val](input: String val, newValue: TYPE  val) =>
+  be update[TYPE: Linkable val](input: String val, newValue: TYPE  val) =>
     None
 
   be refresh() =>

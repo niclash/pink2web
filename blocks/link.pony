@@ -1,5 +1,7 @@
 
-class Link[TYPE: Any val]
+type Linkable is ( Number | Bool | String )
+
+class Link[TYPE: Linkable val]
   let block: Block tag
   let input: String val
   

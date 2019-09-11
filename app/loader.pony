@@ -6,15 +6,14 @@ use "json"
 use "logger"
 
 class Loader
+  let _ambient:AmbientAuth val
   let _manager: BlockManager tag
   let _context: SystemContext val
   
-  let _ambient:AmbientAuth val
-  
   new create( manager: BlockManager tag, context:SystemContext val, ambient:AmbientAuth val) =>
     _context = context
-    _manager = manager
     _ambient = ambient
+    _manager = manager
 
   fun load( pathname: String ) =>
     var doc: JsonDoc = JsonDoc
