@@ -1,0 +1,58 @@
+{
+  "topologies" : [
+    {
+      "name" : "complex topology",
+      "connections": [
+        {
+          "src": {
+            "process": "",
+            "port": "",
+            "data": ""
+          },
+          "tgt": {
+            "process": "",
+            "port": "",
+            "data": ""
+          }
+        }
+      ],
+      "processes": {
+        "main": {
+          "component": "Add"
+        }
+      }
+    }
+  ],
+  "testcases": {
+    "Check Add": {
+      "factory": "SubBlockFactory", 
+      "inputs": {
+        "input1": [0, 1, 32768, -1, -65535, -32767, 0.1, -0.1 ],
+        "input2": [1, 1, 1,      1,      1,      1,   1,    1 ]
+      },
+      "expect": {
+        "output": [-1, 0, 32767, -2, -65536, -32767, -0.9, -1.1 ]
+      }
+    },
+    "Check Sub": {
+      "factory": "SubBlockFactory", 
+      "inputs": {
+        "input1": 12,
+        "input2": 17.5
+      },
+      "expect": {
+        "output": -5.5
+      }
+    },
+    "Check Sub": {
+      "topology": "complex topology", 
+      "inputs": {
+        "input1": 12,
+        "input2": 17.5
+      },
+      "expect": {
+        "output": -5.5
+      }
+    }
+  }
+}
