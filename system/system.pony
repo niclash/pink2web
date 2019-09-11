@@ -2,17 +2,17 @@ use "logger"
 use "time"
 
 class SystemContext
-  let logger:Logger[String]
-  let timers:Timers
+  let _logger:Logger[String] val
+  let _timers:Timers
   
   new create( env: Env ) =>
-    timers = Timers
-    logger = StringLogger( Info, env.out )    
+    _timers = Timers
+    _logger = StringLogger( Info, env.out )    
     
     
 // Logger[String] decorator
   fun box apply( level: (Fine val | Info val | Warn val | Error val)) : Bool val =>
-    log.apply(level)
+    _logger.apply(level)
     
   fun box log( value: String, loc: SourceLoc val = __loc) : Bool val =>
-    log.log( value, loc )
+    _logger.log( value, loc )

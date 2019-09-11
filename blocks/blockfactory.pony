@@ -1,6 +1,6 @@
 use "json"
-use "logger"
+use "../system"
 
 interface val BlockFactory
-  fun createBlock( name: String val, logger:Logger[String] ): Block tag  
+  fun createBlock( name: String val, context:SystemContext val): Block tag  
   fun describe(): JsonObject ref^

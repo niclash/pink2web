@@ -1,17 +1,18 @@
 use "../blocks"
-use "json"
-use "logger"
+use "../system"
 use "collections"
 use "files"
+use "json"
+use "logger"
 
 class Loader
   let _manager: BlockManager tag
-  let _logger: Logger[String] val
+  let _context: SystemContext val
   
   let _ambient:AmbientAuth val
   
-  new create( manager: BlockManager tag, logger:Logger[String] val, ambient:AmbientAuth val) =>
-    _logger = logger
+  new create( manager: BlockManager tag, context:SystemContext val, ambient:AmbientAuth val) =>
+    _context = context
     _manager = manager
     _ambient = ambient
 
@@ -24,7 +25,7 @@ class Loader
       parse_root(root)
     else 
       (let code, let msg) = doc.parse_report()
-      _logger(Error) and _logger.log( "Error parsing " + pathname + " : [" + code.string()+ "] : " + msg )
+      _context(Error) and _context.log( "Error parsing " + pathname + " : [" + code.string()+ "] : " + msg )
     end
   
   fun save( path: String ) =>
@@ -35,14 +36,14 @@ class Loader
       let processes: JsonObject = root.data("processes")? as JsonObject
       parse_processes( processes )
     else
-      _logger(Error) and _logger.log( "A 'processes' object must exist in root object." )
+      _context(Error) and _context.log( "A 'processes' object must exist in root object." )
     end
 
     try
       let connections: JsonArray = root.data("connections")? as JsonArray
       parse_connections( connections )
     else
-      _logger(Error) and _logger.log( "A 'connections' object must exist in root object." )
+      _context(Error) and _context.log( "A 'connections' object must exist in root object." )
     end
 
 
@@ -53,7 +54,7 @@ class Loader
         let blocktype = component.data("component")? as String
         _manager.create_block( blocktype, name )
       else
-        _logger(Error) and _logger.log( "Component '" + name + "' has invalid structure." )
+        _context(Error) and _context.log( "Component '" + name + "' has invalid structure." )
       end
     end
   
@@ -67,7 +68,7 @@ class Loader
       else
         try
           let c:Stringable = value as Stringable
-          _logger(Error) and _logger.log( "Connection "+c.string()+"has invalid structure." )
+          _context(Error) and _context.log( "Connection "+c.string()+"has invalid structure." )
         end
       end
     end
@@ -95,6 +96,6 @@ class Loader
         end
       end
     else
-      _logger(Error) and _logger.log("Couldn't open " + pathname)
+      _context(Error) and _context.log("Couldn't open " + pathname)
     end
     consume result

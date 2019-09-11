@@ -1,19 +1,20 @@
 use "collections"
 use "json"
 use "logger"
+use "../system"
 use "../blocks"
 use "../blocktypes"
 
 actor BlockManager is JsonVisitable
   let _types: Map[String,BlockFactory]
   let _blocks: Map[String,Block tag]
-  let _dummyFactory: BlockFactory
-  let _log: Logger[String] val
+  let _dummyFactory: BlockFactory val
+  let _context: SystemContext val
   
-  new create(log: Logger[String] val) =>
-    _log = log
+  new create(context: SystemContext val) =>
+    _context = context
     _blocks = Map[String,Block tag]
-    _dummyFactory = DummyFactory
+    _dummyFactory = recover DummyFactory end
     _types = Map[String,BlockFactory]
     _types("Add") = AddBlockFactory
 
@@ -29,9 +30,9 @@ actor BlockManager is JsonVisitable
     
 
   be create_block( block_type: String val, name: String val ) =>
-    _log(Info) and _log.log("create_block " + name + " of type " + block_type )
+    _context(Info) and _context.log("create_block " + name + " of type " + block_type )
     let factory = _types.get_or_else(block_type, _dummyFactory)
-    let block:Block tag = factory.createBlock( name, _log )
+    let block:Block tag = factory.createBlock( name, _context )
     _blocks( name ) = block
 
   be connect( src_block: String val, src_output: String val, dest_block: String val, dest_input: String val ) =>
@@ -39,9 +40,9 @@ actor BlockManager is JsonVisitable
         let src:Block tag = _blocks(src_block)?
         let dest:Block tag = _blocks(dest_block)?
         src.connect( src_output, dest, dest_input )
-        _log(Info) and _log.log("connected:" + src_block + "." + src_output + " ==> " + dest_block + "." + dest_input )
+        _context(Info) and _context.log("connected:" + src_block + "." + src_output + " ==> " + dest_block + "." + dest_input )
     else
-      _log(Error) and _log.log("Unable to connect " + src_block + " to " + dest_block )
+      _context(Error) and _context.log("Unable to connect " + src_block + " to " + dest_block )
     end
     
   be visit( lambda:{ (JsonType) } val ) =>
@@ -80,9 +81,9 @@ actor BlockManager is JsonVisitable
 
 class DummyFactory is BlockFactory
   
-  fun createBlock( name: String val, logger:Logger[String] ): Block tag =>
-    logger(Error) and logger.log("Unknown type for \"" + name + "\". Unable to create.")
-    DummyBlock(name, logger)
+  fun createBlock( name: String val, context:SystemContext val ): Block tag =>
+    context(Error) and context.log("Unknown type for \"" + name + "\". Unable to create.")
+    DummyBlock(name, context)
       
   fun describe(): JsonObject =>
     recover JsonObject end
@@ -90,11 +91,11 @@ class DummyFactory is BlockFactory
   
 actor DummyBlock is Block
   let _name: String val
-  let _log:Logger[String]
+  let _context:SystemContext val
   
-  new create( name: String val, logger:Logger[String]) =>
+  new create( name: String val, context:SystemContext val) =>
     _name = name
-    _log = logger
+    _context = context
   
   be start() => None  
   
@@ -110,7 +111,7 @@ actor DummyBlock is Block
     None
 
   be visit( lambda:{ (JsonType) } val ) =>
-    _log(Fine) and _log.log("visit")
+    _context(Fine) and _context.log("visit")
     var json:JsonObject = JsonObject
     lambda( json )
 

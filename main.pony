@@ -1,25 +1,24 @@
 use "./app"
 use "./blocktypes"
 use "./blocks"
+use "./system"
 use "logger"
 use "cli"
 use "json"
 
 actor Main
-  let _log: Logger[String] val
+  let _context: SystemContext val
   let _manager: BlockManager tag
   let _env: Env
-  let _out: OutStream
   
   new create( env: Env ) =>
     _env = env
-    _out = _env.out
-    _log = StringLogger( Info, env.out )    
-    _manager = BlockManager(_log)
+    _context = recover SystemContext(env) end
+    _manager = BlockManager(_context)
     try
       handle_cli()?
     else
-      _log(Error) and _log.log( "Unable to get Environment Root. Internal error?" )
+      _context(Error) and _context.log( "Unable to get Environment Root. Internal error?" )
       env.exitcode(-1)  // some kind of coding error
     end
 
@@ -86,12 +85,12 @@ actor Main
     
   fun describe_topology(filename:String) ? =>
      let printer: PrintJson val = PrintJson(_env.out)
-     let loader = Loader(_manager, _log, _env.root as AmbientAuth)
+     let loader = Loader(_manager, _context, _env.root as AmbientAuth)
      loader.load( filename )
     _manager.describe_topology( { (jt) => printer.print( jt ) } )
     
   fun run_process(filename:String) ? =>
-     let loader = Loader(_manager, _log, _env.root as AmbientAuth)
+     let loader = Loader(_manager, _context, _env.root as AmbientAuth)
      loader.load( filename )
      _manager.start()
 
