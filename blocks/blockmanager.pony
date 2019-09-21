@@ -8,12 +8,14 @@ use "../system"
 actor BlockManager is AVisitable[JArr val]
   let _types: Map[String val,BlockFactory val] val
   let _blocks: Map[String val,Block tag] 
+  let _block_types: MapIs[Block tag, BlockTypeDescriptor val] 
   let _dummyFactory: BlockFactory val
   let _context: SystemContext
   
   new create(context: SystemContext) =>
     _context = context
     _blocks = Map[String,Block tag]
+    _block_types = MapIs[Block tag,BlockTypeDescriptor val]
     _dummyFactory = recover DummyFactory end
     _types = recover 
       let types:Map[String,BlockFactory val] = Map[String,BlockFactory val]
@@ -38,6 +40,7 @@ actor BlockManager is AVisitable[JArr val]
     let factory = _types.get_or_else(block_type, _dummyFactory)
     let block:Block tag = factory.create_block( name, _context )
     _blocks( name ) = block
+    _block_types(block) = factory.block_type_descriptor()
 
   be connect( src_block: String val, src_output: String val, dest_block: String val, dest_input: String val ) =>
     try
@@ -53,22 +56,23 @@ actor BlockManager is AVisitable[JArr val]
     let jsn:JArr val = recover JArr end
     promise( jsn )
     
-  be list_types( promise: Promise[Map[String val, BlockTypeDescriptor val] val] ) =>
-    let result: Map[String val, BlockTypeDescriptor val] iso = recover Map[String val, BlockTypeDescriptor val] end
+  be list_types( promise: Promise[Map[String val, BlockTypeDescriptor val] val] tag ) =>
+    let result = recover iso Map[String val, BlockTypeDescriptor val] end
     for (typename, factory) in _types.pairs() do
       result(typename) = factory.block_type_descriptor()
     end
     promise( consume result )
 
-  be list_blocks( promise: Promise[Map[String val, Block tag] val] ) =>
-    let result: Map[String val, Block tag ] iso = recover Map[String val, Block tag] end
+  be list_block_types( promise: Promise[Map[String val, BlockTypeDescriptor val] val] tag ) =>
+    let result = recover iso Map[String val, BlockTypeDescriptor val] end
     for (blockname, block) in _blocks.pairs() do
-      result(blockname) = block
+      try
+        result(blockname) = _block_types(block)?
+      end
     end
     promise( consume result )
     
-    
-  be describe_type( typename: String val, promise: Promise[JObj val] val) =>
+  be describe_type( typename: String val, promise: Promise[JObj val] tag) =>
     try
       let factory = _types(typename)?
       promise( factory.describe() )

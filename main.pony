@@ -1,10 +1,11 @@
 use "./app"
 use "./blocktypes"
 use "./blocks"
-use "json"
 use "./system"
-use "logger"
 use "cli"
+use "collections"
+use "jay"
+use "logger"
 use "promises"
 
 actor Main
@@ -36,8 +37,8 @@ actor Main
             match c.fullname()
             | "pink2web/list/types" => list_types()
             | "pink2web/run/process" => run_process(c.arg("filename" ).string() )?
-//             | "pink2web/describe/type" => describe_type(c.arg("typename" ).string() )
-//             | "pink2web/describe/topology" => describe_topology(c.arg("filename" ).string() )?
+            | "pink2web/describe/type" => describe_type(c.arg("typename" ).string() )
+            | "pink2web/describe/topology" => describe_topology(c.arg("filename" ).string() )?
             end
       | let ch: CommandHelp =>
           ch.print_help(_env.out)
@@ -77,44 +78,55 @@ actor Main
     ])?
 
   fun list_types() =>
-     let printer: PrintJson = PrintJson(_env.out)
-     let promise: Promise[Array[String val] val] = Promise[Array[String val] val]
+     let promise = Promise[Map[String val, BlockTypeDescriptor val] val]
+     promise.next[None]( recover PrintTypes(_env.out) end )
+     _manager.list_types(promise)
+     
+  fun describe_type(typ:String) =>
+     let promise = Promise[JObj]
+     promise.next[None](recover PrintJObj(_env.out) end)
+     _manager.describe_type( typ, promise )
     
-//   fun describe_type(typ:String) =>
-//      let printer: PrintJson val = PrintJson(_env.out)
-//     _manager.describe_type( typ, { (jt) => printer.print( jt ) } )
-//     
-//   fun describe_topology(filename:String) ? =>
-//      let printer: PrintJson val = PrintJson(_env.out)
-//      let loader = Loader(_manager, _context, _env.root as AmbientAuth)
-//      loader.load( filename )
-//     _manager.describe_topology( { (jt) => printer.print( jt ) } )
+  fun describe_topology(filename:String) ? =>
+     let loader = Loader(_manager, _context, _env.root as AmbientAuth)
+     loader.load( filename )?
+     let promise = Promise[Map[String val, BlockTypeDescriptor val] val]
+     promise.next[None](recover DescribeTopology(_env.out) end)
+    _manager.list_block_types( promise )
     
   fun run_process(filename:String) ? =>
      let loader = Loader(_manager, _context, _env.root as AmbientAuth)
      loader.load( filename ) ?  
      _manager.start()
 
-actor PrintJson
+class DescribeTopology is Fulfill[Map[String val, BlockTypeDescriptor val] val,None]
+  let _out: OutStream tag
+   
+  new create( out: OutStream tag) =>
+     _out = out
+
+  fun apply( value: Map[String val, BlockTypeDescriptor val] val ) =>
+    for (name, block) in value.pairs() do 
+      _out.print( name + "[" + block.name() + "]" )
+    end
+    
+class PrintTypes is Fulfill[Map[String val, BlockTypeDescriptor val] val, None]
+  let _out: OutStream tag
+   
+  new create( out: OutStream tag) =>
+     _out = out
+  
+  fun apply( value: Map[String val, BlockTypeDescriptor val] val) =>
+    for name in value.keys() do
+      _out.print( name )
+    end
+
+class PrintJObj is Fulfill[JObj, None]
   let _out: OutStream tag
    
   new create( out: OutStream tag) =>
      _out = out
     
-  be print( types: JsonType val) =>
-    match consume types
-    |  let s: JsonObject val =>
-      _out.print( s.string() )
-    |  let s: JsonArray val =>
-      _out.print( s.string() )
-    |  let s: String val =>
-      _out.print( s )
-    |  let s: None val =>
-      _out.print( "<None>" )
-    |  let s: Bool val =>
-      _out.print( s.string()  )
-    |  let s: I64 val =>
-      _out.print( s.string()  )
-    |  let s: F64 val =>
-      _out.print( s.string()  )
-    end
+  fun apply( value: JObj val) =>
+      _out.print( value.string() )
+
