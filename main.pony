@@ -1,10 +1,11 @@
 use "./app"
 use "./blocktypes"
 use "./blocks"
+use "json"
 use "./system"
 use "logger"
 use "cli"
-use "json"
+use "promises"
 
 actor Main
   let _context: SystemContext val
@@ -35,8 +36,8 @@ actor Main
             match c.fullname()
             | "pink2web/list/types" => list_types()
             | "pink2web/run/process" => run_process(c.arg("filename" ).string() )?
-            | "pink2web/describe/type" => describe_type(c.arg("typename" ).string() )
-            | "pink2web/describe/topology" => describe_topology(c.arg("filename" ).string() )?
+//             | "pink2web/describe/type" => describe_type(c.arg("typename" ).string() )
+//             | "pink2web/describe/topology" => describe_topology(c.arg("filename" ).string() )?
             end
       | let ch: CommandHelp =>
           ch.print_help(_env.out)
@@ -76,44 +77,44 @@ actor Main
     ])?
 
   fun list_types() =>
-     let printer: PrintJson val = PrintJson(_env.out)
-    _manager.list_types( { (jt) => printer.print( jt ) } )
+     let printer: PrintJson = PrintJson(_env.out)
+     let promise: Promise[Array[String val] val] = Promise[Array[String val] val]
     
-  fun describe_type(typ:String) =>
-     let printer: PrintJson val = PrintJson(_env.out)
-    _manager.describe_type( typ, { (jt) => printer.print( jt ) } )
-    
-  fun describe_topology(filename:String) ? =>
-     let printer: PrintJson val = PrintJson(_env.out)
-     let loader = Loader(_manager, _context, _env.root as AmbientAuth)
-     loader.load( filename )
-    _manager.describe_topology( { (jt) => printer.print( jt ) } )
+//   fun describe_type(typ:String) =>
+//      let printer: PrintJson val = PrintJson(_env.out)
+//     _manager.describe_type( typ, { (jt) => printer.print( jt ) } )
+//     
+//   fun describe_topology(filename:String) ? =>
+//      let printer: PrintJson val = PrintJson(_env.out)
+//      let loader = Loader(_manager, _context, _env.root as AmbientAuth)
+//      loader.load( filename )
+//     _manager.describe_topology( { (jt) => printer.print( jt ) } )
     
   fun run_process(filename:String) ? =>
      let loader = Loader(_manager, _context, _env.root as AmbientAuth)
-     loader.load( filename )
+     loader.load( filename ) ?  
      _manager.start()
 
-class val PrintJson
-   let _out: OutStream
+actor PrintJson
+  let _out: OutStream tag
    
-   new val create( out: OutStream) =>
+  new create( out: OutStream tag) =>
      _out = out
     
-  fun print( types: JsonType ) =>
+  be print( types: JsonType val) =>
     match consume types
-    |  let s: JsonObject=>
+    |  let s: JsonObject val =>
       _out.print( s.string() )
-    |  let s: JsonArray =>
+    |  let s: JsonArray val =>
       _out.print( s.string() )
-    |  let s: String =>
+    |  let s: String val =>
       _out.print( s )
-    |  let s: None =>
+    |  let s: None val =>
       _out.print( "<None>" )
-    |  let s: Bool =>
+    |  let s: Bool val =>
       _out.print( s.string()  )
-    |  let s: I64 =>
+    |  let s: I64 val =>
       _out.print( s.string()  )
-    |  let s: F64 =>
+    |  let s: F64 val =>
       _out.print( s.string()  )
     end

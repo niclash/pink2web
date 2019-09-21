@@ -2,7 +2,7 @@ use "../blocks"
 use "../system"
 use "collections"
 use "files"
-use "json"
+use "jay"
 use "logger"
 
 class Loader
@@ -15,52 +15,55 @@ class Loader
     _ambient = ambient
     _manager = manager
 
-  fun load( pathname: String ) =>
-    var doc: JsonDoc = JsonDoc
-    try
+  fun load( pathname: String ) ? =>
       let content: String val = read_lines(pathname)
-      doc.parse( content )?
-      let root:JsonObject = doc.data as JsonObject
+//       let root:JsonObject val = recover val 
+//         var doc: JsonDoc iso = recover iso JsonDoc end
+//         try
+//           doc.parse( content )?
+//         else 
+//           (let code, let msg) = doc.parse_report()
+//           _context(Error) and _context.log( "Error parsing " + pathname + " : [" + code.string()+ "] : " + msg )
+//         end
+//         doc.data as JsonObject
+//       end 
+      let root = JParse.from_string( content )? as JObj
       parse_root(root)
-    else 
-      (let code, let msg) = doc.parse_report()
-      _context(Error) and _context.log( "Error parsing " + pathname + " : [" + code.string()+ "] : " + msg )
-    end
   
   fun save( path: String ) =>
     None
   
-  fun parse_root( root: JsonObject ) =>
+  fun parse_root( root: JObj box ) =>
     try
-      let processes: JsonObject = root.data("processes")? as JsonObject
+      let processes: JObj val = root("processes") as JObj
       parse_processes( processes )
     else
       _context(Error) and _context.log( "A 'processes' object must exist in root object." )
     end
 
     try
-      let connections: JsonArray = root.data("connections")? as JsonArray
+      let connections: JArr val = root("connections") as JArr
       parse_connections( connections )
     else
       _context(Error) and _context.log( "A 'connections' object must exist in root object." )
     end
 
 
-  fun parse_processes( connections: JsonObject ) =>
+  fun parse_processes( connections: JObj box ) =>
     for name in connections.data.keys() do
       try
-        let component = connections.data(name)? as JsonObject
-        let blocktype = component.data("component")? as String
+        let component = connections(name) as JObj
+        let blocktype = component("component") as String
         _manager.create_block( blocktype, name )
       else
         _context(Error) and _context.log( "Component '" + name + "' has invalid structure." )
       end
     end
   
-  fun parse_connections( connections: JsonArray ) =>
+  fun parse_connections( connections: JArr box ) =>
     for value in connections.data.values() do
       try
-        let conn:JsonObject = value as JsonObject
+        let conn:JObj = value as JObj
         let src:(String,String,String) = parse_endpoint(conn, "src" )
         let tgt:(String,String,String) = parse_endpoint(conn, "tgt" )
         _manager.connect( src._1, src._2, tgt._1, tgt._2 )
@@ -72,18 +75,18 @@ class Loader
       end
     end
     
-  fun parse_endpoint( conn: JsonObject, endp: String ) : ( String, String, String ) =>
+  fun parse_endpoint( conn: JObj box, endp: String ) : ( String, String, String ) =>
     try
-      let point = conn.data(endp)? as JsonObject
-      let process = point.data("process")? as String
-      let port = point.data("port")? as String
-      let data = point.data("data")? as String
+      let point = conn(endp) as JObj
+      let process = point("process") as String
+      let port = point("port") as String
+      let data = point("data") as String
       (process,port,data)
     else
       ("","","")
     end
     
-  fun read_lines( pathname: String val ) : String val =>
+  fun read_lines( pathname: String ) : String =>
     let caps = recover val FileCaps.>set(FileRead).>set(FileStat) end
     var result:String iso = recover iso String end
     try

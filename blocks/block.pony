@@ -1,6 +1,13 @@
-use "json"
+use "collections"
+use "jay"
+use "../system"
 
-interface Block is JsonVisitable
+trait val BlockFactory
+  fun create_block( name: String val, context:SystemContext val): Block tag  
+  fun val block_type_descriptor(): BlockTypeDescriptor val
+  fun val describe(): JObj val
+
+trait Block is AVisitable[JObj val]
 
   be connect( output: String val, to_block: Block tag, to_input: String val)
   
@@ -14,28 +21,12 @@ interface Block is JsonVisitable
 
 trait BlockTypeDescriptor
 
-fun name(): String
+  fun val name(): String val
 
-fun description(): String
+  fun val description(): String val
 
-fun inputs(): Array[InputDescriptor[Any val] val] val
+  fun val inputs(): Array[InputDescriptor] val
+  
+  fun val outputs(): Array[OutputDescriptor] val
 
-fun outputs(): Array[OutputDescriptor[Any val] val] val
-
-fun describe() : JsonObject ref^ =>
-  var json = JsonObject
-  let inp = JsonArray
-  json.data("name") = name()
-  json.data("description") = description()
-  for input in inputs().values() do 
-    inp.data.push(input.describe())
-  end
-  let outp = JsonArray
-  for output in outputs().values() do 
-    outp.data.push(output.describe())
-  end
-  json.data("subgraph") = false
-  json.data("icon") = "plus"
-  json.data("inports") = inp
-  json.data("outports") = outp
-  json
+  fun val describe() : JObj val

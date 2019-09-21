@@ -1,21 +1,26 @@
 use "collections"
-use "json"
+use "jay"
 use "logger"
+use "promises"
 use "../blocktypes"
 use "../system"
 
-actor BlockManager is JsonVisitable
-  let _types: Map[String,BlockFactory]
-  let _blocks: Map[String,Block tag] 
+actor BlockManager is AVisitable[JArr val]
+  let _types: Map[String val,BlockFactory val] val
+  let _blocks: Map[String val,Block tag] 
   let _dummyFactory: BlockFactory val
-  let _context: SystemContext val
+  let _context: SystemContext
   
-  new create(context: SystemContext val) =>
+  new create(context: SystemContext) =>
     _context = context
     _blocks = Map[String,Block tag]
     _dummyFactory = recover DummyFactory end
-    _types = Map[String,BlockFactory]
-    _types("Add") = AddBlockFactory
+    _types = recover 
+      let types:Map[String,BlockFactory val] = Map[String,BlockFactory val]
+      types("Add") = recover val AddBlockFactory end
+      types
+    end
+
 
   be start() =>
     for block in _blocks.values() do
@@ -44,70 +49,68 @@ actor BlockManager is JsonVisitable
       _context(Error) and _context.log("Unable to connect " + src_block + " to " + dest_block )
     end
     
-  be visit( lambda:{ (JsonType) } val ) =>
-    let jsn:JsonObject iso = recover JsonObject end
-    lambda( consume jsn )
+  be visit( promise: Promise[ JArr val ] val ) =>
+    let jsn:JArr val = recover JArr end
+    promise( jsn )
     
-  be list_types( lambda:{ (JsonType) } val ) =>
-    var names: Array[JsonType] iso = recover Array[JsonType] end
-    for name in _types.keys() do
-      names.push(name)
+  be list_types( promise: Promise[Map[String val, BlockTypeDescriptor val] val] ) =>
+    let result: Map[String val, BlockTypeDescriptor val] iso = recover Map[String val, BlockTypeDescriptor val] end
+    for (typename, factory) in _types.pairs() do
+      result(typename) = factory.block_type_descriptor()
     end
-    lambda( JsonArray.from_array( consume names ) )
+    promise( consume result )
 
-  be describe_topology( lambda:{ (JsonType) } val ) =>
-    let root = JsonObject
-    for (name,block) in _blocks.pairs() do
-      let typename = block.visit( { (res) => 
-        let node = JsonObject
-        node.data("name") = name
-        node.data("descriptor") = res 
-        lambda( consume node )
-      } )
+  be list_blocks( promise: Promise[Map[String val, Block tag] val] ) =>
+    let result: Map[String val, Block tag ] iso = recover Map[String val, Block tag] end
+    for (blockname, block) in _blocks.pairs() do
+      result(blockname) = block
     end
+    promise( consume result )
     
     
-  be describe_type( typename: String val, lambda:{ (JsonType) } val) =>
+  be describe_type( typename: String val, promise: Promise[JObj val] val) =>
     try
-      let factory:BlockFactory = _types(typename)?
-      lambda( factory.describe() )
-    else
-      let json:JsonObject = JsonObject
-      json.data("error") = "unknown type " + typename
-      lambda( json )
+      let factory = _types(typename)?
+      promise( factory.describe() )
     end
 
 
-class DummyFactory is (BlockFactory & BlockTypeDescriptor)
+class val DummyFactory is BlockFactory
+  let descriptor:BlockTypeDescriptor val = recover DummyDescriptor end
   
-  fun create_block( container_name: String val, context:SystemContext val): Block tag =>
+  fun create_block( container_name: String, context:SystemContext): Block tag =>
     context(Error) and context.log("Unknown type for \"" + container_name + "\". Unable to create.")
-    DummyBlock(name, context)
+    let result:DummyBlock tag = DummyBlock(descriptor.name(), context)
+    result
       
-  fun inputs():  Array[InputDescriptor[Any val] val] val =>
-    Array[InputDescriptor[Any]](0)
+  fun block_type_descriptor(): BlockTypeDescriptor val =>
+    descriptor
     
-  fun outputs():  Array[OutputDescriptor[Any val] val] val =>
-    Array[OutputDescriptor[Any]](0)
+  fun describe(): JObj val =>
+    recover JObj end
+
+class DummyDescriptor is BlockTypeDescriptor
+  fun val inputs():  Array[InputDescriptor] val =>
+    recover Array[InputDescriptor] end
     
-  fun name() =>
+  fun val outputs():  Array[OutputDescriptor] val =>
+    recover Array[OutputDescriptor] end
+    
+  fun val name(): String val =>
     "dummy"
     
-  fun description() =>
+  fun val description(): String val =>
     "dummy block created when missing type information is found in json files."
     
-  fun block_type_descriptor() =>
-    this
-    
-  fun describe(): JsonObject ref^ =>
-    recover JsonObject end
-  
+  fun describe(): JObj val =>
+    let result:JObj val = JObj
+    result
   
 actor DummyBlock is Block
   let _name: String val
-  let _context:SystemContext val
+  let _context:SystemContext
   
-  new create( name: String val, context:SystemContext val) =>
+  new create( name: String val, context:SystemContext) =>
     _name = name
     _context = context
   
@@ -124,8 +127,8 @@ actor DummyBlock is Block
   be refresh() =>
     None
 
-  be visit( lambda:{ (JsonType) } val ) =>
+  be visit( promise:Promise[JObj val] val ) =>
     _context(Fine) and _context.log("visit")
-    var json:JsonObject = JsonObject
-    lambda( json )
+    var json = JObj
+    promise( json )
 

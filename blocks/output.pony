@@ -1,20 +1,22 @@
 use "collections"
-use "json"
+use "jay"
+use "../system"
 
-interface Output[TYPE: Linkable val] is ToJson
+trait Output[TYPE: Linkable val] is CVisitable[JObj val]
   fun ref set( newValue: TYPE val )
   fun value() : this->TYPE
   fun ref connect(destBlock: Block tag, input: String val)
   fun description() : String val
+  fun ref set_description( new_description:String val )
 
-class OutputImpl[TYPE: Linkable val] 
+class OutputImpl[TYPE: Linkable val] is Output[TYPE]
   var _value: TYPE
-  var _name: String val
-  var _description: String val
-  var _dest: List[Link[TYPE] val] ref
-  let _descriptor: OutputDescriptor[TYPE] val
+  var _name: String
+  var _description: String
+  var _dest: List[Link[TYPE] val]
+  let _descriptor: OutputDescriptor
   
-  new create(container_name: String val, descriptor: OutputDescriptor[TYPE] val, initialValue: TYPE, desc: String val = "") =>
+  new create(container_name: String val, descriptor: OutputDescriptor, initialValue: TYPE, desc: String val = "") =>
     _name = container_name + "." + descriptor.name  // TODO is this the best naming system?
     _description = desc
     _descriptor = descriptor
@@ -41,31 +43,35 @@ class OutputImpl[TYPE: Linkable val]
       _description
     end
 
-  fun to_json() : JsonObject ref^ =>
-    var json:JsonObject = JsonObject
-    json.data("name") = _name
-    json.data("description") = _description
-    json
+  fun ref set_description( new_description: String ) =>
+    _description = new_description
 
-class val OutputDescriptor[TYPE: Linkable val]
-  let name:String val
-  let description: String val
-  let typ: String val
+  fun visit(): JObj val =>
+    let json = JObj
+      + ("id", _name )
+      + ("description", _description)
+      + ("descriptor", _descriptor.describe() )
+    json
+    
+class val OutputDescriptor
+  let name:String
+  let description: String
+  let typ: String
   let addressable: Bool
   let required: Bool
   
-  new create( name':String val, typ':String val, description':String val, addressable': Bool, required': Bool ) =>
+  new val create( name':String, typ':String, description':String, addressable': Bool, required': Bool ) =>
     name = name'
     description = description'
     typ = typ'
     addressable = addressable'
     required = required'
     
-  fun describe() : JsonObject =>
-    let json = JsonObject
-    json.data("id") = name
-    json.data("description") = description
-    json.data("type" ) = typ
-    json.data("required" ) = required
-    json.data("addressable" ) = addressable
-    json
+  fun describe() : JObj val =>
+    let j = JObj
+      + ("id", name )
+      + ("description", description )
+      + ("type", typ )
+      + ("required", required )
+      + ("addressable", addressable )
+    j
