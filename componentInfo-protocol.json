@@ -8,10 +8,17 @@
         "icon": "coffee",
         "inPorts": [
             {
-                "id": "in",
+                "id": "in1",
+                "type": "number",
+                "description": "Input port",
+                "addressable": false,
+                "required": false
+            },
+            {
+                "id": "in2",
                 "type": "double",
                 "description": "Input port",
-                "addressable": true,
+                "addressable": false,
                 "required": false
             }
         ],

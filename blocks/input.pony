@@ -46,11 +46,11 @@ class InputImpl[TYPE: Linkable val] is Input[TYPE]
 class val InputDescriptor
   let name:String
   let description: String
-  let typ: String
+  let typ: LinkType
   let addressable: Bool
   let required: Bool
   
-  new val create( name':String, typ':String, description':String, addressable': Bool, required': Bool ) =>
+  new val create( name':String, typ':LinkType, description':String, addressable': Bool, required': Bool ) =>
     name = name'
     description = description'
     typ = typ'
@@ -61,7 +61,7 @@ class val InputDescriptor
     let j = JObj
       + ("id", name)
       + ("description", description)
-      + ("type", typ )
+      + ("type", typ.string() )
       + ("required", required)
       + ("addressable", addressable )
     j

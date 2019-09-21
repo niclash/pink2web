@@ -56,11 +56,11 @@ class OutputImpl[TYPE: Linkable val] is Output[TYPE]
 class val OutputDescriptor
   let name:String
   let description: String
-  let typ: String
+  let typ: LinkType
   let addressable: Bool
   let required: Bool
   
-  new val create( name':String, typ':String, description':String, addressable': Bool, required': Bool ) =>
+  new val create( name':String, typ':LinkType, description':String, addressable': Bool, required': Bool ) =>
     name = name'
     description = description'
     typ = typ'
@@ -71,7 +71,7 @@ class val OutputDescriptor
     let j = JObj
       + ("id", name )
       + ("description", description )
-      + ("type", typ )
+      + ("type", typ.string() )
       + ("required", required )
       + ("addressable", addressable )
     j

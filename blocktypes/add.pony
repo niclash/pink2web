@@ -71,9 +71,9 @@ class val AddBlockDescriptor is BlockTypeDescriptor
   let _out:OutputDescriptor
 
   new val create() =>
-      _in1 = InputDescriptor("input1", "number", "first term in addition", false, true )
-      _in2 = InputDescriptor("input2", "number", "second term in addition", false, true )
-      _out = OutputDescriptor("output", "number", "output=input1+input2", false, true )
+      _in1 = InputDescriptor("input1", Num, "first term in addition", false, true )
+      _in2 = InputDescriptor("input2", Num, "second term in addition", false, true )
+      _out = OutputDescriptor("output", Num, "output=input1+input2", false, true )
 
   fun val inputs(): Array[InputDescriptor] val =>
     [ _in1; _in2 ]
