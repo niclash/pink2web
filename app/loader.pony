@@ -7,13 +7,13 @@ use "logger"
 
 class Loader
   let _ambient:AmbientAuth val
-  let _manager: BlockManager tag
+  let _application: Application tag
   let _context: SystemContext val
   
-  new create( manager: BlockManager tag, context:SystemContext val, ambient:AmbientAuth val) =>
+  new create( application: Application tag, context:SystemContext val, ambient:AmbientAuth val) =>
     _context = context
     _ambient = ambient
-    _manager = manager
+    _application = application
 
   fun load( pathname: String ) ? =>
       let content: String = read_lines(pathname)
@@ -54,7 +54,7 @@ class Loader
       try
         let component = connections(name) as JObj
         let blocktype = component("component") as String
-        _manager.create_block( blocktype, name )
+        _application.create_block( blocktype, name )
       else
         _context(Error) and _context.log( "Component '" + name + "' has invalid structure." )
       end
@@ -66,7 +66,7 @@ class Loader
         let conn:JObj = value as JObj
         let src:(String,String,String) = parse_endpoint(conn, "src" )
         let tgt:(String,String,String) = parse_endpoint(conn, "tgt" )
-        _manager.connect( src._1, src._2, tgt._1, tgt._2 )
+        _application.connect( src._1, src._2, tgt._1, tgt._2 )
       else
         try
           let c:Stringable = value as Stringable

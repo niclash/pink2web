@@ -10,13 +10,13 @@ use "promises"
 
 actor Main
   let _context: SystemContext val
-  let _manager: BlockManager tag
+  let _application: Application tag
   let _env: Env
   
   new create( env: Env ) =>
     _env = env
     _context = recover SystemContext(env) end
-    _manager = BlockManager(_context)
+    _application = Application(_context)
     try
       handle_cli()?
     else
@@ -87,26 +87,26 @@ actor Main
         _context.stdout( t ) 
       end
     } )
-    _manager.list_types(promise)
+    _application.list_types(promise)
      
   fun describe_type(typ:String) =>
     let promise = Promise[JObj]
     promise.next[None]( { (json: JObj) => _context.stdout( json.string() ) } )
-    _manager.describe_type( typ, promise )
+    _application.describe_type( typ, promise )
     
   fun describe_topology(filename:String) ? =>
     _context(Fine) and _context.log( "Describe topology" )
-    let loader = Loader(_manager, _context, _env.root as AmbientAuth)
+    let loader = Loader(_application, _context, _env.root as AmbientAuth)
     loader.load( filename )?
     let promise = Promise[JArr]
     promise.next[None]( { (json: JArr) => 
       _context(Fine) and _context.log( "Topology Description" )
       _context.stdout( json.string() ) 
     } )
-    _manager.visit( promise )
+    _application.visit( promise )
     
   fun run_process(filename:String) ? =>
-    let loader = Loader(_manager, _context, _env.root as AmbientAuth)
+    let loader = Loader(_application, _context, _env.root as AmbientAuth)
     loader.load( filename ) ?  
-    _manager.start()
+    _application.start()
 

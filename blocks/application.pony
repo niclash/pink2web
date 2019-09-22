@@ -5,7 +5,7 @@ use "promises"
 use "../blocktypes"
 use "../system"
 
-actor BlockManager is AVisitable[JArr val]
+actor Application is AVisitable[JArr val]
   let _types: Map[String,BlockFactory val] val
   let _blocks: Map[String,Block tag] 
   let _block_types: MapIs[Block tag, BlockTypeDescriptor val] 
@@ -75,7 +75,7 @@ actor BlockManager is AVisitable[JArr val]
     end
 
   be visit( promise: Promise[ JArr val ] tag ) =>
-    _context(Fine) and _context.log("BlockManager.visit()")
+    _context(Fine) and _context.log("Application.visit()")
     let promises = Array[Promise[JObj val] tag]
     for (blockname, block) in _blocks.pairs() do
       let p = Promise[JObj val]
