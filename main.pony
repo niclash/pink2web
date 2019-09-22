@@ -78,55 +78,28 @@ actor Main
     ])?
 
   fun list_types() =>
-     let promise = Promise[Map[String val, BlockTypeDescriptor val] val]
-     promise.next[None]( recover PrintTypes(_env.out) end )
-     _manager.list_types(promise)
+    let promise = Promise[Map[String, BlockTypeDescriptor val] val]
+    promise.next[None]( { (m: Map[String, BlockTypeDescriptor val] val) => 
+      for t in m.keys() do
+        _context.log( t ) 
+      end
+    } )
+    _manager.list_types(promise)
      
   fun describe_type(typ:String) =>
-     let promise = Promise[JObj]
-     promise.next[None](recover PrintJObj(_env.out) end)
-     _manager.describe_type( typ, promise )
+    let promise = Promise[JObj]
+    promise.next[None]( { (json: JObj) => _context.log( json.string() ) } )
+    _manager.describe_type( typ, promise )
     
   fun describe_topology(filename:String) ? =>
-     let loader = Loader(_manager, _context, _env.root as AmbientAuth)
-     loader.load( filename )?
-     let promise = Promise[Map[String val, BlockTypeDescriptor val] val]
-     promise.next[None](recover DescribeTopology(_env.out) end)
-    _manager.list_block_types( promise )
+    let loader = Loader(_manager, _context, _env.root as AmbientAuth)
+    loader.load( filename )?
+    let promise = Promise[JArr]
+    promise.next[None]( { (json: JArr) => _context.log( json.string() ) } )
+    _manager.visit( promise )
     
   fun run_process(filename:String) ? =>
-     let loader = Loader(_manager, _context, _env.root as AmbientAuth)
-     loader.load( filename ) ?  
-     _manager.start()
-
-class DescribeTopology is Fulfill[Map[String val, BlockTypeDescriptor val] val,None]
-  let _out: OutStream tag
-   
-  new create( out: OutStream tag) =>
-     _out = out
-
-  fun apply( value: Map[String val, BlockTypeDescriptor val] val ) =>
-    for (name, block) in value.pairs() do 
-      _out.print( name + "[" + block.name() + "]" )
-    end
-    
-class PrintTypes is Fulfill[Map[String val, BlockTypeDescriptor val] val, None]
-  let _out: OutStream tag
-   
-  new create( out: OutStream tag) =>
-     _out = out
-  
-  fun apply( value: Map[String val, BlockTypeDescriptor val] val) =>
-    for name in value.keys() do
-      _out.print( name )
-    end
-
-class PrintJObj is Fulfill[JObj, None]
-  let _out: OutStream tag
-   
-  new create( out: OutStream tag) =>
-     _out = out
-    
-  fun apply( value: JObj val) =>
-      _out.print( value.string() )
+    let loader = Loader(_manager, _context, _env.root as AmbientAuth)
+    loader.load( filename ) ?  
+    _manager.start()
 

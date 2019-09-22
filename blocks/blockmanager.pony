@@ -6,8 +6,8 @@ use "../blocktypes"
 use "../system"
 
 actor BlockManager is AVisitable[JArr val]
-  let _types: Map[String val,BlockFactory val] val
-  let _blocks: Map[String val,Block tag] 
+  let _types: Map[String,BlockFactory val] val
+  let _blocks: Map[String,Block tag] 
   let _block_types: MapIs[Block tag, BlockTypeDescriptor val] 
   let _dummyFactory: BlockFactory val
   let _context: SystemContext
@@ -35,14 +35,14 @@ actor BlockManager is AVisitable[JArr val]
     end
     
 
-  be create_block( block_type: String val, name: String val ) =>
+  be create_block( block_type: String, name: String ) =>
     _context(Info) and _context.log("create_block " + name + " of type " + block_type )
     let factory = _types.get_or_else(block_type, _dummyFactory)
     let block:Block tag = factory.create_block( name, _context )
     _blocks( name ) = block
     _block_types(block) = factory.block_type_descriptor()
 
-  be connect( src_block: String val, src_output: String val, dest_block: String val, dest_input: String val ) =>
+  be connect( src_block: String, src_output: String, dest_block: String, dest_input: String ) =>
     try
         let src:Block tag = _blocks(src_block)?
         let dest:Block tag = _blocks(dest_block)?
@@ -52,15 +52,15 @@ actor BlockManager is AVisitable[JArr val]
       _context(Error) and _context.log("Unable to connect " + src_block + " to " + dest_block )
     end
     
-  be list_types( promise: Promise[Map[String val, BlockTypeDescriptor val] val] tag ) =>
-    let result = recover iso Map[String val, BlockTypeDescriptor val] end
+  be list_types( promise: Promise[Map[String, BlockTypeDescriptor val] val] tag ) =>
+    let result = recover iso Map[String, BlockTypeDescriptor val] end
     for (typename, factory) in _types.pairs() do
       result(typename) = factory.block_type_descriptor()
     end
     promise( consume result )
 
-  be list_block_types( promise: Promise[Map[String val, BlockTypeDescriptor val] val] tag ) =>
-    let result = recover iso Map[String val, BlockTypeDescriptor val] end
+  be list_block_types( promise: Promise[Map[String, BlockTypeDescriptor val] val] tag ) =>
+    let result = recover iso Map[String, BlockTypeDescriptor val] end
     for (blockname, block) in _blocks.pairs() do
       try
         result(blockname) = _block_types(block)?
@@ -68,7 +68,7 @@ actor BlockManager is AVisitable[JArr val]
     end
     promise( consume result )
     
-  be describe_type( typename: String val, promise: Promise[JObj val] tag) =>
+  be describe_type( typename: String, promise: Promise[JObj val] tag) =>
     try
       let factory = _types(typename)?
       promise( factory.describe() )
@@ -115,10 +115,10 @@ class DummyDescriptor is BlockTypeDescriptor
   fun val outputs():  Array[OutputDescriptor] val =>
     recover Array[OutputDescriptor] end
     
-  fun val name(): String val =>
+  fun val name(): String =>
     "dummy"
     
-  fun val description(): String val =>
+  fun val description(): String =>
     "dummy block created when missing type information is found in json files."
     
   fun describe(): JObj val =>
@@ -126,10 +126,10 @@ class DummyDescriptor is BlockTypeDescriptor
     result
   
 actor DummyBlock is Block
-  let _name: String val
+  let _name: String
   let _context:SystemContext
   
-  new create( name: String val, context:SystemContext) =>
+  new create( name: String, context:SystemContext) =>
     _name = name
     _context = context
   
@@ -137,10 +137,10 @@ actor DummyBlock is Block
   
   be stop() => None  
   
-  be connect( output: String val, to_block: Block tag, to_input: String val) =>
+  be connect( output: String, to_block: Block tag, to_input: String) =>
     None
   
-  be update[TYPE: Linkable val](input: String val, newValue: TYPE  val) =>
+  be update[TYPE: Linkable val](input: String, newValue: TYPE  val) =>
     None
 
   be refresh() =>

@@ -5,9 +5,9 @@ use "../system"
 trait Output[TYPE: Linkable val] is CVisitable[JObj val]
   fun ref set( newValue: TYPE val )
   fun value() : this->TYPE
-  fun ref connect(destBlock: Block tag, input: String val)
-  fun description() : String val
-  fun ref set_description( new_description:String val )
+  fun ref connect( destBlock: Block tag, input: String )
+  fun description() : String 
+  fun ref set_description( new_description:String )
 
 class OutputImpl[TYPE: Linkable val] is Output[TYPE]
   var _value: TYPE
@@ -16,7 +16,7 @@ class OutputImpl[TYPE: Linkable val] is Output[TYPE]
   var _dest: List[Link[TYPE] val]
   let _descriptor: OutputDescriptor
   
-  new create(container_name: String val, descriptor: OutputDescriptor, initialValue: TYPE, desc: String val = "") =>
+  new create(container_name: String, descriptor: OutputDescriptor, initialValue: TYPE, desc: String = "") =>
     _name = container_name + "." + descriptor.name  // TODO is this the best naming system?
     _description = desc
     _descriptor = descriptor
@@ -32,11 +32,11 @@ class OutputImpl[TYPE: Linkable val] is Output[TYPE]
     end
     _value = newValue
 
-  fun ref connect(destBlock: Block tag, input: String val) =>
+  fun ref connect(destBlock: Block tag, input: String) =>
     var link:Link[TYPE] val = recover Link[TYPE](destBlock, input) end
     _dest.push(link)
 
-  fun description() : String val =>
+  fun description() : String =>
     if _description == "" then 
       _descriptor.description
     else

@@ -5,8 +5,8 @@ use "../system"
 trait Input[TYPE: Linkable val] is CVisitable[JObj val]
   fun ref set( newValue: TYPE)
   fun value() : this->TYPE
-  fun description() : String val
-  fun ref set_description( new_description:String val )
+  fun description() : String
+  fun ref set_description( new_description:String )
 
 class InputImpl[TYPE: Linkable val] is Input[TYPE]
   let _name: String
@@ -14,7 +14,7 @@ class InputImpl[TYPE: Linkable val] is Input[TYPE]
   var _description: String
   let _descriptor:InputDescriptor
   
-  new create(container_name: String val, descriptor:InputDescriptor, initialValue: TYPE, description': String val  = "") =>
+  new create(container_name: String, descriptor:InputDescriptor, initialValue: TYPE, description': String  = "") =>
     _name = container_name + "." + descriptor.name   // TODO is this the best naming system?
     _description = description'
     _descriptor = descriptor
@@ -26,7 +26,7 @@ class InputImpl[TYPE: Linkable val] is Input[TYPE]
   fun ref set( newValue: TYPE) =>
     _value = consume newValue
 
-  fun description() : String val =>
+  fun description() : String =>
     if _description == "" then 
       _descriptor.description
     else

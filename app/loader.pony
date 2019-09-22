@@ -16,7 +16,7 @@ class Loader
     _manager = manager
 
   fun load( pathname: String ) ? =>
-      let content: String val = read_lines(pathname)
+      let content: String = read_lines(pathname)
 //       let root:JsonObject val = recover val 
 //         var doc: JsonDoc iso = recover iso JsonDoc end
 //         try

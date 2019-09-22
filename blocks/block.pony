@@ -3,15 +3,15 @@ use "jay"
 use "../system"
 
 trait val BlockFactory
-  fun create_block( name: String val, context:SystemContext val): Block tag  
+  fun create_block( name: String, context:SystemContext val): Block tag  
   fun val block_type_descriptor(): BlockTypeDescriptor val
   fun val describe(): JObj val
 
 trait Block is AVisitable[JObj val]
 
-  be connect( output: String val, to_block: Block tag, to_input: String val)
+  be connect( output: String, to_block: Block tag, to_input: String)
   
-  be update[TYPE: Linkable val](input: String val, newValue: TYPE  val)
+  be update[TYPE: Linkable val](input: String, newValue: TYPE  val)
 
   be refresh()
 
@@ -21,9 +21,9 @@ trait Block is AVisitable[JObj val]
 
 trait BlockTypeDescriptor
 
-  fun val name(): String val
+  fun val name(): String
 
-  fun val description(): String val
+  fun val description(): String
 
   fun val inputs(): Array[InputDescriptor] val
   

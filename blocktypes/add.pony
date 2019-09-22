@@ -6,7 +6,7 @@ use "../blocks"
 use "../system"
 
 actor AddBlock is Block
-  let _name: String val
+  let _name: String
   let _input1: Input[Number]
   let _input2: Input[Number]
   let _output: Output[F64]
@@ -30,13 +30,13 @@ actor AddBlock is Block
     _context(Fine) and _context.log("stop()")
     _started = false
     
-  be connect( output: String val, to_block: Block tag, to_input: String val) =>
+  be connect( output: String, to_block: Block tag, to_input: String) =>
     if output == "output"  then
       _output.connect(to_block, to_input)
     end
     refresh()
 
-  be update[TYPE: Linkable val](input: String val, newValue: TYPE  val) =>
+  be update[TYPE: Linkable val](input: String, newValue: TYPE  val) =>
     _context(Fine) and _context.log("update()")
     match newValue
     | let v: F64 => 
@@ -118,7 +118,7 @@ class val AddBlockFactory is BlockFactory
   fun val block_type_descriptor() : BlockTypeDescriptor val^ =>
     _descriptor
 
-  fun create_block( instance_name: String val, context:SystemContext val):Block tag =>
+  fun create_block( instance_name: String, context:SystemContext val):Block tag =>
     context(Fine) and context.log("create Add")
     AddBlock( instance_name, _descriptor.in1(), _descriptor.in2(), _descriptor.out(), context )
 

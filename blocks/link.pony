@@ -18,9 +18,9 @@ type Linkable is ( Number | Bool | String )
 
 class Link[TYPE: Linkable val]
   let block: Block tag
-  let input: String val
+  let input: String
   
-  new create( destBlock: Block tag, destInput: String val) =>
+  new create( destBlock: Block tag, destInput: String ) =>
     block = destBlock
     input =  destInput
     
