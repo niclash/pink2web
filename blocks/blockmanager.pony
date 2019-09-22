@@ -75,24 +75,29 @@ actor BlockManager is AVisitable[JArr val]
     end
 
   be visit( promise: Promise[ JArr val ] tag ) =>
-    let promises = MapIs[Promise[JObj val] tag, String]
+    _context(Fine) and _context.log("BlockManager.visit()")
+    let promises = Array[Promise[JObj val] tag]
     for (blockname, block) in _blocks.pairs() do
       let p = Promise[JObj val]
-      promises(p) = blockname  
+      promises.push( p )
+      _context(Fine) and _context.log("Make a visit to " + blockname )
       block.visit(p)
     end
     let root = Promise[JObj val]
-    root.join(promises.keys()).next[None]( 
+    root.join(promises.values()).next[None]( 
       {
         (a: Array[JObj val] val) =>
+          _context(Fine) and _context.log("Blocks are done..." )
+        
           var result = JArr
           for s in a.values() do
-            _context.log( s.string() )
+            _context(Fine) and _context.log("Block is reporting " + s.string() )
             result = result + s
           end
           promise( result )
       }      
     )
+    root(JObj)
 
 class val DummyFactory is BlockFactory
   let descriptor:BlockTypeDescriptor val = recover DummyDescriptor end

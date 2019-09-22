@@ -25,8 +25,10 @@ actor AddBlock is Block
   be start() =>
     _context(Fine) and _context.log("start()")
     _started = true
+    refresh()
     
   be stop() =>
+    refresh()
     _context(Fine) and _context.log("stop()")
     _started = false
     
@@ -46,8 +48,8 @@ actor AddBlock is Block
     refresh()
 
   be refresh() =>
-    _context(Fine) and _context.log("refresh()")
     if _started then
+      _context(Fine) and _context.log("refresh()")
       let value : F64 val = _input1.value().f64() + _input2.value().f64()
       _output.set( value )
     end
@@ -63,7 +65,8 @@ actor AddBlock is Block
       + ("input1", in1 )
       + ("input2", in2 )
       + ("output", out )
-    m
+    _context(Fine) and _context.log( "Reporting " + m.string() )
+    promise(m)
     
 class val AddBlockDescriptor is BlockTypeDescriptor
   let _in1:InputDescriptor

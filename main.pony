@@ -20,13 +20,16 @@ actor Main
     try
       handle_cli()?
     else
-      _context(Error) and _context.log( "Unable to get Environment Root. Internal error?" )
+      _context.stderr( "Unable to get Environment Root. Internal error?" )
       env.exitcode(-1)  // some kind of coding error
     end
 
 
   fun handle_cli() ? =>
     let cs = CommandSpec.parent("pink2web", "Flow Based Programming engine", [ 
+            OptionSpec.bool("warn", "Warn Logging Level" where default' = false)
+            OptionSpec.bool("info", "Info Logging Level" where default' = false)
+            OptionSpec.bool("fine", "Fine Logging Level" where default' = false)
         ],  [ 
             list_command()?; run_command()?; describe_command()? 
         ] )? .> add_help()?
@@ -81,21 +84,25 @@ actor Main
     let promise = Promise[Map[String, BlockTypeDescriptor val] val]
     promise.next[None]( { (m: Map[String, BlockTypeDescriptor val] val) => 
       for t in m.keys() do
-        _context.log( t ) 
+        _context.stdout( t ) 
       end
     } )
     _manager.list_types(promise)
      
   fun describe_type(typ:String) =>
     let promise = Promise[JObj]
-    promise.next[None]( { (json: JObj) => _context.log( json.string() ) } )
+    promise.next[None]( { (json: JObj) => _context.stdout( json.string() ) } )
     _manager.describe_type( typ, promise )
     
   fun describe_topology(filename:String) ? =>
+    _context(Fine) and _context.log( "Describe topology" )
     let loader = Loader(_manager, _context, _env.root as AmbientAuth)
     loader.load( filename )?
     let promise = Promise[JArr]
-    promise.next[None]( { (json: JArr) => _context.log( json.string() ) } )
+    promise.next[None]( { (json: JArr) => 
+      _context(Fine) and _context.log( "Topology Description" )
+      _context.stdout( json.string() ) 
+    } )
     _manager.visit( promise )
     
   fun run_process(filename:String) ? =>
