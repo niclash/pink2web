@@ -52,7 +52,7 @@ actor AddBlock is Block
       _output.set( value )
     end
     
-  be visit( promise:Promise[JObj val] val ) =>
+  be visit( promise:Promise[JObj val] tag ) =>
     _context(Fine) and _context.log("visit")
     let in1 = _input1.visit()
     let in2 = _input2.visit()

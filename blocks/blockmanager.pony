@@ -52,10 +52,6 @@ actor BlockManager is AVisitable[JArr val]
       _context(Error) and _context.log("Unable to connect " + src_block + " to " + dest_block )
     end
     
-  be visit( promise: Promise[ JArr val ] val ) =>
-    let jsn:JArr val = recover JArr end
-    promise( jsn )
-    
   be list_types( promise: Promise[Map[String val, BlockTypeDescriptor val] val] tag ) =>
     let result = recover iso Map[String val, BlockTypeDescriptor val] end
     for (typename, factory) in _types.pairs() do
@@ -78,6 +74,25 @@ actor BlockManager is AVisitable[JArr val]
       promise( factory.describe() )
     end
 
+  be visit( promise: Promise[ JArr val ] tag ) =>
+    let promises = MapIs[Promise[JObj val] tag, String]
+    for (blockname, block) in _blocks.pairs() do
+      let p = Promise[JObj val]
+      promises(p) = blockname  
+      block.visit(p)
+    end
+    let root = Promise[JObj val]
+    root.join(promises.keys()).next[None]( 
+      {
+        (a: Array[JObj val] val) =>
+          var result = JArr
+          for s in a.values() do
+            _context.log( s.string() )
+            result = result + s
+          end
+          promise( result )
+      }      
+    )
 
 class val DummyFactory is BlockFactory
   let descriptor:BlockTypeDescriptor val = recover DummyDescriptor end
@@ -131,7 +146,7 @@ actor DummyBlock is Block
   be refresh() =>
     None
 
-  be visit( promise:Promise[JObj val] val ) =>
+  be visit( promise:Promise[JObj val] tag ) =>
     _context(Fine) and _context.log("visit")
     var json = JObj
     promise( json )
