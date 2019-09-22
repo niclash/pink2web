@@ -2,13 +2,14 @@ use "collections"
 use "jay"
 use "../system"
 
-trait Output[TYPE: Linkable val] is CVisitable[JObj val]
+trait Output[TYPE: Linkable val]
   fun ref set( newValue: TYPE val )
   fun value() : this->TYPE
   fun ref connect( destBlock: Block tag, input: String )
   fun description() : String 
   fun ref set_description( new_description:String )
-
+  fun describe(): JObj val
+  
 class OutputImpl[TYPE: Linkable val] is Output[TYPE]
   var _value: TYPE
   var _name: String
@@ -46,7 +47,7 @@ class OutputImpl[TYPE: Linkable val] is Output[TYPE]
   fun ref set_description( new_description: String ) =>
     _description = new_description
 
-  fun visit(): JObj val =>
+  fun describe(): JObj val =>
     let json = JObj
       + ("id", _name )
       + ("description", _description)

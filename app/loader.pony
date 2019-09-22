@@ -1,4 +1,5 @@
 use "../blocks"
+use "../blocktypes"
 use "../system"
 use "collections"
 use "files"
@@ -7,66 +8,59 @@ use "logger"
 
 class Loader
   let _ambient:AmbientAuth val
-  let _application: Application tag
-  let _context: SystemContext val
+  let _blocktypes: BlockTypes
+  let _context: SystemContext
   
-  new create( application: Application tag, context:SystemContext val, ambient:AmbientAuth val) =>
+  new create( blocktypes: BlockTypes, context:SystemContext val, ambient:AmbientAuth val) =>
     _context = context
     _ambient = ambient
-    _application = application
+    _blocktypes = blocktypes
 
-  fun load( pathname: String ) ? =>
+  fun load( pathname: String ): Application ? =>
       let content: String = read_lines(pathname)
-//       let root:JsonObject val = recover val 
-//         var doc: JsonDoc iso = recover iso JsonDoc end
-//         try
-//           doc.parse( content )?
-//         else 
-//           (let code, let msg) = doc.parse_report()
-//           _context(Error) and _context.log( "Error parsing " + pathname + " : [" + code.string()+ "] : " + msg )
-//         end
-//         doc.data as JsonObject
-//       end 
       let root = JParse.from_string( content )? as JObj
       parse_root(root)
   
   fun save( path: String ) =>
     None
   
-  fun parse_root( root: JObj box ) =>
+  fun parse_root( root: JObj box ): Application =>
+    let application = Application( _blocktypes, _context )
     try
       let processes: JObj val = root("processes") as JObj
-      parse_processes( processes )
+      parse_processes( application, processes )
     else
       _context(Error) and _context.log( "A 'processes' object must exist in root object." )
     end
 
     try
       let connections: JArr val = root("connections") as JArr
-      parse_connections( connections )
+      parse_connections( application, connections )
     else
       _context(Error) and _context.log( "A 'connections' object must exist in root object." )
     end
 
+    application
 
-  fun parse_processes( connections: JObj box ) =>
+
+  fun parse_processes( application: Application, connections: JObj box ) =>
     for name in connections.data.keys() do
       try
         let component = connections(name) as JObj
         let blocktype = component("component") as String
-        _application.create_block( blocktype, name )
+        application.create_block( blocktype, name )
       else
         _context(Error) and _context.log( "Component '" + name + "' has invalid structure." )
       end
     end
   
-  fun parse_connections( connections: JArr box ) =>
+  fun parse_connections( application:Application, connections: JArr box ) =>
     for value in connections.data.values() do
       try
         let conn:JObj = value as JObj
         let src:(String,String,String) = parse_endpoint(conn, "src" )
         let tgt:(String,String,String) = parse_endpoint(conn, "tgt" )
-        _application.connect( src._1, src._2, tgt._1, tgt._2 )
+        application.connect( src._1, src._2, tgt._1, tgt._2 )
       else
         try
           let c:Stringable = value as Stringable

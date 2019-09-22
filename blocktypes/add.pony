@@ -7,20 +7,23 @@ use "../system"
 
 actor AddBlock is Block
   let _name: String
+  let _descriptor: BlockTypeDescriptor
   let _input1: Input[Number]
   let _input2: Input[Number]
   let _output: Output[F64]
   let _context:SystemContext val
   var _started:Bool = false
   
-  new create(name: String, in1:InputDescriptor, in2:InputDescriptor, out:OutputDescriptor, context:SystemContext val ) =>
+  new create(name: String, descriptor': BlockTypeDescriptor, context:SystemContext val ) =>
     context(Fine) and context.log("create("+name+")")
     _context = context
     _name = name
+    _descriptor = descriptor'
+    
     let zero:F64 = 0.0
-    _input1 = InputImpl[Number]( name, in1, zero )
-    _input2 = InputImpl[Number]( name, in2, zero )
-    _output = OutputImpl[F64]( name, out, zero )
+    _input1 = InputImpl[Number]( name, _descriptor.input(0), zero )
+    _input2 = InputImpl[Number]( name, _descriptor.input(1), zero )
+    _output = OutputImpl[F64]( name, _descriptor.output(0), zero )
 
   be start() =>
     _context(Fine) and _context.log("start()")
@@ -54,11 +57,14 @@ actor AddBlock is Block
       _output.set( value )
     end
     
-  be visit( promise:Promise[JObj val] tag ) =>
-    _context(Fine) and _context.log("visit")
-    let in1 = _input1.visit()
-    let in2 = _input2.visit()
-    let out = _output.visit()
+  be descriptor( promise: Promise[BlockTypeDescriptor] tag ) =>
+    promise(_descriptor)
+
+  be describe( promise:Promise[JObj val] tag ) =>
+    _context(Fine) and _context.log("describe")
+    let in1 = _input1.describe()
+    let in2 = _input2.describe()
+    let out = _output.describe()
     let m = JObj
       + ("name", _name )
       + ("started", _started )
@@ -90,30 +96,27 @@ class val AddBlockDescriptor is BlockTypeDescriptor
   
   fun out(): OutputDescriptor => _out
   
+  fun val input( index: U32 ): InputDescriptor val =>
+    match index
+    | 0 => _in1
+    | 1 => _in2
+    else
+      InputDescriptor( "INVALID", Num, "INVALID", false, false)
+    end
+    
+  fun val output( index: U32 ): OutputDescriptor val =>
+    match index
+    | 0 => _out
+    else
+      OutputDescriptor( "INVALID", Num, "INVALID", false, false)
+    end
+    
   fun val name(): String =>
     "Add"
     
   fun val description(): String =>
     "Adds two input and outputs the sum."
     
-  fun val describe() : JObj val =>
-      
-    var inp = JArr
-    for input in inputs().values() do 
-      inp = inp + input.describe()
-    end
-    var outp = JArr
-    for output in outputs().values() do 
-      outp = outp + output.describe()
-    end
-    var json6 = JObj
-      + ("name", name() )
-      + ("description", description() )
-      + ("subgraph", false )
-      + ("icon", "plus" )
-      + ("inports", inp)
-      + ("outports", outp )
-    json6
 
 class val AddBlockFactory is BlockFactory 
   let _descriptor: AddBlockDescriptor val = recover AddBlockDescriptor end
@@ -123,7 +126,7 @@ class val AddBlockFactory is BlockFactory
 
   fun create_block( instance_name: String, context:SystemContext val):Block tag =>
     context(Fine) and context.log("create Add")
-    AddBlock( instance_name, _descriptor.in1(), _descriptor.in2(), _descriptor.out(), context )
+    AddBlock( instance_name, _descriptor, context )
 
   fun val describe(): JObj val =>
     JObj + ("descriptor", _descriptor.describe() )

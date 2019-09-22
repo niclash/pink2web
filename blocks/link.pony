@@ -26,4 +26,6 @@ class Link[TYPE: Linkable val]
     
   fun update( newValue: TYPE ) =>
     block.update[TYPE](input, newValue )
-    
+  
+  fun describe(): (String,Block tag) =>
+    (input, block)

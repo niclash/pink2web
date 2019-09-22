@@ -2,12 +2,13 @@ use "collections"
 use "jay"
 use "../system"
 
-trait Input[TYPE: Linkable val] is CVisitable[JObj val]
+trait Input[TYPE: Linkable val]
   fun ref set( newValue: TYPE)
   fun value() : this->TYPE
   fun description() : String
   fun ref set_description( new_description:String )
-
+  fun describe(): JObj val
+  
 class InputImpl[TYPE: Linkable val] is Input[TYPE]
   let _name: String
   var _value: TYPE
@@ -36,7 +37,7 @@ class InputImpl[TYPE: Linkable val] is Input[TYPE]
   fun ref set_description( new_description: String ) =>
     _description = new_description
     
-  fun visit(): JObj val =>
+  fun describe(): JObj val =>
     let j = JObj
       + ("id", _name)
       + ("description", _description )
