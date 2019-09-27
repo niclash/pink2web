@@ -14,6 +14,7 @@
         { "block.input1": -0.1 },
     ],
     "expect": [
+      { "block.output": 1 },
       { "block.output": -1 },
       { "block.output": 0 },
       { "block.output": 1 },

@@ -5,8 +5,10 @@ use "../system"
 use "../blocktypes"
 
 trait val BlockFactory
-  fun create_block( name: String, context:SystemContext val): Block tag  
+  fun create_block( name: String, context:SystemContext val): Block tag
+  
   fun val block_type_descriptor(): BlockTypeDescriptor
+  
   fun val describe(): JObj val
 
 trait Block
