@@ -3,7 +3,7 @@
     "command": "component",
     "payload": {
         "name": "Add",
-        "description": "Adding 4 inputs",
+        "description": "Adding 2 inputs",
         "subgraph": false,
         "icon": "coffee",
         "inPorts": [
