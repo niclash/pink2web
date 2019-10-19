@@ -7,17 +7,15 @@ use "jay"
 use "logger"
 
 class Loader
-  let _ambient:AmbientAuth val
   let _blocktypes: BlockTypes
   let _context: SystemContext
   
-  new create( blocktypes: BlockTypes, context:SystemContext val, ambient:AmbientAuth val) =>
+  new create( blocktypes: BlockTypes, context:SystemContext val) =>
     _context = context
-    _ambient = ambient
     _blocktypes = blocktypes
 
   fun load( pathname: String ): Application ? =>
-      let content: String = read_lines(pathname)
+      let content: String = Files.read_lines_from_pathname(pathname, _context.ambient())?
       let root = JParse.from_string( content )? as JObj
       parse_root(root)
   
@@ -80,18 +78,3 @@ class Loader
       ("","","")
     end
     
-  fun read_lines( pathname: String ) : String =>
-    let caps = recover val FileCaps.>set(FileRead).>set(FileStat) end
-    var result:String iso = recover iso String end
-    try
-      with file = OpenFile(
-        FilePath(_ambient, pathname, caps)?) as File
-      do
-        for line in file.lines() do
-          result.append( consume line )
-        end
-      end
-    else
-      _context(Error) and _context.log("Couldn't open " + pathname)
-    end
-    consume result

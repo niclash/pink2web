@@ -44,6 +44,9 @@ actor Application
       _context(Error) and _context.log("Unable to connect " + src_block + " to " + dest_block )
     end
     
+  be set_value_from_string( block: String, value: String ) =>
+    None
+    
   be list_blocks( promise: Promise[Map[String, BlockTypeDescriptor val] val] tag ) =>
     let result = recover iso Map[String, BlockTypeDescriptor val] end
     for (blockname, block) in _blocks.pairs() do

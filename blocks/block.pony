@@ -11,7 +11,7 @@ trait val BlockFactory
   
   fun val describe(): JObj val
 
-trait Block
+trait tag Block
 
   be connect( output: String, to_block: Block tag, to_input: String)
   

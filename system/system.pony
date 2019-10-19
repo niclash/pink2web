@@ -37,3 +37,6 @@ class val SystemContext
     
   fun internal_error() =>
     log( "INTERNAL ERROR!!!" )
+
+  fun val ambient(): (AmbientAuth val| None) =>
+    _env.root

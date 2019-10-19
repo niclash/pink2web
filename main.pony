@@ -92,7 +92,7 @@ actor Main
     
   fun describe_topology(filename:String) ? =>
     _context(Fine) and _context.log( "Describe topology" )
-    let loader = Loader(_blocktypes, _context, _env.root as AmbientAuth)
+    let loader = Loader(_blocktypes, _context)
     let application = loader.load( filename )?
     let promise = Promise[JArr]
     promise.next[None]( { (json: JArr) => 
@@ -102,7 +102,7 @@ actor Main
     application.describe( promise )
     
   fun run_process(filename:String) ? =>
-    let loader = Loader(_blocktypes, _context, _env.root as AmbientAuth)
-    let application = loader.load( filename ) ?  
+    let loader = Loader(_blocktypes, _context)
+    let application = loader.load( filename )?  
     application.start()
 

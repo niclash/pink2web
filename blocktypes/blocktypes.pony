@@ -5,16 +5,17 @@ use "../blocks"
 use "../system"
 
 class val BlockTypes
-  let _types: Map[String,BlockFactory val] val
+  let _types: Map[String,BlockFactory] val
   let _context:SystemContext
   let _dummy: BlockFactory val
   
-  new create(context: SystemContext) =>
+  new val create(context: SystemContext) =>
     _context = context
     _dummy = recover DummyFactory end
     _types = recover 
-      let types:Map[String,BlockFactory val] = Map[String,BlockFactory val]
-      types("Add") = recover val AddBlockFactory end
+      let types = Map[String,BlockFactory]
+      types("Add") = AddBlockFactory
+      types("Assertion") = AssertionFactory
       types
     end
 

@@ -11,10 +11,10 @@ actor AddBlock is Block
   let _input1: Input[Number]
   let _input2: Input[Number]
   let _output: Output[F64]
-  let _context:SystemContext val
+  let _context:SystemContext
   var _started:Bool = false
   
-  new create(name: String, descriptor': BlockTypeDescriptor, context:SystemContext val ) =>
+  new create(name: String, descriptor': BlockTypeDescriptor, context:SystemContext ) =>
     context(Fine) and context.log("create("+name+")")
     _context = context
     _name = name
@@ -35,13 +35,13 @@ actor AddBlock is Block
     _context(Fine) and _context.log("stop()")
     _started = false
     
-  be connect( output: String, to_block: Block tag, to_input: String) =>
+  be connect( output: String, to_block: Block, to_input: String) =>
     if output == "output"  then
       _output.connect(to_block, to_input)
     end
     refresh()
 
-  be update[TYPE: Linkable val](input: String, newValue: TYPE  val) =>
+  be update[TYPE: Linkable](input: String, newValue: TYPE) =>
     _context(Fine) and _context.log("update()")
     match newValue
     | let v: F64 => 
@@ -53,7 +53,7 @@ actor AddBlock is Block
   be refresh() =>
     if _started then
       _context(Fine) and _context.log("refresh()")
-      let value : F64 val = _input1.value().f64() + _input2.value().f64()
+      let value : F64 = _input1.value().f64() + _input2.value().f64()
       _output.set( value )
     end
     
@@ -121,10 +121,12 @@ class val AddBlockDescriptor is BlockTypeDescriptor
 class val AddBlockFactory is BlockFactory 
   let _descriptor: AddBlockDescriptor val = recover AddBlockDescriptor end
   
+  new val create() => None
+  
   fun val block_type_descriptor() : BlockTypeDescriptor val^ =>
     _descriptor
 
-  fun create_block( instance_name: String, context:SystemContext val):Block tag =>
+  fun create_block( instance_name: String, context:SystemContext val):Block =>
     context(Fine) and context.log("create Add")
     AddBlock( instance_name, _descriptor, context )
 
