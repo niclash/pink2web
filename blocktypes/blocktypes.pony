@@ -1,4 +1,5 @@
 use "collections"
+use "debug"
 use "promises"
 use "jay"
 use "../blocks"
@@ -15,7 +16,6 @@ class val BlockTypes
     _types = recover 
       let types = Map[String,BlockFactory]
       types("Add") = AddBlockFactory
-      types("Assertion") = AssertionFactory
       types
     end
 
@@ -44,9 +44,9 @@ trait val BlockTypeDescriptor
   
   fun val outputs(): Array[OutputDescriptor] val
   
-  fun val input( index: U32 ): InputDescriptor val
+  fun val input( index: USize ): InputDescriptor val
 
-  fun val output( index: U32 ): OutputDescriptor val
+  fun val output( index: USize ): OutputDescriptor val
 
   fun val describe() : JObj val =>
     var inps = JArr

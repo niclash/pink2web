@@ -15,7 +15,7 @@ actor Main
   
   new create( env: Env ) =>
     _env = env
-    _context = recover SystemContext(env) end
+    _context = recover SystemContext(env, Info) end
     _blocktypes = recover BlockTypes(_context) end
     try
       handle_cli()?

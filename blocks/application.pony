@@ -1,4 +1,5 @@
 use "collections"
+use "debug"
 use "jay"
 use "logger"
 use "promises"
@@ -15,7 +16,7 @@ actor Application
     _context = context
     _types = types
     _blocks = Map[String,Block tag]
-    _block_types = MapIs[Block tag,BlockTypeDescriptor val]
+    _block_types = MapIs[Block tag, BlockTypeDescriptor val]
 
   be start() =>
     for block in _blocks.values() do
@@ -34,6 +35,10 @@ actor Application
     _blocks( name ) = block
     _block_types(block) = factory.block_type_descriptor()
 
+  be register_block( block:Block, name:String, blocktype: BlockTypeDescriptor ) =>
+    _blocks( name ) = block
+    _block_types(block) = blocktype
+  
   be connect( src_block: String, src_output: String, dest_block: String, dest_input: String ) =>
     try
         let src:Block tag = _blocks(src_block)?
@@ -41,12 +46,23 @@ actor Application
         src.connect( src_output, dest, dest_input )
         _context(Info) and _context.log("connected:" + src_block + "." + src_output + " ==> " + dest_block + "." + dest_input )
     else
-      _context(Error) and _context.log("Unable to connect " + src_block + " to " + dest_block )
+      _context(Error) and _context.log("Unable to connect " + src_block + "." + src_output + " to " + dest_block )
     end
     
-  be set_value_from_string( block: String, value: String ) =>
-    None
-    
+  be set_value_from_string( point: String, value:String ) =>
+    try
+      (let blockname, let input) = BlockName(point)?
+      try
+        let block:Block tag = _blocks(blockname)?
+        block.update( input, value )
+        _context(Fine) and _context.log("update: " + blockname + "." + input + "=" + value )
+      else
+        _context(Error) and _context.log("Failed update: " + blockname + "." + input + "=" + value )
+      end
+    else
+      _context(Error) and _context.log("Failed update: " + point + "=" + value )
+    end
+     
   be list_blocks( promise: Promise[Map[String, BlockTypeDescriptor val] val] tag ) =>
     let result = recover iso Map[String, BlockTypeDescriptor val] end
     for (blockname, block) in _blocks.pairs() do

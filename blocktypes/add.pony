@@ -41,12 +41,17 @@ actor AddBlock is Block
     end
     refresh()
 
-  be update[TYPE: Linkable](input: String, newValue: TYPE) =>
-    _context(Fine) and _context.log("update()")
-    match newValue
+  be update(input: String, new_value: Linkable) =>
+    _context(Fine) and _context.log("update(" + input + "," + new_value.string() + ")")
+    match new_value
     | let v: F64 => 
         if input == "input1" then _input1.set( v ) end
         if input == "input2" then _input2.set( v ) end
+    | let v: String => 
+      try
+        if input == "input1" then _input1.set( v.f64()? ) end
+        if input == "input2" then _input2.set( v.f64()? ) end
+      end // ignore if we can't convert it. Later we introduce a error message channel.
     end
     refresh()
 
@@ -96,7 +101,7 @@ class val AddBlockDescriptor is BlockTypeDescriptor
   
   fun out(): OutputDescriptor => _out
   
-  fun val input( index: U32 ): InputDescriptor val =>
+  fun val input( index: USize ): InputDescriptor val =>
     match index
     | 0 => _in1
     | 1 => _in2
@@ -104,7 +109,7 @@ class val AddBlockDescriptor is BlockTypeDescriptor
       InputDescriptor( "INVALID", Num, "INVALID", false, false)
     end
     
-  fun val output( index: U32 ): OutputDescriptor val =>
+  fun val output( index: USize ): OutputDescriptor val =>
     match index
     | 0 => _out
     else

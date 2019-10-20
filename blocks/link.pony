@@ -24,8 +24,8 @@ class Link[TYPE: Linkable val]
     block = destBlock
     input =  destInput
     
-  fun update( newValue: TYPE ) =>
-    block.update[TYPE](input, newValue )
+  fun update( new_value: Linkable ) =>
+    block.update(input, new_value )
   
   fun describe(): (String,Block tag) =>
     (input, block)

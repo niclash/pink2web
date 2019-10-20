@@ -2,7 +2,7 @@
   "Check Add": {
     "topology": "add-only.json", 
     "inputs": [
-        { "block.input2": "1"}
+        { "block.input2": "1"},
         { "block.input1": "-2"},
         { "block.input1": "-1"},
         { "block.input1": "0"},
@@ -12,8 +12,9 @@
         { "block.input1": "-32768"},
         { "block.input1": "0.1"},
         { "block.input1": "-0.1" },
+        { "assertions.completed": "true" }
     ],
-    "expect": [
+    "expects": [
       { "block.output": { "type": "F64", "value": "1" } },
       { "block.output": { "type": "F64", "value": "-1" } },
       { "block.output": { "type": "F64", "value": "0" } },
@@ -25,4 +26,5 @@
       { "block.output": { "type": "F64", "value": "1.1" } },
       { "block.output": { "type": "F64", "value": "0.9" } }
     ]
+    }
 }

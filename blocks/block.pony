@@ -1,4 +1,5 @@
 use "collections"
+use "debug"
 use "jay"
 use "promises"
 use "../system"
@@ -13,9 +14,9 @@ trait val BlockFactory
 
 trait tag Block
 
-  be connect( output: String, to_block: Block tag, to_input: String)
+  be connect( output: String, to_block: Block, to_input: String)
   
-  be update[TYPE: Linkable val](input: String, newValue: TYPE  val)
+  be update(input: String, new_value: Linkable)
 
   be refresh()
 
@@ -27,4 +28,10 @@ trait tag Block
   
   be descriptor( promise: Promise[BlockTypeDescriptor] tag )
   
+primitive BlockName
+  fun apply( fullname: String box ): (String val, String val )? =>
+    let last_index = fullname.rfind(".")?
+    let blockname:String = recover fullname.substring(0, last_index) end
+    let pointname:String = recover fullname.substring(last_index+1) end
+    (blockname, pointname)
 

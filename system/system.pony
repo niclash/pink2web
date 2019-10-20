@@ -6,11 +6,11 @@ class val SystemContext
   let _timers:Timers
   let _env: Env
   
-  new val create( env: Env ) =>
+  new val create( env: Env, level':LogLevel ) =>
     // TODO: add -v for Warn, -vv for Info and -vvv for Fine logging levels
     //       The SystemContext is created before handling of CLI, so it needs to scan 
     //       manually.
-    var level:LogLevel = Error
+    var level:LogLevel = level'
     for arg in env.args.values() do 
       match arg
       | "--warn" => level = Warn

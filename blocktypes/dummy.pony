@@ -26,10 +26,10 @@ class DummyDescriptor is BlockTypeDescriptor
   fun val outputs():  Array[OutputDescriptor] val =>
     recover Array[OutputDescriptor] end
 
-  fun val input( index: U32 ): InputDescriptor val =>
+  fun val input( index: USize ): InputDescriptor val =>
     InputDescriptor( "INVALID", Num, "INVALID", false, false)
     
-  fun val output( index: U32 ): OutputDescriptor val =>
+  fun val output( index: USize ): OutputDescriptor val =>
     OutputDescriptor( "INVALID", Num, "INVALID", false, false)
 
   fun val name(): String =>
@@ -59,7 +59,7 @@ actor DummyBlock is Block
   be connect( output: String, to_block: Block tag, to_input: String) =>
     None
   
-  be update[TYPE: Linkable val](input: String, newValue: TYPE  val) =>
+  be update(input: String, new_value: Linkable val) =>
     None
 
   be refresh() =>
