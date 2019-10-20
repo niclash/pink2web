@@ -42,7 +42,7 @@ actor AddBlock is Block
     refresh()
 
   be update(input: String, new_value: Linkable) =>
-    _context(Fine) and _context.log("update(" + input + "," + new_value.string() + ")")
+    _context(Fine) and _context.log("Add[ " + _name + "." + input + " = " + new_value.string() + " ]")
     match new_value
     | let v: F64 => 
         if input == "input1" then _input1.set( v ) end

@@ -1,5 +1,5 @@
 {
-  "Check Add": {
+  "Check Single Add": {
     "topology": "add-only.json", 
     "inputs": [
         { "block.input2": "1"},
@@ -12,7 +12,13 @@
         { "block.input1": "-32768"},
         { "block.input1": "0.1"},
         { "block.input1": "-0.1" },
-        { "assertions.completed": "true" }
+        { "block.input2": "0.1"},
+        { "block.input2": "1.0"},
+        { "block.input2": "-32767"},
+        { "block.input2": "-32768"},
+        { "block.input2": "32767"},
+        { "block.input2": "32768"},
+        { "block.input2": "32769"}
     ],
     "expects": [
       { "block.output": { "type": "F64", "value": "1" } },
@@ -24,7 +30,15 @@
       { "block.output": { "type": "F64", "value": "-65535" } },
       { "block.output": { "type": "F64", "value": "-32767" } },
       { "block.output": { "type": "F64", "value": "1.1" } },
-      { "block.output": { "type": "F64", "value": "0.9" } }
+      { "block.output": { "type": "F64", "value": "0.9" } },
+      
+      { "block.output": { "type": "F64", "value": "0.0" } },
+      { "block.output": { "type": "F64", "value": "0.9" } },
+      { "block.output": { "type": "F64", "value": "-32767.1" } },
+      { "block.output": { "type": "F64", "value": "-32768.1" } },
+      { "block.output": { "type": "F64", "value": "32766.9" } },
+      { "block.output": { "type": "F64", "value": "32767.9" } },
+      { "block.output": { "type": "F64", "value": "32768.9" } }
     ]
     }
 }
