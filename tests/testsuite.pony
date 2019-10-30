@@ -60,7 +60,7 @@ class iso _BlockTest is UnitTest
 
   fun setup(h: TestHelper): Array[(Array[(String,String)] val,Assertion, Application)] ?=>
     let env:Env = h.env
-    let context = SystemContext(env, Fine)
+    let context = SystemContext(env, Warn)?
     let blocktypes = BlockTypes(context)
     let loader = Loader(blocktypes, context)
     let root: JObj = parse_test(_pathname, env)?

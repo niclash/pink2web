@@ -1,0 +1,51 @@
+{
+    "connections": [
+        {
+            "src": { "process": "block1","port": "output","data": "" },
+            "tgt": {"process": "block3","port": "input1","data": ""}
+        },
+        {
+            "src": { "process": "block2","port": "output","data": "" },
+            "tgt": {"process": "block3","port": "input2","data": ""}
+        },
+        {
+            "src": { "process": "block4","port": "output","data": "" },
+            "tgt": {"process": "block6","port": "input1","data": ""}
+        },
+        {
+            "src": { "process": "block5","port": "output","data": "" },
+            "tgt": {"process": "block6","port": "input2","data": ""}
+        },
+        {
+            "src": { "process": "block3","port": "output","data": "" },
+            "tgt": {"process": "block7","port": "input1","data": ""}
+        },
+        {
+            "src": { "process": "block6","port": "output","data": "" },
+            "tgt": {"process": "block7","port": "input2","data": ""}
+        }
+    ],
+    "processes": {
+        "block1": {
+            "component": "Add"
+        },
+        "block2": {
+            "component": "Add"
+        },
+        "block3": {
+            "component": "Add"
+        },
+        "block4": {
+            "component": "Add"
+        },
+        "block5": {
+            "component": "Add"
+        },
+        "block6": {
+            "component": "Add"
+        },
+        "block7": {
+            "component": "Add"
+        }
+    }
+}

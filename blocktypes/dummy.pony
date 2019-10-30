@@ -27,10 +27,10 @@ class DummyDescriptor is BlockTypeDescriptor
     recover Array[OutputDescriptor] end
 
   fun val input( index: USize ): InputDescriptor val =>
-    InputDescriptor( "INVALID", Num, "INVALID", false, false)
+    InputDescriptor( "INVALID", PNum, "INVALID", false, false)
     
   fun val output( index: USize ): OutputDescriptor val =>
-    OutputDescriptor( "INVALID", Num, "INVALID", false, false)
+    OutputDescriptor( "INVALID", PNum, "INVALID", false, false)
 
   fun val name(): String =>
     "dummy"

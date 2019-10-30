@@ -40,5 +40,29 @@
       { "block.output": { "type": "F64", "value": "32767.9" } },
       { "block.output": { "type": "F64", "value": "32768.9" } }
     ]
+    },
+  "Check Many Add": {
+    "topology": "add-many.json", 
+    "inputs": [
+        { "block1.input1": "2"},
+        { "block1.input2": "3"},
+        { "block2.input1": "5"},
+        { "block2.input2": "7"},
+        { "block4.input1": "11"},
+        { "block4.input2": "13"},
+        { "block5.input1": "17"},
+        { "block5.input2": "19"}
+    ],
+    "expects": [
+      { "block7.output": { "type": "F64", "value": "2" } },
+      { "block7.output": { "type": "F64", "value": "5" } },
+      { "block7.output": { "type": "F64", "value": "10" } },
+      { "block7.output": { "type": "F64", "value": "17" } },
+      { "block7.output": { "type": "F64", "value": "28" } },
+      { "block7.output": { "type": "F64", "value": "41" } },
+      { "block7.output": { "type": "F64", "value": "58" } },
+      { "block7.output": { "type": "F64", "value": "77" } }
+    ]
     }
+
 }

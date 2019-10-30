@@ -2,30 +2,31 @@ use "./app"
 use "./blocktypes"
 use "./blocks"
 use "./system"
+use "./web"
 use "cli"
 use "collections"
 use "jay"
 use "logger"
 use "promises"
+use "websocket"
 
 actor Main
-  let _context: SystemContext val
-  let _env: Env
-  let _blocktypes: BlockTypes
+  var _rest: (RestServer|None) = None
+  var _websocketListener: (WebSocketListener|None) = None
   
   new create( env: Env ) =>
-    _env = env
-    _context = recover SystemContext(env, Info) end
-    _blocktypes = recover BlockTypes(_context) end
     try
-      handle_cli()?
+      let context: SystemContext = handle_cli(env)?
+      //_rest = RestServer("localhost:8384", context )
+      _websocketListener = WebSocketListener( env.root as AmbientAuth, BroadcastListenNotify, "10.10.139.242","3569")
     else
-      _context.stderr( "Unable to get Environment Root. Internal error?" )
+      env.err.print( "Unable to get Environment Root. Internal error?" )
       env.exitcode(-1)  // some kind of coding error
     end
 
-
-  fun handle_cli() ? =>
+  fun handle_cli(env:Env): SystemContext ? =>
+    let context = SystemContext(env, Info)?
+    let blocktypes = BlockTypes(context)
     let cs = CommandSpec.parent("pink2web", "Flow Based Programming engine", [ 
             OptionSpec.bool("warn", "Warn Logging Level" where default' = false)
             OptionSpec.bool("info", "Info Logging Level" where default' = false)
@@ -35,25 +36,25 @@ actor Main
         ] )? .> add_help()?
 
     let cmd =
-      match CommandParser(cs).parse(_env.args, _env.vars)
+      match CommandParser(cs).parse(env.args, env.vars)
       | let c: Command => 
             match c.fullname()
-            | "pink2web/list/types" => list_types()
-            | "pink2web/run/process" => run_process(c.arg("filename" ).string() )?
-            | "pink2web/describe/type" => describe_type(c.arg("typename" ).string() )
-            | "pink2web/describe/topology" => describe_topology(c.arg("filename" ).string() )?
+            | "pink2web/list/types" => list_types(blocktypes, context)
+            | "pink2web/run/process" => run_process(c.arg("filename" ).string(), blocktypes, context )?
+            | "pink2web/describe/type" => describe_type(c.arg("typename" ).string(), blocktypes, context )
+            | "pink2web/describe/topology" => describe_topology(c.arg("filename" ).string(), blocktypes, context )?
             end
       | let ch: CommandHelp =>
-          ch.print_help(_env.out)
-          _env.exitcode(0)
-          return
+          ch.print_help(env.out)
+          env.exitcode(0)
+          error
       | let se: SyntaxError =>
-          _env.out.print(se.string())
-          _env.exitcode(1)
-          return
+          env.out.print(se.string())
+          env.exitcode(1)
+          error
       end
+    context
 
-    
   fun list_command() : CommandSpec ? =>
     CommandSpec.parent("list", "", [
     ],[
@@ -80,29 +81,29 @@ actor Main
       ] )?
     ])?
 
-  fun list_types() =>
-    let m = _blocktypes.list_types()
+  fun list_types(blocktypes:BlockTypes, context:SystemContext) =>
+    let m = blocktypes.list_types()
     for t in m.keys() do
-      _context.stdout( t ) 
+      context.to_stdout( t ) 
     end
      
-  fun describe_type(typ:String) =>
-    let json = _blocktypes.describe_type( typ )
-    _context.stdout( json.string() )    
+  fun describe_type(typ:String, blocktypes:BlockTypes, context:SystemContext) =>
+    let json = blocktypes.describe_type( typ )
+    context.to_stdout( json.string() )    
     
-  fun describe_topology(filename:String) ? =>
-    _context(Fine) and _context.log( "Describe topology" )
-    let loader = Loader(_blocktypes, _context)
+  fun describe_topology(filename:String, blocktypes:BlockTypes, context:SystemContext) ? =>
+    context(Fine) and context.log( "Describe topology" )
+    let loader = Loader(blocktypes, context)
     let application = loader.load( filename )?
     let promise = Promise[JArr]
     promise.next[None]( { (json: JArr) => 
-      _context(Fine) and _context.log( "Topology Description" )
-      _context.stdout( json.string() ) 
+      context(Fine) and context.log( "Topology Description" )
+      context.to_stdout( json.string() ) 
     } )
     application.describe( promise )
     
-  fun run_process(filename:String) ? =>
-    let loader = Loader(_blocktypes, _context)
+  fun run_process(filename:String, blocktypes:BlockTypes, context:SystemContext) ? =>
+    let loader = Loader(blocktypes, context)
     let application = loader.load( filename )?  
     application.start()
 

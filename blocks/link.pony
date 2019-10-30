@@ -1,18 +1,18 @@
 
-primitive Num is Stringable
+primitive PNum is Stringable
   fun string(): String iso^ => "number".string()
   
-primitive Boolean is Stringable
+primitive PBoolean is Stringable
   fun string(): String iso^ => "bool".string()
 
-primitive Text is Stringable
+primitive PText is Stringable
   fun string(): String iso^ => "string".string()
 
-type LinkType is (Num | Boolean | Text )
+type LinkType is (PNum | PBoolean | PText )
 
 primitive LinkTypeList
   fun tag apply(): Array[LinkType] =>
-    [Num; Boolean; Text]
+    [PNum; PBoolean; PText]
 
 type Linkable is ( Number | Bool | String )
 

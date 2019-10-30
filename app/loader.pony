@@ -15,7 +15,7 @@ class Loader
     _blocktypes = blocktypes
 
   fun load( pathname: String ): Application ? =>
-      let content: String = Files.read_lines_from_pathname(pathname, _context.ambient())?
+      let content: String = Files.read_lines_from_pathname(pathname, _context.auth())?
       let root = JParse.from_string( content )? as JObj
       parse_root(root)
   

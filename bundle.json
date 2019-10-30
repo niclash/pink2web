@@ -19,6 +19,22 @@
     {
       "type": "github",
       "repo": "niclash/jay"
+    },
+    {
+      "type": "github",
+      "repo": "ponylang/http"
+    },
+    {
+      "type": "github",
+      "repo": "ponylang/net-ssl"
+    },
+    {
+      "type": "github",
+      "repo": "niclash/pony-websocket"
+    },
+    {
+      "type": "github",
+      "repo": "ponylang/crypto"
     }
   ]
 }
