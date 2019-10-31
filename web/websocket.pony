@@ -1,60 +1,40 @@
 
+use "jay"
 use "websocket"
 use "collections"
+use "../blocktypes"
+use "../protocol"
 
-actor ConnectionManager
-  var _connections: SetIs[WebSocketConnection] = SetIs[WebSocketConnection]()
-
-  be add(conn: WebSocketConnection) =>
-    @printf[I32]("Add connection\n".cstring())
-    _connections.set(conn)
-
-  be remove(conn: WebSocketConnection) =>
-    @printf[I32]("Remove connection\n".cstring())
-    _connections.unset(conn)
-
-  be broadcast_text(text: String) =>
-    @printf[I32](("broadcast_text"+text+"\n").cstring())
-    for c in _connections.values() do
-      c.send_text_be(text)
-    end
-
-  be broadcast_binary(data: Array[U8] val) =>
-    @printf[I32]("broadcast_binary\n".cstring())
-    for c in _connections.values() do
-      c.send_binary_be(data)
-    end
-
-class BroadcastListenNotify is WebSocketListenNotify
-  var _conn_manager: ConnectionManager = ConnectionManager.create()
-
+class val BroadcastListenNotify is WebSocketListenNotify
+  let _fbp: Fbp tag
+  
+  new iso create( blocktypes: BlockTypes val) =>
+    _fbp = Fbp( "619362b3-1aee-4dca-b109-bef38e0e1ca8", blocktypes )
+    
   fun ref connected(): BroadcastConnectionNotify iso^ =>
     @printf[I32]("Connected\n".cstring())
-    BroadcastConnectionNotify(_conn_manager)
+    BroadcastConnectionNotify.create(_fbp)
 
   fun ref not_listening() =>
-    @printf[I32]("Failed listening\n".cstring())
+    @printf[I32]("Stopped listening\n".cstring())
 
 class BroadcastConnectionNotify is WebSocketConnectionNotify
-  var _conn_manager: ConnectionManager
-
-  new iso create(conn_manager: ConnectionManager) =>
+  let _fbp: Fbp tag
+  
+  new iso create( fbp: Fbp tag ) =>
     @printf[I32]("Created\n".cstring())
-    _conn_manager = conn_manager
+    _fbp = fbp
 
-  fun ref opened(conn: WebSocketConnection tag) =>
+  fun ref opened(conn: WebSocketConnection ref) =>
     @printf[I32]("Opened\n".cstring())
-    _conn_manager.add(conn)
 
-  fun ref text_received(conn: WebSocketConnection tag, text: String) =>
+  fun ref text_received(conn: WebSocketConnection ref, text: String) =>
     @printf[I32](("text_received: " + text + "\n").cstring())
-    _conn_manager.broadcast_text(text)
+    _fbp.execute( conn, text )
 
-  fun ref binary_received(conn: WebSocketConnection tag, data: Array[U8] val) =>
+  fun ref binary_received(conn: WebSocketConnection ref, data: Array[U8] val) =>
     @printf[I32](("binary_received: \n").cstring())
-    _conn_manager.broadcast_binary(data)
+    conn.send_text( Error("Binary formats not supported").string() )
 
-  fun ref closed(conn: WebSocketConnection tag) =>
+  fun ref closed(conn: WebSocketConnection ref) =>
     @printf[I32]("Closed\n".cstring())
-    _conn_manager.remove(conn)
-

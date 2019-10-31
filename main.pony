@@ -18,15 +18,14 @@ actor Main
     try
       let context: SystemContext = handle_cli(env)?
       //_rest = RestServer("localhost:8384", context )
-      _websocketListener = WebSocketListener( env.root as AmbientAuth, BroadcastListenNotify, "10.10.139.242","3569")
     else
       env.err.print( "Unable to get Environment Root. Internal error?" )
       env.exitcode(-1)  // some kind of coding error
     end
 
-  fun handle_cli(env:Env): SystemContext ? =>
+  fun ref handle_cli(env:Env): SystemContext ? =>
     let context = SystemContext(env, Info)?
-    let blocktypes = BlockTypes(context)
+    let blocktypes:BlockTypes val = BlockTypes(context)
     let cs = CommandSpec.parent("pink2web", "Flow Based Programming engine", [ 
             OptionSpec.bool("warn", "Warn Logging Level" where default' = false)
             OptionSpec.bool("info", "Info Logging Level" where default' = false)
@@ -53,6 +52,8 @@ actor Main
           env.exitcode(1)
           error
       end
+
+    _websocketListener = WebSocketListener( env.root as AmbientAuth, BroadcastListenNotify(blocktypes), "10.10.139.242","3569")
     context
 
   fun list_command() : CommandSpec ? =>
