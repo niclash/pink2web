@@ -1,4 +1,4 @@
-use "../../blocks"
+use "../../graphs"
 
 use "ponytest"
 

@@ -1,4 +1,4 @@
-use "../blocks"
+use "../graphs"
 use "../blocktypes"
 use "../system"
 use "collections"
@@ -22,7 +22,7 @@ actor Assertion is Block
   var _sub_counter:ISize = -1
   var _started:Bool = false
   var _feed:Array[(String,String)] val = []
-  var _app: (Application|None) = None
+  var _graph: (Graph|None) = None
   
   new create(name: String, descriptor': BlockTypeDescriptor, context:SystemContext, helper:TestHelper ) =>
     context(Fine) and context.log("create("+name+")")
@@ -34,10 +34,10 @@ actor Assertion is Block
     _equality = InputImpl[Linkable]( name, _descriptor.input(0), zero )
     _completed = InputImpl[Bool]( name, _descriptor.input(2), false )
 
-  be run(inputs:Array[(String,String)] val, app:Application) =>
+  be run(inputs:Array[(String,String)] val, graph:Graph) =>
     _context(Fine) and _context.log( "Starting data feed" )
     _feed = inputs
-    _app = app
+    _graph = graph
     try
       next_input()?
     else
@@ -45,11 +45,11 @@ actor Assertion is Block
     end
 
   fun next_input()? =>
-    match _app
-    | let app':Application => 
+    match _graph
+    | let graph':Graph => 
       (let point, let value) = _feed(_counter)?
       _context(Fine) and _context.log( "next_input() " + _counter.string() + "  " +  point + " = " + value )
-      app'.set_value_from_string( point, value )
+      graph'.set_value_from_string( point, value )
     else
       None // Ignore as this happens (or may happen) during start up.
     end
@@ -79,7 +79,7 @@ actor Assertion is Block
     None
     
   be update(input: String, new_value: Linkable) =>
-    if _app is None then
+    if _graph is None then
       return
     end
     _context(Fine) and _context.log("Assertion[ " + _name + "." + input + " = " + new_value.string() + " ]")

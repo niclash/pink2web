@@ -1,6 +1,6 @@
 use "./app"
 use "./blocktypes"
-use "./blocks"
+use "./graphs"
 use "./system"
 use "./web"
 use "cli"
@@ -39,7 +39,9 @@ actor Main
       | let c: Command => 
             match c.fullname()
             | "pink2web/list/types" => list_types(blocktypes, context)
-            | "pink2web/run/process" => run_process(c.arg("filename" ).string(), blocktypes, context )?
+            | "pink2web/run/process" => 
+                let graph = run_process(c.arg("filename" ).string(), blocktypes, context )?
+                _websocketListener = WebSocketListener( env.root as AmbientAuth, BroadcastListenNotify(graph, blocktypes), "10.10.139.242","3569")
             | "pink2web/describe/type" => describe_type(c.arg("typename" ).string(), blocktypes, context )
             | "pink2web/describe/topology" => describe_topology(c.arg("filename" ).string(), blocktypes, context )?
             end
@@ -53,7 +55,6 @@ actor Main
           error
       end
 
-    _websocketListener = WebSocketListener( env.root as AmbientAuth, BroadcastListenNotify(blocktypes), "10.10.139.242","3569")
     context
 
   fun list_command() : CommandSpec ? =>
@@ -95,16 +96,16 @@ actor Main
   fun describe_topology(filename:String, blocktypes:BlockTypes, context:SystemContext) ? =>
     context(Fine) and context.log( "Describe topology" )
     let loader = Loader(blocktypes, context)
-    let application = loader.load( filename )?
+    let graph = loader.load( filename )?
     let promise = Promise[JArr]
     promise.next[None]( { (json: JArr) => 
       context(Fine) and context.log( "Topology Description" )
       context.to_stdout( json.string() ) 
     } )
-    application.describe( promise )
+    graph.describe( promise )
     
-  fun run_process(filename:String, blocktypes:BlockTypes, context:SystemContext) ? =>
+  fun run_process(filename:String, blocktypes:BlockTypes, context:SystemContext): Graph ? =>
     let loader = Loader(blocktypes, context)
-    let application = loader.load( filename )?  
-    application.start()
-
+    let graph = loader.load( filename )?  
+    graph.start()
+    graph

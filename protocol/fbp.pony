@@ -1,6 +1,7 @@
 
 use "jay"
 use "websocket"
+use "../graphs"
 use "../blocktypes"
 use "./runtime"
 
@@ -11,28 +12,34 @@ actor Fbp
   let _component_protocol: ComponentProtocol
   let _trace_protocol: TraceProtocol
   
-  new create( uuid:String, blocktypes: BlockTypes) =>
+  new create( uuid:String, graph:Graph, blocktypes: BlockTypes) =>
     let label: String = "Pink2Web - flowbased programming engine written in Pony Language"
     let version: String = "0.1.0"
     let all_capabilities: Array[String val] val = [
+        "network:status"
+        "network:persist"
+        "network:data"
+        "network:control"
+        "protocol:component"
+        "protocol:runtime"
+        "protocol:graph"
     ]
     let capabilities: Array[String val] val = all_capabilities
-    let graph: String = ""
+    let graph_name: String = ""
     let type': String = "pink2web"
     let namespace: String = "pin2web"
     let repository: String = ""
     let repository_version: String = ""
-    let runtime = RuntimeMessage( uuid, label, version, all_capabilities, capabilities, graph, type', namespace, repository, repository_version )
+    let runtime = RuntimeMessage( uuid, label, version, all_capabilities, capabilities, graph_name, type', namespace, repository, repository_version )
 
-    _runtime_protocol = RuntimeProtocol.create(runtime)
+    _runtime_protocol = RuntimeProtocol.create(graph, runtime)
     _network_protocol = NetworkProtocol.create()
     _graph_protocol = GraphProtocol.create()
-    _component_protocol = ComponentProtocol.create()
+    _component_protocol = ComponentProtocol.create(blocktypes)
     _trace_protocol = TraceProtocol.create()
 
   be execute( conn: WebSocketConnection, text: String ) =>
     try
-      @printf[I32](("parse\n").cstring())
       let jdoc = JParse.from_string( text )? as JObj
       let protocol = jdoc("protocol") as String
       let command = jdoc("command") as String
@@ -46,7 +53,6 @@ actor Fbp
       else
         conn.send_text( Error("Unknown protocol").string() )
       end
-      conn.send_text(text)
     else
       @printf[I32](("parse error\n").cstring())
       conn.send_text( Error("Badly formatted request").string() )

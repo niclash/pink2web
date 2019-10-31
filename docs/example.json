@@ -1,4 +1,5 @@
 {
+    "name": "pink2web-example", 
     "connections": [
         {
             "src": { "process": "block1","port": "output","data": "" },

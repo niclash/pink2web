@@ -32,7 +32,7 @@ class val RuntimeMessage
     _all_capabilities = create_jarr( capabilities )
     
   fun format(): JObj val =>
-    JObj
+    let payload = JObj 
       + ("id", _id )
       + ("label", _label )
       + ("version", _version )
@@ -43,6 +43,11 @@ class val RuntimeMessage
       + ("namespace", _namespace )    
       + ("repository", _repository )    
       + ("repositoryVersion", _repository_version )
+
+    JObj
+      + ("protocol", "runtime" )
+      + ("command", "runtime" )
+      + ("payload", payload )
     
     
   fun tag create_jarr( array: Array[String val] val ): JArr val =>
@@ -55,4 +60,4 @@ class val RuntimeMessage
     end
     
   fun string(): String val =>
-    format().string()
+    format().string() + "\n"

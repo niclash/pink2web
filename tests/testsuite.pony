@@ -5,7 +5,7 @@ use blocks = "./blocks"
 
 use "../app"
 use "../system"
-use "../blocks"
+use "../graphs"
 use "../blocktypes"
 
 
@@ -41,40 +41,40 @@ class iso _BlockTest is UnitTest
   fun apply(h: TestHelper)? =>
   
     // 0. set up test application
-    let testcase:Array[(Array[(String,String)] val,Assertion, Application)] = setup( h )?
+    let testcase:Array[(Array[(String,String)] val,Assertion, Graph)] = setup( h )?
     h.long_test(1000000000)  // indicate long test.
     
     // 1. For each topology
-    for (inputs,assertion,app) in testcase.values() do
+    for (inputs,assertion,graph) in testcase.values() do
       
       // The following construct is to ensure that all blocks in the topology has started before we start inputting data
       let promise = Promise[JArr]
       promise.next[None]( { (json: JArr) => 
-        assertion.run( inputs, app )
+        assertion.run( inputs, graph )
       } )
-      app.describe( promise )
+      graph.describe( promise )
       
     end
     
     None
 
-  fun setup(h: TestHelper): Array[(Array[(String,String)] val,Assertion, Application)] ?=>
+  fun setup(h: TestHelper): Array[(Array[(String,String)] val,Assertion, Graph)] ?=>
     let env:Env = h.env
     let context = SystemContext(env, Warn)?
     let blocktypes = BlockTypes(context)
     let loader = Loader(blocktypes, context)
     let root: JObj = parse_test(_pathname, env)?
-    let result = Array[(Array[(String,String)] val,Assertion, Application)]
+    let result = Array[(Array[(String,String)] val,Assertion, Graph)]
     for test_descr in root.keys() do
       let unittest = root(test_descr) as JObj
       let topology = unittest("topology") as String
       (let dir, let file) = Path.split(_pathname)
       let testdefinition = Path.join(dir,topology)
-      let test_app = loader.load( testdefinition )?
+      let test_graph = loader.load( testdefinition )?
 
       let factory = AssertionFactory(h)
       let assertion_block = factory.create_block("assertions", context) as Assertion
-      test_app.register_block( assertion_block, "assertions", factory.block_type_descriptor() )
+      test_graph.register_block( assertion_block, "assertions", factory.block_type_descriptor() )
       
       let inputs: JArr val = unittest("inputs") as JArr
       let feed = recover val 
@@ -114,10 +114,10 @@ class iso _BlockTest is UnitTest
       end
       for output_name in assertions.values() do
         (let src_block, let src_output) = BlockName(output_name)?
-        test_app.connect( src_block, src_output, "assertions", "equality" )
+        test_graph.connect( src_block, src_output, "assertions", "equality" )
       end
-      test_app.start()
-      result.push((feed,assertion_block, test_app))
+      test_graph.start()
+      result.push((feed,assertion_block, test_graph))
     end
     result
     

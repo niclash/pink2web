@@ -2,7 +2,7 @@ use "collections"
 use "jay"
 use "logger"
 use "promises"
-use "../blocks"
+use "../graphs"
 use "../system"
 
 actor AddBlock is Block

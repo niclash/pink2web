@@ -2,14 +2,15 @@
 use "jay"
 use "websocket"
 use "collections"
+use "../graphs"
 use "../blocktypes"
 use "../protocol"
 
 class val BroadcastListenNotify is WebSocketListenNotify
   let _fbp: Fbp tag
   
-  new iso create( blocktypes: BlockTypes val) =>
-    _fbp = Fbp( "619362b3-1aee-4dca-b109-bef38e0e1ca8", blocktypes )
+  new iso create( graph: Graph, blocktypes: BlockTypes val) =>
+    _fbp = Fbp( "619362b3-1aee-4dca-b109-bef38e0e1ca8", graph, blocktypes )
     
   fun ref connected(): BroadcastConnectionNotify iso^ =>
     @printf[I32]("Connected\n".cstring())

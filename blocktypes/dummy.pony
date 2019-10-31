@@ -1,7 +1,7 @@
 use "jay"
 use "logger"
 use "promises"
-use "../blocks"
+use "../graphs"
 use "../system"
 
 class val DummyFactory is BlockFactory

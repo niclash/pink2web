@@ -6,13 +6,15 @@ use "promises"
 use "../blocktypes"
 use "../system"
 
-actor Application
+actor Graph
   let _blocks: Map[String,Block tag] 
   let _context: SystemContext
   let _types: BlockTypes
+  let _name: String
   let _block_types: MapIs[Block tag, BlockTypeDescriptor val] 
   
-  new create(types: BlockTypes, context: SystemContext) =>
+  new create(name': String, types: BlockTypes, context: SystemContext) =>
+    _name = name'
     _context = context
     _types = types
     _blocks = Map[String,Block tag]
@@ -28,15 +30,15 @@ actor Application
       block.stop()
     end
 
-  be create_block( block_type: String, name: String ) =>
-    _context(Info) and _context.log("create_block " + name + " of type " + block_type )
+  be create_block( block_type: String, name': String ) =>
+    _context(Info) and _context.log("create_block " + name' + " of type " + block_type )
     let factory = _types.get(block_type)
-    let block:Block tag = factory.create_block( name, _context )
-    _blocks( name ) = block
+    let block:Block tag = factory.create_block( name', _context )
+    _blocks( name' ) = block
     _block_types(block) = factory.block_type_descriptor()
 
-  be register_block( block:Block, name:String, blocktype: BlockTypeDescriptor ) =>
-    _blocks( name ) = block
+  be register_block( block:Block, name':String, blocktype: BlockTypeDescriptor ) =>
+    _blocks( name' ) = block
     _block_types(block) = blocktype
   
   be connect( src_block: String, src_output: String, dest_block: String, dest_input: String ) =>
@@ -72,8 +74,11 @@ actor Application
     end
     promise( consume result )
     
+  be name( promise: Promise[String val] ) =>
+    promise(_name)
+    
   be describe( promise: Promise[ JArr val ] tag ) =>
-    _context(Fine) and _context.log("Application.describe()")
+    _context(Fine) and _context.log("Graph.describe()")
     let promises = Array[Promise[JObj val] tag]
     for (blockname, block) in _blocks.pairs() do
       let p = Promise[JObj val]

@@ -2,7 +2,7 @@ use "collections"
 use "debug"
 use "promises"
 use "jay"
-use "../blocks"
+use "../graphs"
 use "../system"
 
 class val BlockTypes
@@ -62,6 +62,6 @@ trait val BlockTypeDescriptor
       + ("description", description() )
       + ("subgraph", false )
       + ("icon", "plus" )
-      + ("inports", inps)
-      + ("outports", outps )
+      + ("inPorts", inps)
+      + ("outPorts", outps )
     json6
