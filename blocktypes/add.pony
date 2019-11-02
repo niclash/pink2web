@@ -25,6 +25,15 @@ actor AddBlock is Block
     _input2 = InputImpl[Number]( name, _descriptor.input(1), zero )
     _output = OutputImpl[F64]( name, _descriptor.output(0), zero )
 
+  be disconnect_block( block: Block ) =>
+    _output.disconnect( block )
+
+  be destroy() =>
+    refresh()
+    _context(Fine) and _context.log("destroy()")
+    _started = false
+    _output.disconnect_all()
+    
   be start() =>
     _context(Fine) and _context.log("start()")
     _started = true

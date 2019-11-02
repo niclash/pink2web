@@ -1,15 +1,19 @@
 
 use "jay"
 use "websocket"
-
+use "./graph"
+use "../graphs"
 
 class GraphProtocol is FbpProtocol
-
+  let _graphs: Graphs
+  
+  new create( graphs: Graphs ) =>
+    _graphs = graphs
+  
   fun execute( connection: WebSocketConnection, command: String, payload: JObj ) =>
-    @printf[I32](("network protocol: " + command + ", " + payload.string() + "\n").cstring())
     match command
-    |   "clear" => None
-    |   "addnode" => None
+    |   "clear" => ClearMessage(connection, _graphs, payload )
+    |   "addnode" => AddNodeMessage(connection, _graphs, payload )
     |   "removenode" => None
     |   "renamenode" => None
     |   "changenode" => None
@@ -29,5 +33,5 @@ class GraphProtocol is FbpProtocol
     |   "renamegroup" => None
     |   "changegroup" => None
     else
-      connection.send_text( Error("Unknown command in runtime protocol").string() )
+      connection.send_text( Message.err( "graph", "Unknown command in runtime protocol: " + command).string() )
     end

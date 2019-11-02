@@ -16,8 +16,12 @@ trait tag Block
 
   be connect( output: String, to_block: Block, to_input: String)
   
+  be disconnect_block( to_block: Block )
+  
   be update(input: String, new_value: Linkable)
 
+  be destroy()
+  
   be refresh()
 
   be start()

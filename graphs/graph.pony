@@ -12,9 +12,17 @@ actor Graph
   let _types: BlockTypes
   let _name: String
   let _block_types: MapIs[Block tag, BlockTypeDescriptor val] 
+  let _description: String
+  let _icon: String
+  let _library: String
+  let _id: String
   
-  new create(name': String, types: BlockTypes, context: SystemContext) =>
+  new create(id': String, name': String, description':String, library': String, icon': String, types: BlockTypes, context: SystemContext) =>
+    _id = id'
     _name = name'
+    _description = description'
+    _library = library'
+    _icon = icon'
     _context = context
     _types = types
     _blocks = Map[String,Block tag]
@@ -37,10 +45,25 @@ actor Graph
     _blocks( name' ) = block
     _block_types(block) = factory.block_type_descriptor()
 
+  be remove_block( name': String ) =>
+    try
+      let block = _blocks( name' )?
+      for b in _blocks.values() do
+        b.disconnect_block( block )
+      end
+      block.destroy()
+      try
+        _blocks.remove( name' )?
+      end
+      try
+        _block_types.remove( block )?
+      end
+    end
+    
   be register_block( block:Block, name':String, blocktype: BlockTypeDescriptor ) =>
     _blocks( name' ) = block
     _block_types(block) = blocktype
-  
+    
   be connect( src_block: String, src_output: String, dest_block: String, dest_input: String ) =>
     try
         let src:Block tag = _blocks(src_block)?

@@ -6,7 +6,6 @@ class NetworkProtocol is FbpProtocol
 
 
   fun execute( connection: WebSocketConnection, command: String, payload: JObj ) =>
-    @printf[I32](("network protocol: " + command + ", " + payload.string() + "\n").cstring())
     match command
     |   "start" => None
     |   "stop" => None
@@ -20,5 +19,5 @@ class NetworkProtocol is FbpProtocol
     |   "endgroup" => None
     |   "data" => None
     else
-      connection.send_text( Error("Unknown command in runtime protocol").string() )
+      connection.send_text( Message.err( "network", "Unknown command in runtime protocol: " + command).string() )
     end

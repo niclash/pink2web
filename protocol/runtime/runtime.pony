@@ -1,6 +1,7 @@
 
 use "jay"
 use "websocket"
+use ".."
 
 class val RuntimeMessage 
   let _id: String
@@ -43,11 +44,7 @@ class val RuntimeMessage
       + ("namespace", _namespace )    
       + ("repository", _repository )    
       + ("repositoryVersion", _repository_version )
-
-    JObj
-      + ("protocol", "runtime" )
-      + ("command", "runtime" )
-      + ("payload", payload )
+    Message("runtime", "runtime", payload)
     
     
   fun tag create_jarr( array: Array[String val] val ): JArr val =>

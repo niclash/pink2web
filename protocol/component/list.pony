@@ -19,5 +19,5 @@ class ListMessage
         + ( "payload", payload )
       connection.send_text( json.string() )
     end
-    connection.send_text( ComponentsReadyMessage.string() )
+    connection.send_text( ComponentsReadyMessage(components.size()) )
 

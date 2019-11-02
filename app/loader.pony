@@ -9,10 +9,12 @@ use "logger"
 class Loader
   let _blocktypes: BlockTypes
   let _context: SystemContext
+  let _graphs: Graphs
   
-  new create( blocktypes: BlockTypes, context:SystemContext val) =>
+  new create( graphs: Graphs, blocktypes: BlockTypes, context:SystemContext val) =>
     _context = context
     _blocktypes = blocktypes
+    _graphs = graphs
 
   fun load( pathname: String ): Graph ? =>
       let content: String = Files.read_lines_from_pathname(pathname, _context.auth())?
@@ -24,7 +26,14 @@ class Loader
   
   fun parse_root( root: JObj box ): Graph =>
     let name = try root("name") as String else "<unknown>" end
-    let graph = Graph( name, _blocktypes, _context )
+    let id = try root("id") as String else "<unknown>" end
+    let description = try root("description") as String else "<unknown>" end
+    let library = try root("library") as String else "<unknown>" end
+    let icon = try root("icon") as String else "<unknown>" end
+    
+    let graph = Graph( id, name, description, library, icon, _blocktypes, _context )
+    _graphs.register_graph( id, name, graph )
+    
     try
       let processes: JObj val = root("processes") as JObj
       parse_processes( graph, processes )

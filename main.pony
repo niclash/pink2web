@@ -26,6 +26,7 @@ actor Main
   fun ref handle_cli(env:Env): SystemContext ? =>
     let context = SystemContext(env, Info)?
     let blocktypes:BlockTypes val = BlockTypes(context)
+    let graphs = Graphs( blocktypes, context )
     let cs = CommandSpec.parent("pink2web", "Flow Based Programming engine", [ 
             OptionSpec.bool("warn", "Warn Logging Level" where default' = false)
             OptionSpec.bool("info", "Info Logging Level" where default' = false)
@@ -33,17 +34,17 @@ actor Main
         ],  [ 
             list_command()?; run_command()?; describe_command()? 
         ] )? .> add_help()?
-
+    
     let cmd =
       match CommandParser(cs).parse(env.args, env.vars)
       | let c: Command => 
             match c.fullname()
             | "pink2web/list/types" => list_types(blocktypes, context)
             | "pink2web/run/process" => 
-                let graph = run_process(c.arg("filename" ).string(), blocktypes, context )?
-                _websocketListener = WebSocketListener( env.root as AmbientAuth, BroadcastListenNotify(graph, blocktypes), "10.10.139.242","3569")
+                let graph = run_process(c.arg("filename" ).string(), graphs, blocktypes, context )?
+                _websocketListener = WebSocketListener( env.root as AmbientAuth, BroadcastListenNotify(graphs, blocktypes), "10.10.139.242","3569")
             | "pink2web/describe/type" => describe_type(c.arg("typename" ).string(), blocktypes, context )
-            | "pink2web/describe/topology" => describe_topology(c.arg("filename" ).string(), blocktypes, context )?
+            | "pink2web/describe/topology" => describe_topology(c.arg("filename" ).string(), graphs, blocktypes, context )?
             end
       | let ch: CommandHelp =>
           ch.print_help(env.out)
@@ -93,9 +94,9 @@ actor Main
     let json = blocktypes.describe_type( typ )
     context.to_stdout( json.string() )    
     
-  fun describe_topology(filename:String, blocktypes:BlockTypes, context:SystemContext) ? =>
+  fun describe_topology(filename:String, graphs: Graphs, blocktypes:BlockTypes, context:SystemContext) ? =>
     context(Fine) and context.log( "Describe topology" )
-    let loader = Loader(blocktypes, context)
+    let loader = Loader( graphs, blocktypes, context )
     let graph = loader.load( filename )?
     let promise = Promise[JArr]
     promise.next[None]( { (json: JArr) => 
@@ -104,8 +105,8 @@ actor Main
     } )
     graph.describe( promise )
     
-  fun run_process(filename:String, blocktypes:BlockTypes, context:SystemContext): Graph ? =>
-    let loader = Loader(blocktypes, context)
+  fun run_process(filename:String, graphs: Graphs, blocktypes:BlockTypes, context:SystemContext): Graph ? =>
+    let loader = Loader(graphs, blocktypes, context)
     let graph = loader.load( filename )?  
     graph.start()
     graph

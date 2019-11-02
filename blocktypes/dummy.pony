@@ -52,6 +52,10 @@ actor DummyBlock is Block
     _descriptor = descriptor'
     _context = context
   
+  be disconnect_block( block: Block ) =>  None
+
+  be destroy() => None
+  
   be start() => None  
   
   be stop() => None  

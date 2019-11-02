@@ -5,7 +5,9 @@ use "../system"
 trait Output[TYPE: Linkable val]
   fun ref set( newValue: TYPE val )
   fun value() : this->TYPE
-  fun ref connect( destBlock: Block tag, input: String )
+  fun ref connect( dest: Block tag, input: String )
+  fun ref disconnect( dest: Block tag )
+  fun ref disconnect_all()
   fun description() : String 
   fun ref set_description( new_description:String )
   fun describe(): JObj val
@@ -33,10 +35,23 @@ class OutputImpl[TYPE: Linkable val] is Output[TYPE]
     end
     _value = newValue
 
-  fun ref connect(destBlock: Block tag, input: String) =>
-    var link:Link[TYPE] val = recover Link[TYPE](destBlock, input) end
+  fun ref connect(dest_block: Block tag, input: String) =>
+    var link:Link[TYPE] val = recover Link[TYPE]( dest_block, input ) end
     _dest.push(link)
 
+  fun ref disconnect( dest: Block ) =>
+    for node in _dest.nodes() do
+      try
+        if dest is node()?.block then
+          node.remove()
+          break
+        end
+      end
+    end
+    
+  fun ref disconnect_all() =>
+    _dest.clear()
+  
   fun description() : String =>
     if _description == "" then 
       _descriptor.description

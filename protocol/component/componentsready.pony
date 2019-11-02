@@ -1,5 +1,5 @@
 
 primitive ComponentsReadyMessage
 
-  fun string(): String =>
-    "{ \"protocol\":\"component\", \"command\": \"componentsready\", \"payload\": {} }"
+  fun apply(size: USize): String =>
+    "{ \"protocol\":\"component\", \"command\": \"componentsready\", \"payload\": " + size.string() + " }"

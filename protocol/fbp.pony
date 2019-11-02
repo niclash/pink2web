@@ -12,7 +12,7 @@ actor Fbp
   let _component_protocol: ComponentProtocol
   let _trace_protocol: TraceProtocol
   
-  new create( uuid:String, graph:Graph, blocktypes: BlockTypes) =>
+  new create( uuid:String, graphs:Graphs, blocktypes: BlockTypes) =>
     let label: String = "Pink2Web - flowbased programming engine written in Pony Language"
     let version: String = "0.1.0"
     let all_capabilities: Array[String val] val = [
@@ -32,9 +32,9 @@ actor Fbp
     let repository_version: String = ""
     let runtime = RuntimeMessage( uuid, label, version, all_capabilities, capabilities, graph_name, type', namespace, repository, repository_version )
 
-    _runtime_protocol = RuntimeProtocol.create(graph, runtime)
+    _runtime_protocol = RuntimeProtocol.create(runtime)
     _network_protocol = NetworkProtocol.create()
-    _graph_protocol = GraphProtocol.create()
+    _graph_protocol = GraphProtocol.create(graphs)
     _component_protocol = ComponentProtocol.create(blocktypes)
     _trace_protocol = TraceProtocol.create()
 
@@ -51,11 +51,11 @@ actor Fbp
       | "component" => _component_protocol.execute( conn, command, payload ) 
       | "trace" => _trace_protocol.execute( conn, command, payload ) 
       else
-        conn.send_text( Error("Unknown protocol").string() )
+        conn.send_text( Message.err( protocol, "Unknown protocol" ).string() )
       end
     else
       @printf[I32](("parse error\n").cstring())
-      conn.send_text( Error("Badly formatted request").string() )
+      conn.send_text( Message.err( "unknown", "Badly formatted request" ).string() )
     end
 
 interface FbpProtocol

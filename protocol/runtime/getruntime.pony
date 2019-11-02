@@ -1,4 +1,8 @@
 use "jay"
+use "websocket"
 
-class GetRuntimeMessage
+primitive GetRuntimeMessage
+
+  fun apply( connection: WebSocketConnection, runtime: RuntimeMessage ) =>
+    connection.send_text( runtime.string() )
 

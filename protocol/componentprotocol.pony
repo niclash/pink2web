@@ -11,11 +11,10 @@ class ComponentProtocol is FbpProtocol
     _blocktypes = blocktypes
     
   fun execute( connection: WebSocketConnection, command: String, payload: JObj ) =>
-    @printf[I32](("component protocol: " + command + ", " + payload.string() + "\n").cstring())
     match command
     |   "list" => ListMessage(_blocktypes).execute(connection)
     |   "getsource" => None
     |   "source" => None
     else
-      connection.send_text( Error("Unknown command in runtime protocol").string() )
+      connection.send_text( Message.err( "component", "Unknown command in runtime protocol: " + command ).string() )
     end

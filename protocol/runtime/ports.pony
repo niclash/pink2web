@@ -3,10 +3,7 @@ use "promises"
 use "websocket"
 use "../../graphs"
 
-class PortsMessage
-    
-  new create() =>
-    None
+primitive PortsMessage
     
   fun apply( graph: Graph, conn: WebSocketConnection ) =>
     let promise = Promise[String]
