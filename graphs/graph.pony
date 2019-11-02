@@ -74,6 +74,16 @@ actor Graph
       _context(Error) and _context.log("Unable to connect " + src_block + "." + src_output + " to " + dest_block )
     end
     
+  be disconnect( src_block: String, src_output: String, dest_block: String, dest_input: String ) =>
+    try
+        let src:Block tag = _blocks(src_block)?
+        let dest:Block tag = _blocks(dest_block)?
+        src.disconnect_edge( src_output, dest, dest_input )
+        _context(Info) and _context.log("connected:" + src_block + "." + src_output + " ==> " + dest_block + "." + dest_input )
+    else
+      _context(Error) and _context.log("Unable to connect " + src_block + "." + src_output + " to " + dest_block )
+    end
+
   be set_value_from_string( point: String, value:String ) =>
     try
       (let blockname, let input) = BlockName(point)?

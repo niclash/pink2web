@@ -14,11 +14,11 @@ class GraphProtocol is FbpProtocol
     match command
     |   "clear" => ClearMessage(connection, _graphs, payload )
     |   "addnode" => AddNodeMessage(connection, _graphs, payload )
-    |   "removenode" => None
+    |   "removenode" => RemoveNodeMessage(connection, _graphs, payload )
     |   "renamenode" => None
     |   "changenode" => None
-    |   "addedge" => None
-    |   "removeedge" => None
+    |   "addedge" => AddEdgeMessage(connection, _graphs, payload )
+    |   "removeedge" => RemoveEdgeMessage(connection, _graphs, payload )
     |   "changeedge" => None
     |   "addinitial" => None
     |   "removeinitial" => None

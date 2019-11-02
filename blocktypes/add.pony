@@ -25,15 +25,6 @@ actor AddBlock is Block
     _input2 = InputImpl[Number]( name, _descriptor.input(1), zero )
     _output = OutputImpl[F64]( name, _descriptor.output(0), zero )
 
-  be disconnect_block( block: Block ) =>
-    _output.disconnect( block )
-
-  be destroy() =>
-    refresh()
-    _context(Fine) and _context.log("destroy()")
-    _started = false
-    _output.disconnect_all()
-    
   be start() =>
     _context(Fine) and _context.log("start()")
     _started = true
@@ -50,6 +41,20 @@ actor AddBlock is Block
     end
     refresh()
 
+  be disconnect_block( block: Block ) =>
+    _output.disconnect_block( block )
+
+  be disconnect_edge( output:String, dest_block: Block, dest_input: String ) =>
+    match output
+    | "output" => _output.disconnect_edge( dest_block, dest_input )
+    end
+
+  be destroy() =>
+    refresh()
+    _context(Fine) and _context.log("destroy()")
+    _started = false
+    _output.disconnect_all()
+    
   be update(input: String, new_value: Linkable) =>
     _context(Fine) and _context.log("Add[ " + _name + "." + input + " = " + new_value.string() + " ]")
     match new_value

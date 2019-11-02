@@ -54,6 +54,8 @@ actor DummyBlock is Block
   
   be disconnect_block( block: Block ) =>  None
 
+  be disconnect_edge( output:String, dest_block: Block, dest_input: String ) => None
+  
   be destroy() => None
   
   be start() => None  

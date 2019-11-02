@@ -6,7 +6,8 @@ trait Output[TYPE: Linkable val]
   fun ref set( newValue: TYPE val )
   fun value() : this->TYPE
   fun ref connect( dest: Block tag, input: String )
-  fun ref disconnect( dest: Block tag )
+  fun ref disconnect_block( dest: Block tag )
+  fun ref disconnect_edge( dest: Block tag, input: String )
   fun ref disconnect_all()
   fun description() : String 
   fun ref set_description( new_description:String )
@@ -39,19 +40,29 @@ class OutputImpl[TYPE: Linkable val] is Output[TYPE]
     var link:Link[TYPE] val = recover Link[TYPE]( dest_block, input ) end
     _dest.push(link)
 
-  fun ref disconnect( dest: Block ) =>
+  fun ref disconnect_block( dest: Block ) =>
     for node in _dest.nodes() do
       try
         if dest is node()?.block then
           node.remove()
-          break
         end
       end
     end
     
   fun ref disconnect_all() =>
     _dest.clear()
+
+  fun ref disconnect_edge( dest: Block, input: String ) =>
+    for node in _dest.nodes() do
+      try
+        let n = node()?
+        if (dest is n.block) and (input == n.input) then
+          node.remove()
+        end
+      end
+    end
   
+    
   fun description() : String =>
     if _description == "" then 
       _descriptor.description

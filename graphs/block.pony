@@ -18,6 +18,8 @@ trait tag Block
   
   be disconnect_block( to_block: Block )
   
+  be disconnect_edge( output:String, dest_block: Block, dest_input: String )
+  
   be update(input: String, new_value: Linkable)
 
   be destroy()
