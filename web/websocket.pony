@@ -6,28 +6,31 @@ use "../graphs"
 use "../blocktypes"
 use "../protocol"
 
-class val BroadcastListenNotify is WebSocketListenNotify
-  let _fbp: Fbp tag
+class val ListenNotify is WebSocketListenNotify
+  let _fbp: Fbp val
   
-  new iso create( graphs: Graphs, blocktypes: BlockTypes val) =>
-    _fbp = Fbp( "619362b3-1aee-4dca-b109-bef38e0e1ca8", graphs, blocktypes )
+  new iso create( fbp: Fbp val) =>
+    _fbp = fbp
     
-  fun ref connected(): BroadcastConnectionNotify iso^ =>
+  fun ref connected(): ConnectionNotify iso^ =>
     @printf[I32]("Connected\n".cstring())
-    BroadcastConnectionNotify.create(_fbp)
+    ConnectionNotify.create(_fbp)
 
   fun ref not_listening() =>
     @printf[I32]("Stopped listening\n".cstring())
 
-class BroadcastConnectionNotify is WebSocketConnectionNotify
-  let _fbp: Fbp tag
+class ConnectionNotify is WebSocketConnectionNotify
+  let _fbp: Fbp val
+  var _connection: (WebSocketConnection | None) = None
   
-  new iso create( fbp: Fbp tag ) =>
+  new iso create( fbp: Fbp val ) =>
     @printf[I32]("Created\n".cstring())
     _fbp = fbp
 
   fun ref opened(conn: WebSocketConnection ref) =>
     @printf[I32]("Opened\n".cstring())
+    _connection = conn
+    _fbp.subscribe( conn )
 
   fun ref text_received(conn: WebSocketConnection ref, text: String) =>
     @printf[I32](("  ==>" + text + "\n").cstring())
@@ -39,3 +42,6 @@ class BroadcastConnectionNotify is WebSocketConnectionNotify
 
   fun ref closed(conn: WebSocketConnection ref) =>
     @printf[I32]("Closed\n".cstring())
+    _fbp.unsubscribe( conn )
+    _connection = None
+    

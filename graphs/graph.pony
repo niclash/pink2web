@@ -3,21 +3,30 @@ use "debug"
 use "jay"
 use "logger"
 use "promises"
+use "time"
 use "../blocktypes"
 use "../system"
 
 actor Graph
-  let _blocks: Map[String,Block tag] 
   let _context: SystemContext
   let _types: BlockTypes
-  let _name: String
+  let _graphs:Graphs
+  let _blocks: Map[String,Block tag] 
   let _block_types: MapIs[Block tag, BlockTypeDescriptor val] 
+  
+  let _id: String
+  let _name: String
   let _description: String
   let _icon: String
   let _library: String
-  let _id: String
+  var _time_started:PosixDate val= recover val PosixDate end
+  var _started: Bool = false
+  var _running: Bool = false
+  var _debug: Bool = false
+  var _uptime: I64 = 0  // in seconds
   
-  new create(id': String, name': String, description':String, library': String, icon': String, types: BlockTypes, context: SystemContext) =>
+  new create(graphs:Graphs, id': String, name': String, description':String, library': String, icon': String, types: BlockTypes, context: SystemContext) =>
+    _graphs = graphs
     _id = id'
     _name = name'
     _description = description'
@@ -29,21 +38,34 @@ actor Graph
     _block_types = MapIs[Block tag, BlockTypeDescriptor val]
 
   be start() =>
+    _time_started = DateTime.now()
+    _started = true
     for block in _blocks.values() do
       block.start()
     end
+    _running = true
+    _graphs._started( _id, _time_started, _started, _running, _debug )
     
   be stop() =>
+    _running = false
     for block in _blocks.values() do
       block.stop()
     end
-
+    _graphs._stopped(_id, _time_started, _started, _running, _uptime, _debug)
+    
+  be status() =>
+    _graphs._status( _id, _uptime, _running, _started, _debug )
+    
+  be tick() =>
+    if _running then
+      _uptime = _uptime + 1
+    end
+    
   be create_block( block_type: String, name': String ) =>
     _context(Info) and _context.log("create_block " + name' + " of type " + block_type )
     let factory = _types.get(block_type)
     let block:Block tag = factory.create_block( name', _context )
-    _blocks( name' ) = block
-    _block_types(block) = factory.block_type_descriptor()
+    register_block(block, name', factory.block_type_descriptor())
 
   be remove_block( name': String ) =>
     try
@@ -58,11 +80,27 @@ actor Graph
       try
         _block_types.remove( block )?
       end
+      _graphs._removed(_id, name')
+    end
+    
+  be rename_block( from': String, to': String ) =>
+    try
+      let block = _blocks( from' )?
+      try
+        _blocks.remove( from' )?
+      end
+      try
+        (let block', let type') = _block_types.remove(block)?
+        block.rename(to')
+        register_block(block, to', type')
+        _graphs._renamed(_id, from', to')
+      end
     end
     
   be register_block( block:Block, name':String, blocktype: BlockTypeDescriptor ) =>
     _blocks( name' ) = block
     _block_types(block) = blocktype
+    _graphs._added(_id, name', blocktype.name(), 0, 0)
     
   be connect( src_block: String, src_output: String, dest_block: String, dest_input: String ) =>
     try

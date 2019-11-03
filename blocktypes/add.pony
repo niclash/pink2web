@@ -6,7 +6,7 @@ use "../graphs"
 use "../system"
 
 actor AddBlock is Block
-  let _name: String
+  var _name: String
   let _descriptor: BlockTypeDescriptor
   let _input1: Input[Number]
   let _input2: Input[Number]
@@ -54,6 +54,9 @@ actor AddBlock is Block
     _context(Fine) and _context.log("destroy()")
     _started = false
     _output.disconnect_all()
+    
+  be rename( new_name: String ) =>
+    _name = new_name
     
   be update(input: String, new_value: Linkable) =>
     _context(Fine) and _context.log("Add[ " + _name + "." + input + " = " + new_value.string() + " ]")

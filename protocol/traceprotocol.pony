@@ -2,7 +2,7 @@
 use "jay"
 use "websocket"
 
-class TraceProtocol is FbpProtocol
+class val TraceProtocol
   
   fun execute( connection: WebSocketConnection, command: String, payload: JObj ) =>
     None

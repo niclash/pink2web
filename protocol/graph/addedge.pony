@@ -11,9 +11,15 @@ class AddEdgeMessage
       (let src_block, let src_output, let src_index) = parse( payload("src") as JObj )?
       (let dest_block, let dest_input, let dest_index) = parse( payload("tgt") as JObj )?
       let graph = payload("graph") as String
+
+      let metadata = payload("graph") as JObj
+      let route = (metadata("route") as Number).u64()
+      let schema = metadata("schema") as String
+      let secure = metadata("secure") as Bool
       
       let promise = Promise[ Graph ]
       promise.next[None]( { (graph: Graph) =>
+        // TODO: Add metadata support
         graph.connect( src_block, src_output, dest_block, dest_input )
       })
       graphs.graph_by_id( graph, promise )

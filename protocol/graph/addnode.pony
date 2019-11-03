@@ -19,3 +19,12 @@ class AddNodeMessage
     else
       connection.send_text( Message.err( "graph", "Invalid payload" ).string() )
     end
+
+  fun reply( connection: WebSocketConnection, graph:String, block:String, component:String, x:I64, y:I64 ) =>
+    let meta = JObj + ("x", x) + ("y", y)
+    let json = JObj 
+      + ("graph", graph)
+      + ("component", component)
+      + ("id", block)
+      + ("metadata", meta )
+    connection.send_text( Message( "graph", "addnode", json).string() )

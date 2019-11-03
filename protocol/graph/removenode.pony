@@ -18,3 +18,9 @@ class RemoveNodeMessage
     else
       connection.send_text( Message.err( "graph", "Invalid payload" ).string() )
     end
+
+  fun reply( connection:WebSocketConnection, graph:String, block:String ) =>
+    let json = JObj
+      + ("id", block )
+      + ("graph", graph )
+    connection.send_text( Message("graph", "removenode", json ).string() )

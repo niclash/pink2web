@@ -16,7 +16,7 @@ class Loader
     _blocktypes = blocktypes
     _graphs = graphs
 
-  fun load( pathname: String ): Graph ? =>
+  fun load( pathname: String ): (String, Graph) ? =>
       let content: String = Files.read_lines_from_pathname(pathname, _context.auth())?
       let root = JParse.from_string( content )? as JObj
       parse_root(root)
@@ -24,14 +24,25 @@ class Loader
   fun save( path: String ) =>
     None
   
-  fun parse_root( root: JObj box ): Graph =>
-    let name = try root("name") as String else "<unknown>" end
-    let id = try root("id") as String else "<unknown>" end
+  fun parse_root( root: JObj box ): (String,Graph) =>
+    var name = try root("name") as String else "" end
+    var id = try root("id") as String else "" end
+    if name == "" then
+      if id == "" then
+        name = "<unknown>"
+        id = "<unknown>"
+      else
+        name = id
+      end
+    else
+      if id == "" then
+        id = name
+      end
+    end
     let description = try root("description") as String else "<unknown>" end
     let library = try root("library") as String else "<unknown>" end
     let icon = try root("icon") as String else "<unknown>" end
-    
-    let graph = Graph( id, name, description, library, icon, _blocktypes, _context )
+    let graph = Graph( _graphs, id, name, description, library, icon, _blocktypes, _context )
     _graphs.register_graph( id, name, graph )
     
     try
@@ -48,7 +59,7 @@ class Loader
       _context(Error) and _context.log( "A 'connections' object must exist in root object." )
     end
 
-    graph
+    (id,graph)
 
 
   fun parse_processes( graph: Graph, connections: JObj box ) =>

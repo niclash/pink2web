@@ -4,10 +4,10 @@ use "websocket"
 use "./graph"
 use "../graphs"
 
-class GraphProtocol is FbpProtocol
-  let _graphs: Graphs
+class val GraphProtocol
+  let _graphs: Graphs tag
   
-  new create( graphs: Graphs ) =>
+  new val create( graphs: Graphs ) =>
     _graphs = graphs
   
   fun execute( connection: WebSocketConnection, command: String, payload: JObj ) =>
@@ -15,11 +15,11 @@ class GraphProtocol is FbpProtocol
     |   "clear" => ClearMessage(connection, _graphs, payload )
     |   "addnode" => AddNodeMessage(connection, _graphs, payload )
     |   "removenode" => RemoveNodeMessage(connection, _graphs, payload )
-    |   "renamenode" => None
-    |   "changenode" => None
+    |   "renamenode" => RenameNodeMessage(connection, _graphs, payload )
+    |   "changenode" => ChangeNodeMessage(connection, _graphs, payload )
     |   "addedge" => AddEdgeMessage(connection, _graphs, payload )
     |   "removeedge" => RemoveEdgeMessage(connection, _graphs, payload )
-    |   "changeedge" => None
+    |   "changeedge" => ChangeNodeMessage(connection, _graphs, payload )
     |   "addinitial" => None
     |   "removeinitial" => None
     |   "addinport" => None

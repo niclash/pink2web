@@ -1,6 +1,7 @@
 use "./app"
 use "./blocktypes"
 use "./graphs"
+use "./protocol"
 use "./system"
 use "./web"
 use "cli"
@@ -41,8 +42,9 @@ actor Main
             match c.fullname()
             | "pink2web/list/types" => list_types(blocktypes, context)
             | "pink2web/run/process" => 
-                let graph = run_process(c.arg("filename" ).string(), graphs, blocktypes, context )?
-                _websocketListener = WebSocketListener( env.root as AmbientAuth, BroadcastListenNotify(graphs, blocktypes), "10.10.139.242","3569")
+                (let main_graph:String, let graph:Graph) = run_process(c.arg("filename" ).string(), graphs, blocktypes, context )?
+                let fbp = Fbp( "619362b3-1aee-4dca-b109-bef38e0e1ca8", main_graph, graphs, blocktypes )
+                _websocketListener = WebSocketListener( env.root as AmbientAuth, ListenNotify(fbp), "10.10.139.242","3569")
             | "pink2web/describe/type" => describe_type(c.arg("typename" ).string(), blocktypes, context )
             | "pink2web/describe/topology" => describe_topology(c.arg("filename" ).string(), graphs, blocktypes, context )?
             end
@@ -97,7 +99,7 @@ actor Main
   fun describe_topology(filename:String, graphs: Graphs, blocktypes:BlockTypes, context:SystemContext) ? =>
     context(Fine) and context.log( "Describe topology" )
     let loader = Loader( graphs, blocktypes, context )
-    let graph = loader.load( filename )?
+    (let id:String, let graph:Graph) = loader.load( filename )?
     let promise = Promise[JArr]
     promise.next[None]( { (json: JArr) => 
       context(Fine) and context.log( "Topology Description" )
@@ -105,8 +107,9 @@ actor Main
     } )
     graph.describe( promise )
     
-  fun run_process(filename:String, graphs: Graphs, blocktypes:BlockTypes, context:SystemContext): Graph ? =>
+  fun run_process(filename:String, graphs: Graphs, blocktypes:BlockTypes, context:SystemContext):(String, Graph) ? =>
     let loader = Loader(graphs, blocktypes, context)
-    let graph = loader.load( filename )?  
+    (let id:String, let graph:Graph) = loader.load( filename )?  
     graph.start()
-    graph
+    context.log("Main graph: " + id )
+    (id, graph)

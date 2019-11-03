@@ -4,13 +4,9 @@ use "jay"
 use "websocket"
 
 class ListMessage
-  let _blocktypes: BlockTypes
-  
-  new create( blocktypes: BlockTypes ) =>
-    _blocktypes = blocktypes
     
-  fun execute( connection: WebSocketConnection ) =>
-    let components = _blocktypes.list_types()
+  fun apply( connection: WebSocketConnection, blocktypes: BlockTypes ) =>
+    let components = blocktypes.list_types()
     for descriptor in components.values() do
       let payload: JObj = descriptor.describe()
       let json = JObj 

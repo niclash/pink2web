@@ -43,7 +43,7 @@ class DummyDescriptor is BlockTypeDescriptor
     result
   
 actor DummyBlock is Block
-  let _name: String
+  var _name: String
   let _context:SystemContext
   let _descriptor:BlockTypeDescriptor
   
@@ -64,6 +64,9 @@ actor DummyBlock is Block
   
   be connect( output: String, to_block: Block tag, to_input: String) =>
     None
+
+  be rename( new_name: String ) => 
+    _name = new_name
   
   be update(input: String, new_value: Linkable val) =>
     None

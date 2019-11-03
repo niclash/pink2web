@@ -1,6 +1,6 @@
 
 
-class Error is Stringable
+class Error
   let _message: String
   let _stack: String
   let _graph: String
@@ -10,7 +10,7 @@ class Error is Stringable
     _stack = stack
     _graph = graph
     
-  fun string(): String val =>
+  fun string(): String =>
     "{ " + 
     "\"message\": \"" + _message + "\"," +
     "\"stack\": \"" + _stack + "\"," +

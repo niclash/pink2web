@@ -22,6 +22,8 @@ trait tag Block
   
   be update(input: String, new_value: Linkable)
 
+  be rename( new_name: String )
+  
   be destroy()
   
   be refresh()
