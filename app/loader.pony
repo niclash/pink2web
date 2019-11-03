@@ -67,7 +67,10 @@ class Loader
       try
         let component = connections(name) as JObj
         let blocktype = component("component") as String
-        graph.create_block( blocktype, name )
+        let meta = component("metadata") as JObj
+        let x = meta("x") as I64
+        let y = meta("y") as I64
+        graph.create_block( blocktype, name, x, y )
       else
         _context(Error) and _context.log( "Component '" + name + "' has invalid structure." )
       end

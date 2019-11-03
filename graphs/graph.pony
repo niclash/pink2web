@@ -61,10 +61,10 @@ actor Graph
       _uptime = _uptime + 1
     end
     
-  be create_block( block_type: String, name': String ) =>
+  be create_block( block_type: String, name': String, x:I64, y:I64 ) =>
     _context(Info) and _context.log("create_block " + name' + " of type " + block_type )
     let factory = _types.get(block_type)
-    let block:Block tag = factory.create_block( name', _context )
+    let block:Block tag = factory.create_block( name', _context, x, y )
     register_block(block, name', factory.block_type_descriptor())
 
   be remove_block( name': String ) =>

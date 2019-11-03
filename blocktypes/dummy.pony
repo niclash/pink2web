@@ -7,7 +7,7 @@ use "../system"
 class val DummyFactory is BlockFactory
   let descriptor:BlockTypeDescriptor val = recover DummyDescriptor end
   
-  fun create_block( container_name: String, context:SystemContext): Block tag =>
+  fun create_block( container_name: String, context:SystemContext, x:I64, y:I64): Block tag =>
     context(Error) and context.log("Unknown type for \"" + container_name + "\". Unable to create.")
     let result:DummyBlock tag = DummyBlock(descriptor.name(), descriptor, context)
     result
@@ -52,6 +52,8 @@ actor DummyBlock is Block
     _descriptor = descriptor'
     _context = context
   
+  be change( x:I64, y:I64 ) => None
+
   be disconnect_block( block: Block ) =>  None
 
   be disconnect_edge( output:String, dest_block: Block, dest_input: String ) => None

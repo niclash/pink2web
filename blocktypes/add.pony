@@ -13,18 +13,25 @@ actor AddBlock is Block
   let _output: Output[F64]
   let _context:SystemContext
   var _started:Bool = false
+  var _x:I64
+  var _y:I64
   
-  new create(name: String, descriptor': BlockTypeDescriptor, context:SystemContext ) =>
+  new create(name: String, descriptor': BlockTypeDescriptor, context:SystemContext, x:I64, y:I64 ) =>
     context(Fine) and context.log("create("+name+")")
     _context = context
     _name = name
     _descriptor = descriptor'
-    
+    _x = x
+    _y = y
     let zero:F64 = 0.0
     _input1 = InputImpl[Number]( name, _descriptor.input(0), zero )
     _input2 = InputImpl[Number]( name, _descriptor.input(1), zero )
     _output = OutputImpl[F64]( name, _descriptor.output(0), zero )
 
+  be change( x:I64, y:I64 ) =>
+    _x = x
+    _y = y
+    
   be start() =>
     _context(Fine) and _context.log("start()")
     _started = true
@@ -148,9 +155,9 @@ class val AddBlockFactory is BlockFactory
   fun val block_type_descriptor() : BlockTypeDescriptor val^ =>
     _descriptor
 
-  fun create_block( instance_name: String, context:SystemContext val):Block =>
+  fun create_block( instance_name: String, context:SystemContext val, x:I64, y:I64):Block =>
     context(Fine) and context.log("create Add")
-    AddBlock( instance_name, _descriptor, context )
+    AddBlock( instance_name, _descriptor, context, x, y )
 
   fun val describe(): JObj val =>
     JObj + ("descriptor", _descriptor.describe() )

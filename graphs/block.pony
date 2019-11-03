@@ -6,7 +6,7 @@ use "../system"
 use "../blocktypes"
 
 trait val BlockFactory
-  fun create_block( name: String, context:SystemContext val): Block tag
+  fun create_block( name: String, context:SystemContext val, x:I64, y:I64): Block tag
   
   fun val block_type_descriptor(): BlockTypeDescriptor
   
@@ -23,6 +23,8 @@ trait tag Block
   be update(input: String, new_value: Linkable)
 
   be rename( new_name: String )
+  
+  be change( x:I64, y:I64 )
   
   be destroy()
   
