@@ -61,12 +61,30 @@ actor Graph
       _uptime = _uptime + 1
     end
     
-  be create_block( block_type: String, name': String, x:I64, y:I64 ) =>
+  be create_block(block_type: String, name': String, x:I64, y:I64) =>
     _context(Info) and _context.log("create_block " + name' + " of type " + block_type )
     let factory = _types.get(block_type)
     let block:Block tag = factory.create_block( name', _context, x, y )
-    register_block(block, name', factory.block_type_descriptor())
+    _register_block(block, name', factory.block_type_descriptor())
 
+  be register_block(block:Block, name':String, blocktype: BlockTypeDescriptor) =>
+    _register_block(block, name', blocktype)
+    
+  fun ref _register_block(block:Block tag, name':String, blocktype: BlockTypeDescriptor) =>
+    _blocks( name' ) = block
+    _block_types(block) = blocktype
+    _graphs._added(_id, name', blocktype.name(), 0, 0)
+    _context(Info) and _context.log("Available Blocks: " + _available_blocks() )
+
+  be change_block( name':String, x:I64, y:I64 ) =>
+    try
+      let block = _blocks( name' )?
+      block.change(x, y)
+      _graphs._changed( _id, name', x, y )
+    else
+      _graphs._error( "graph", "Unknown Node" )
+    end
+  
   be remove_block( name': String ) =>
     try
       let block = _blocks( name' )?
@@ -97,21 +115,34 @@ actor Graph
       end
     end
     
-  be register_block( block:Block, name':String, blocktype: BlockTypeDescriptor ) =>
-    _blocks( name' ) = block
-    _block_types(block) = blocktype
-    _graphs._added(_id, name', blocktype.name(), 0, 0)
-    
   be connect( src_block: String, src_output: String, dest_block: String, dest_input: String ) =>
     try
-        let src:Block tag = _blocks(src_block)?
-        let dest:Block tag = _blocks(dest_block)?
+        let src:Block tag = _get_block(src_block)?
+        let dest:Block tag = _get_block(dest_block)?
         src.connect( src_output, dest, dest_input )
         _context(Info) and _context.log("connected:" + src_block + "." + src_output + " ==> " + dest_block + "." + dest_input )
     else
-      _context(Error) and _context.log("Unable to connect " + src_block + "." + src_output + " to " + dest_block )
+      _context(Error) and _context.log("Unable to connect " + src_block + "." + src_output + " to " + dest_block + "." + dest_input )
     end
     
+  fun _get_block( name': String ):Block ? =>
+    try
+        _blocks(name')?
+    else
+      _context(Error) and _context.log("Unable to find block " + name' + "\nAvailable blocks: " + _available_blocks() )
+      error
+    end
+  
+  fun _available_blocks():String =>
+    var blocks': String val = recover val "[" end
+    var first = true
+    for identity in _blocks.keys() do
+      if not first then blocks' = blocks' + ", " end
+      first = false
+      blocks' = blocks' + identity
+    end
+    blocks' + "]"
+  
   be disconnect( src_block: String, src_output: String, dest_block: String, dest_input: String ) =>
     try
         let src:Block tag = _blocks(src_block)?

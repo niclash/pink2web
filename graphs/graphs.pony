@@ -1,10 +1,10 @@
 
-use "../system"
-use "../blocktypes"
 use "collections"
 use "logger"
 use "promises"
 use "time"
+use "../blocktypes"
+use "../system"
 
 actor Graphs
   let _graphs_by_id: Map[String, Graph] = Map[String, Graph]
@@ -53,7 +53,7 @@ actor Graphs
         first = false
         graphs = graphs + identity
       end
-      _context(Error) and _context.log( "Graph with id " + id' + " doesn't exist: " + consume graphs + "]" )
+      _context(Error) and _context.log( "Graph with id " + id' + " doesn't exist\nAvailable graphs: " + consume graphs + "]" )
     end
     
   be graph_by_name( name': String, promise: Promise[ Graph ] ) =>
@@ -75,6 +75,11 @@ actor Graphs
       end
     end
   
+  be _error( type':String, message: String ) =>
+    for s in _subscribers.values() do 
+      s.err( type', message ) 
+    end
+    
   be _added(graph: String, block:String, component:String, x:I64, y:I64) =>
     for s in _subscribers.values() do 
       s.added_block( graph, block, component, x, y ) 

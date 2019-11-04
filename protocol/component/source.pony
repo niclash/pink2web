@@ -7,5 +7,10 @@ use ".."
 class SourceMessage
 
   fun apply( connection: WebSocketConnection, blocktypes: BlockTypes, payload: JObj ) =>
-    connection.send_text( Message.err( "component", "Source code is not available" ).string() )
+    let json = JObj 
+      + ("language", "json" )
+      + ("library", "pink2web" )
+      + ("code", "not true" )
+      + ("tests", "not false" )
+    connection.send_text( Message( "component", "source", json ).string() )
 

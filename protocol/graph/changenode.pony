@@ -10,13 +10,12 @@ class ChangeNodeMessage
     try
       let node = payload("id") as String
       let metadata = payload("metadata") as JObj
-      let x = (metadata("x") as Number).u32()
-      let y = (metadata("y") as Number).u32()
+      let x = metadata("x") as I64
+      let y = metadata("y") as I64
       let graph = payload("graph") as String
       let promise = Promise[ Graph ]
       promise.next[None]( { (graph: Graph) =>
-        // TODO: Add metadata support
-        None
+        graph.change_block( node, x, y )
       })
       graphs.graph_by_id( graph, promise )
     else

@@ -3,6 +3,8 @@ use "time"
 
 interface val GraphNotify is Equatable[GraphNotify]
 
+  fun err( type':String, message:String )
+  
   fun added_block(graph:String, block:String, component:String, x:I64, y:I64)
   
   fun renamed_block(graph:String, from:String, to:String)

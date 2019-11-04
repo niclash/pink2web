@@ -32,6 +32,7 @@ actor AddBlock is Block
     _x = x
     _y = y
     
+    
   be start() =>
     _context(Fine) and _context.log("start()")
     _started = true

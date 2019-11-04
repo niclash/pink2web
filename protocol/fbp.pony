@@ -79,6 +79,9 @@ class val Subscription is GraphNotify
   new val create( conn: WebSocketConnection) =>
     _connection = conn
     
+  fun err( type':String, message:String ) =>
+    _connection.send_text( Message.err(type', message).string() )
+    
   fun added_block( graph:String, block:String, component:String, x:I64, y:I64 ) =>
     AddNodeMessage.reply(_connection, graph, block, component, x, y )
   

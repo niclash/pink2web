@@ -12,10 +12,10 @@ class AddEdgeMessage
       (let dest_block, let dest_input, let dest_index) = parse( payload("tgt") as JObj )?
       let graph = payload("graph") as String
 
-      let metadata = payload("graph") as JObj
-      let route = (metadata("route") as Number).u64()
-      let schema = metadata("schema") as String
-      let secure = metadata("secure") as Bool
+//       let metadata = payload("metadata") as JObj
+//       let route = (metadata("route") as Number).u64()
+//       let schema = metadata("schema") as String
+//       let secure = metadata("secure") as Bool
       
       let promise = Promise[ Graph ]
       promise.next[None]( { (graph: Graph) =>
@@ -27,5 +27,5 @@ class AddEdgeMessage
       connection.send_text( Message.err( "graph", "Invalid payload" ).string() )
     end
     
-  fun parse( n: JObj ): (String,String, U64)? =>
-    ( n("node") as String, n("port") as String, (n("index") as Number).u64() )
+  fun parse( n: JObj ): (String,String, (I64|None))? =>
+    ( n("node") as String, n("port") as String, (n("index") as (I64|None) ) )

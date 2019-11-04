@@ -61,7 +61,6 @@ class Loader
 
     (id,graph)
 
-
   fun parse_processes( graph: Graph, connections: JObj box ) =>
     for name in connections.data.keys() do
       try

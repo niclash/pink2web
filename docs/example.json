@@ -1,6 +1,6 @@
 {
-    "id": "adder", 
-    "name": "pink2web adder", 
+    "id": "main", 
+    "name": "pink2web main process", 
     "connections": [
         {
             "src": { "process": "block1","port": "output","data": "" },
