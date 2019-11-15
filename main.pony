@@ -16,18 +16,22 @@ actor Main
   var _websocketListener: (WebSocketListener|None) = None
   
   new create( env: Env ) =>
-    try
-      let context: SystemContext = handle_cli(env)?
-      //_rest = RestServer("localhost:8384", context )
+    let context = try
+      SystemContext(env, Info)?
     else
       env.err.print( "Unable to get Environment Root. Internal error?" )
       env.exitcode(-1)  // some kind of coding error
+      return
+    end
+    try
+      handle_cli(context, env.args, env.vars, env.root as AmbientAuth)?
+    else
+      env.err.print( "Can not handle command line." )
+      env.exitcode(-1)  // some kind of coding error
     end
 
-  fun ref handle_cli(env:Env): SystemContext ? =>
-    let context = SystemContext(env, Info)?
+  fun ref handle_cli(context:SystemContext, args:Array[String] val, vars:Array[String] val, auth:AmbientAuth )? =>
     let blocktypes:BlockTypes val = BlockTypes(context)
-    let graphs = Graphs( blocktypes, context )
     let cs = CommandSpec.parent("pink2web", "Flow Based Programming engine", [ 
             OptionSpec.bool("warn", "Warn Logging Level" where default' = false)
             OptionSpec.bool("info", "Info Logging Level" where default' = false)
@@ -37,28 +41,30 @@ actor Main
         ] )? .> add_help()?
     
     let cmd =
-      match CommandParser(cs).parse(env.args, env.vars)
+      match CommandParser(cs).parse(args, vars)
       | let c: Command => 
             match c.fullname()
             | "pink2web/list/types" => list_types(blocktypes, context)
-            | "pink2web/run/process" => 
-                (let main_graph:String, let graph:Graph) = run_process(c.arg("filename" ).string(), graphs, blocktypes, context )?
+            | "pink2web/run/process" =>
+                context.log( "Starting process" )
+                let filename = c.arg("filename" ).string()
+                let host = c.option("host").string()
+                let port = c.option("port").string()
+                let graphs = Graphs( blocktypes, context )
+                (let main_graph:String, let graph:Graph) = run_process(filename, graphs, blocktypes, context )?
                 let fbp = Fbp( "619362b3-1aee-4dca-b109-bef38e0e1ca8", main_graph, graphs, blocktypes )
-                _websocketListener = WebSocketListener( env.root as AmbientAuth, ListenNotify(fbp), "10.10.139.242","3569")
+                _rest = RestServer(host, port, context )
+                _websocketListener = WebSocketListener( auth, ListenNotify(fbp), "10.10.139.242","3569")
             | "pink2web/describe/type" => describe_type(c.arg("typename" ).string(), blocktypes, context )
-            | "pink2web/describe/topology" => describe_topology(c.arg("filename" ).string(), graphs, blocktypes, context )?
+            | "pink2web/describe/topology" => 
+                describe_topology(c.arg("filename" ).string(), blocktypes, context )?
             end
       | let ch: CommandHelp =>
-          ch.print_help(env.out)
-          env.exitcode(0)
-          error
+          ch.print_help(context.stdout())
       | let se: SyntaxError =>
-          env.out.print(se.string())
-          env.exitcode(1)
+          context.log(se.string())
           error
       end
-
-    context
 
   fun list_command() : CommandSpec ? =>
     CommandSpec.parent("list", "", [
@@ -79,6 +85,8 @@ actor Main
     
   fun run_command() : CommandSpec ?=>
     CommandSpec.parent("run", "", [
+      OptionSpec.string("host", "Host interface to connect to" where default' = "0.0.0.0")
+      OptionSpec.string("port", "Host interface to connect to" where default' = "3569")
     ],[
       CommandSpec.leaf( "process", "Run the process.", [
       ], [
@@ -96,14 +104,16 @@ actor Main
     let json = blocktypes.describe_type( typ )
     context.to_stdout( json.string() )    
     
-  fun describe_topology(filename:String, graphs: Graphs, blocktypes:BlockTypes, context:SystemContext) ? =>
+  fun describe_topology(filename:String, blocktypes:BlockTypes, context:SystemContext) ? =>
     context(Fine) and context.log( "Describe topology" )
+    let graphs = Graphs( blocktypes, context )
     let loader = Loader( graphs, blocktypes, context )
     (let id:String, let graph:Graph) = loader.load( filename )?
     let promise = Promise[JArr]
     promise.next[None]( { (json: JArr) => 
       context(Fine) and context.log( "Topology Description" )
       context.to_stdout( json.string() ) 
+      graphs.shutdown()
     } )
     graph.describe( promise )
     

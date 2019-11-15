@@ -38,6 +38,7 @@ actor Graph
     _block_types = MapIs[Block tag, BlockTypeDescriptor val]
 
   be start() =>
+    _context.log( "Starting graph: " + _name )
     _time_started = DateTime.now()
     _started = true
     for block in _blocks.values() do
@@ -47,11 +48,23 @@ actor Graph
     _graphs._started( _id, _time_started, _started, _running, _debug )
     
   be stop() =>
+    _stop()
+    
+  fun ref _stop() =>
+    _context.log( "Stopping graph: " + _name )
     _running = false
     for block in _blocks.values() do
       block.stop()
     end
     _graphs._stopped(_id, _time_started, _started, _running, _uptime, _debug)
+    
+  be destroy() =>
+    if _running then _stop() end
+    _context.log( "Destroying graph: " + _name )
+    for block in _blocks.values() do
+      block.destroy()
+    end
+    _blocks.clear()
     
   be status() =>
     _graphs._status( _id, _uptime, _running, _started, _debug )

@@ -26,6 +26,31 @@ actor Graphs
       graph.tick()
     end
 
+  be start_all() =>
+    _context.log( "start all" )
+    for graph in _graphs_by_id.values() do
+      graph.start()
+    end
+
+  be stop_all() =>
+    _stop_all()
+    
+  fun _stop_all() =>
+    _context.log( "stop all" )
+    for graph in _graphs_by_id.values() do
+      graph.stop()
+    end
+
+  be shutdown() =>
+    _context.log( "shutdown all" )
+    for graph in _graphs_by_id.values() do
+      graph.stop()
+      graph.destroy()
+    end
+    _graphs_by_id.clear()
+    _graphs_by_name.clear()
+    _subscribers.clear()
+    
   be list( promise: Promise[List[Graph] val] ) =>
     let result: List[Graph] iso = recover iso List[Graph] end
     for g in _graphs_by_id.values() do 
@@ -76,41 +101,49 @@ actor Graphs
     end
   
   be _error( type':String, message: String ) =>
+    _context.log( "error: " + type' + " : " + message )
     for s in _subscribers.values() do 
       s.err( type', message ) 
     end
     
   be _added(graph: String, block:String, component:String, x:I64, y:I64) =>
+    _context.log( "added: " + graph + " : " + block + " : " + component + " : (" + x.string() + "," + y.string() + ")" )
     for s in _subscribers.values() do 
       s.added_block( graph, block, component, x, y ) 
     end
     
   be _removed(graph: String, block:String) =>
+    _context.log( "removed: " + graph + " : " + block )
     for s in _subscribers.values() do 
       s.removed_block( graph, block ) 
     end
   
   be _renamed(graph:String, from:String, to:String) =>
+    _context.log( "renamed: " + graph + " : " + from + " -> " + to )
     for s in _subscribers.values() do 
       s.renamed_block( graph, from, to ) 
     end
 
   be _changed(graph: String, block:String, x:I64, y:I64) =>
+    _context.log( "changed: " + graph + " : " + block + " : (" + x.string() + "," + y.string() + ")" )
     for s in _subscribers.values() do 
       s.changed_block( graph, block, x, y ) 
     end
     
   be _started(graph: String, time_started:PosixDate val, started':Bool, running:Bool, debug:Bool) =>
+    _context.log( "started: " + graph + " : " + started'.string() + " : " + running.string() + " : " + debug.string() )
     for s in _subscribers.values() do 
       s.started(graph, time_started, started', running, debug) 
     end
   
   be _stopped(graph: String, time_started:PosixDate val, started':Bool, running:Bool, uptime:I64, debug:Bool) =>
+    _context.log( "stopped: " + graph + " : " + uptime.string() + " : " + started'.string() + " : " + running.string() + " : " + debug.string() )
     for s in _subscribers.values() do 
       s.stopped( graph, time_started, uptime, started', running, debug ) 
     end
   
   be _status(id:String, uptime:I64, running:Bool, started:Bool, debug:Bool) =>
+    _context.log( "status: " + id + " : " + uptime.string() + " : " + started.string() + " : " + running.string() + " : " + debug.string() )
     for s in _subscribers.values() do 
       s.status( id, uptime, started, running, debug) 
     end

@@ -6,14 +6,4 @@ use "websocket"
 class ListMessage
     
   fun apply( connection: WebSocketConnection, blocktypes: BlockTypes ) =>
-    let components = blocktypes.list_types()
-    for descriptor in components.values() do
-      let payload: JObj = descriptor.describe()
-      let json = JObj 
-        + ( "protocol", "component" )
-        + ( "command", "component" )
-        + ( "payload", payload )
-      connection.send_text( json.string() )
-    end
-    connection.send_text( ComponentsReadyMessage(components.size()) )
-
+    ComponentMessage( connection, blocktypes )

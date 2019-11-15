@@ -1,12 +1,14 @@
 use http = "http"
 use "logger"
 use "net"
+use "format"
 
 use "../system"
 
 actor RestServer
   
-  new create( listen_on: String, context: SystemContext ) =>
+  new create( host': String, port': String, context: SystemContext ) =>
+    context.log("Rest Server starting on: " + host' + ":" + port')
     let auth = context.auth()
     let logger:http.Logger = http.ContentsLog(context.stdout())
     
@@ -15,7 +17,7 @@ actor RestServer
       ListenHandler(context),
       BackendMaker.create(context),
       logger
-      where service=listen_on, limit=100, reversedns=auth
+      where host=host', service=port', limit=50, reversedns=auth
     )
     
 class ListenHandler
@@ -34,7 +36,8 @@ class ListenHandler
     end
 
   fun ref not_listening(server: http.HTTPServer ref) =>
-    _context(Error) and _context.log("Failed to listen.")
+    let local = server.local_address()
+    _context(Error) and _context.log("Failed to listen. " )
 
   fun ref closed(server: http.HTTPServer ref) =>
     _context(Info) and _context.log("Shutdown.")
@@ -51,24 +54,17 @@ class BackendMaker is http.HandlerFactory
 class BackendHandler is http.HTTPHandler
   """
   Notification class for a single HTTP session.  A session can process
-  several requests, one at a time.  Data recieved using OneshotTransfer
-  transfer mode is echoed in the response.
+  several requests, one at a time.  
   """
   let _context: SystemContext
   let _session: http.HTTPSession
   var _response: http.Payload = http.Payload.response()
 
   new ref create(context: SystemContext, session: http.HTTPSession) =>
-    """
-    Create a context for receiving HTTP requests for a session.
-    """
     _context = context
     _session = session
 
   fun ref apply(request: http.Payload val) =>
-    """
-    Start processing a request.
-    """
     _response.add_chunk("You asked for ")
     _response.add_chunk(request.url.path)
 
