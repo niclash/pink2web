@@ -27,7 +27,7 @@ class val SystemContext
       end
     end
     _timers = Timers
-    logger = StringLogger( level, env.out )    
+    logger = StringLogger( level, env.err )    
     _env = env
     
 // Logger[String] decorator

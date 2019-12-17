@@ -1,12 +1,12 @@
 use "jay"
 use "promises"
-use "websocket"
+use "../../web"
 use ".."
 use "../../graphs"
 
-class ChangeNodeMessage
+primitive ChangeNodeMessage
 
-  fun apply( connection: WebSocketConnection, graphs: Graphs, payload: JObj ) =>
+  fun apply( connection: WebSocketSender, graphs: Graphs, payload: JObj ) =>
     try
       let node = payload("id") as String
       let metadata = payload("metadata") as JObj
@@ -22,7 +22,7 @@ class ChangeNodeMessage
       connection.send_text( Message.err( "graph", "Invalid payload" ).string() )
     end
 
-  fun reply( connection:WebSocketConnection, graph:String, block:String, x:I64, y:I64 ) =>
+  fun reply( connection:WebSocketSender, graph:String, block:String, x:I64, y:I64 ) =>
     let meta = JObj
       + ("x", x )
       + ("y", y )

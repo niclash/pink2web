@@ -1,9 +1,10 @@
 
 use "jay"
 use "time"
-use "websocket"
-use "../graphs"
 use "../blocktypes"
+use "../graphs"
+use "../system"
+use "../web"
 use "./component"
 use "./graph"
 use "./network"
@@ -17,7 +18,7 @@ class val Fbp
   let _component_protocol:ComponentProtocol
   let _trace_protocol:TraceProtocol
   
-  new val create( uuid:String, main_graph:String, graphs:Graphs, blocktypes:BlockTypes) =>
+  new val create( uuid:String, main_graph:String, graphs:Graphs, blocktypes:BlockTypes, context:SystemContext) =>
     _graphs = graphs
     let label: String = "Pink2Web - flowbased programming engine written in Pony Language"
     let version: String = "0.1.0"
@@ -26,7 +27,6 @@ class val Fbp
         "network:persist"
         "network:data"
         "network:control"
-        "component:getsource"
         "protocol:component"
         "protocol:runtime"
         "protocol:graph"
@@ -39,13 +39,13 @@ class val Fbp
     let repository_version: String = ""
     let runtime = RuntimeMessage( uuid, label, version, all_capabilities, capabilities, graph_name, type', namespace, repository, repository_version )
 
-    _runtime_protocol = RuntimeProtocol.create(runtime)
+    _runtime_protocol = RuntimeProtocol(runtime, graphs, context)
     _network_protocol = NetworkProtocol.create(graphs)
     _graph_protocol = GraphProtocol.create(graphs)
     _component_protocol = ComponentProtocol.create(blocktypes)
-    _trace_protocol = TraceProtocol.create()
+    _trace_protocol = TraceProtocol
 
-  fun execute( conn: WebSocketConnection, text: String ) =>
+  fun execute( conn: WebSocketSender, text: String ) =>
     try
       let jdoc = JParse.from_string( text )? as JObj
       let protocol = jdoc("protocol") as String
@@ -65,18 +65,18 @@ class val Fbp
       conn.send_text( Message.err( "unknown", "Badly formatted request" ).string() )
     end
 
-  fun subscribe( websocket: WebSocketConnection) =>
+  fun subscribe(websocket: WebSocketSender val) =>
     let subscriber = Subscription(websocket)
     _graphs.subscribe( subscriber )
 
-  fun unsubscribe( websocket: WebSocketConnection ) =>
+  fun unsubscribe(websocket: WebSocketSender val) =>
     let subscriber = Subscription(websocket)
     _graphs.unsubscribe( subscriber )
 
 class val Subscription is GraphNotify
-  let _connection: WebSocketConnection tag
+  let _connection: WebSocketSender val
   
-  new val create( conn: WebSocketConnection) =>
+  new val create( conn: WebSocketSender val) =>
     _connection = conn
     
   fun err( type':String, message:String ) =>
@@ -94,6 +94,12 @@ class val Subscription is GraphNotify
   fun removed_block( graph:String, block:String ) =>
     RemoveNodeMessage.reply(_connection, graph, block )
 
+  fun added_connection(graph:String, from_block:String, from_output:String, to_block:String, to_input:String) =>
+    AddEdgeMessage.reply(_connection, graph, from_block, from_output, to_block, to_input )
+    
+  fun removed_connection(graph:String, from_block:String, from_output:String, to_block:String, to_input:String) =>
+    RemoveEdgeMessage.reply(_connection, graph, from_block, from_output, to_block, to_input )
+    
   fun started( graph: String, time_started:PosixDate val, started':Bool, running:Bool, debug:Bool) =>
     StartedMessage.reply( _connection, graph, time_started, started', running, debug )
   
@@ -109,7 +115,7 @@ class val Subscription is GraphNotify
     else
       match that 
       | let t: Subscription =>
-        _connection is t._connection
+        _connection == t._connection
       else
         false
       end

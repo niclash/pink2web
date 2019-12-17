@@ -1,6 +1,6 @@
 
 use "jay"
-use "websocket"
+use "../web"
 use "./network"
 use "../graphs"
 
@@ -10,19 +10,19 @@ class val NetworkProtocol
   new val create( graphs: Graphs ) =>
     _graphs = graphs
   
-  fun execute( connection: WebSocketConnection, command: String, payload: JObj ) =>
+  fun execute( connection: WebSocketSender, command: String, payload: JObj ) =>
     match command
-    |   "start" => None
-    |   "stop" => None
+    |   "start" => StartMessage(connection, _graphs, payload )
+    |   "stop" => StopMessage(connection, _graphs, payload )
     |   "getstatus" => GetStatusMessage(connection, _graphs, payload )
     |   "persist" => None
     |   "debug" => None
-    |   "edges" => None
+    |   "edges" => EdgesMessage(connection, _graphs, payload )
     |   "connect" => None
     |   "disconnect" => None
     |   "begingroup" => None
     |   "endgroup" => None
     else
-      connection.send_text( Message.err( "network", "Unknown command in runtime protocol: " + command).string() )
+      connection.send_text( Message.err( "network", "Invalid command: " + command).string() )
     end
 

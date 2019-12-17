@@ -1,14 +1,14 @@
 use "jay"
 use "promises"
-use "websocket"
+use "../../web"
 use ".."
 use "../../graphs"
 
 class RemoveEdgeMessage
-  fun apply( connection: WebSocketConnection, graphs: Graphs, payload: JObj ) =>
+  fun apply( connection: WebSocketSender, graphs: Graphs, payload: JObj ) =>
     try
-      (let src_block, let src_output, let src_index) = parse( payload("src") as JObj )?
-      (let dest_block, let dest_input, let dest_index) = parse( payload("tgt") as JObj )?
+      (let src_block, let src_output, let src_index) = Util._parse( payload("src") as JObj )?
+      (let dest_block, let dest_input, let dest_index) = Util._parse( payload("tgt") as JObj )?
       let graph = payload("graph") as String
       
       let promise = Promise[ Graph ]
@@ -20,5 +20,8 @@ class RemoveEdgeMessage
       connection.send_text( Message.err( "graph", "Invalid payload" ).string() )
     end
     
-  fun parse( n: JObj ): (String,String, U64)? =>
-    ( n("node") as String, n("port") as String, (n("index") as Number).u64() )
+  fun reply(connection:WebSocketSender, graph:String, from_block:String, from_output:String, to_block:String, to_input:String ) =>
+    let src = JObj + ("node", from_block) + ("port", from_output) 
+    let tgt = JObj + ("node", to_block) + ("port", to_input) 
+    let payload:JObj = JObj + ("graph", graph) + ("src", src ) + ("tgt", tgt)
+    connection.send_text( Message("graph", "removeedge", payload ).string() )

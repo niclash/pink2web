@@ -46,18 +46,24 @@ actor Main
             match c.fullname()
             | "pink2web/list/types" => list_types(blocktypes, context)
             | "pink2web/run/process" =>
-                context.log( "Starting process" )
-                let filename = c.arg("filename" ).string()
+                context.log( "Starting process")
+                let filename = c.arg("filename").string()
                 let host = c.option("host").string()
-                let port = c.option("port").string()
+                let p = c.option("port")
+                context.log( "--port=" + p.i64().string() )
+                var port = p.i64().u32()
+                // bug in cli, default port isn't working properly
+                if port == 0 then port = 3568 end
                 let graphs = Graphs( blocktypes, context )
-                (let main_graph:String, let graph:Graph) = run_process(filename, graphs, blocktypes, context )?
-                let fbp = Fbp( "619362b3-1aee-4dca-b109-bef38e0e1ca8", main_graph, graphs, blocktypes )
-                _rest = RestServer(host, port, context )
-                _websocketListener = WebSocketListener( auth, ListenNotify(fbp), "10.10.139.242","3569")
-            | "pink2web/describe/type" => describe_type(c.arg("typename" ).string(), blocktypes, context )
+                (let main_graph:String,let graph:Graph) = run_process(filename,graphs,blocktypes,context)?
+                let fbp = Fbp("619362b3-1aee-4dca-b109-bef38e0e1ca8", main_graph, graphs, blocktypes, context)
+                let ws_port:String val = (port+1).string()
+                _websocketListener = WebSocketListener(auth,ListenNotify(fbp,context),host,ws_port)
+                context(Info) and context.log("Started to listen: ws://"+host+":"+ws_port)
+                _rest = RestServer(host, port, "/home/niclas/dev/pony/pink2web/ui", context )
+            | "pink2web/describe/type" => describe_type(c.arg("typename" ).string(),blocktypes,context)
             | "pink2web/describe/topology" => 
-                describe_topology(c.arg("filename" ).string(), blocktypes, context )?
+                describe_topology(c.arg("filename" ).string(),blocktypes,context)?
             end
       | let ch: CommandHelp =>
           ch.print_help(context.stdout())
@@ -86,7 +92,7 @@ actor Main
   fun run_command() : CommandSpec ?=>
     CommandSpec.parent("run", "", [
       OptionSpec.string("host", "Host interface to connect to" where default' = "0.0.0.0")
-      OptionSpec.string("port", "Host interface to connect to" where default' = "3569")
+      OptionSpec.i64("port", "Port number to listen on" where default' = 3568)
     ],[
       CommandSpec.leaf( "process", "Run the process.", [
       ], [
@@ -109,8 +115,8 @@ actor Main
     let graphs = Graphs( blocktypes, context )
     let loader = Loader( graphs, blocktypes, context )
     (let id:String, let graph:Graph) = loader.load( filename )?
-    let promise = Promise[JArr]
-    promise.next[None]( { (json: JArr) => 
+    let promise = Promise[JObj]
+    promise.next[None]( { (json: JObj) => 
       context(Fine) and context.log( "Topology Description" )
       context.to_stdout( json.string() ) 
       graphs.shutdown()

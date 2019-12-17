@@ -1,9 +1,9 @@
 
 use "../../blocktypes"
 use "jay"
-use "websocket"
+use "../../web"
 
 class ListMessage
     
-  fun apply( connection: WebSocketConnection, blocktypes: BlockTypes ) =>
+  fun apply( connection: WebSocketSender, blocktypes: BlockTypes ) =>
     ComponentMessage( connection, blocktypes )

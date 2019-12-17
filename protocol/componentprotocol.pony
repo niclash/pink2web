@@ -2,7 +2,7 @@
 use "../blocktypes"
 use "./component"
 use "jay"
-use "websocket"
+use "../web"
 
 class val ComponentProtocol
   let _blocktypes: BlockTypes
@@ -10,11 +10,10 @@ class val ComponentProtocol
   new val create( blocktypes: BlockTypes ) =>
     _blocktypes = blocktypes
     
-  fun execute( connection: WebSocketConnection, command: String, payload: JObj ) =>
+  fun execute( connection: WebSocketSender, command: String, payload: JObj ) =>
     match command
     |   "list" => ListMessage(connection, _blocktypes)
     |   "getsource" => GetSourceMessage(connection, _blocktypes, payload )
-    |   "source" => None
     else
-      connection.send_text( Message.err( "component", "Unknown command in runtime protocol: " + command ).string() )
+      connection.send_text( Message.err( "component", "Invalid command: " + command ).string() )
     end

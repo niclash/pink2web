@@ -1,17 +1,23 @@
 
 use "jay"
-use "websocket"
+use "../graphs"
+use "../system"
+use "../web"
 use "./runtime"
 
 class val RuntimeProtocol
-  let _runtime: RuntimeMessage
+  let _runtime:RuntimeMessage
+  let _getruntime:GetRuntimeMessage
+  let _graphs:Graphs
   
-  new val create( runtime:RuntimeMessage ) =>
+  new val create( runtime:RuntimeMessage, graphs:Graphs, context:SystemContext ) =>
     _runtime = runtime
+    _graphs = graphs
+    _getruntime = GetRuntimeMessage(context)
 
-  fun execute( connection: WebSocketConnection, command: String, payload: JObj ) =>
+  fun execute( connection: WebSocketSender, command: String, payload: JObj ) =>
     match command
-    |   "getruntime" => GetRuntimeMessage(connection, _runtime)
+    |   "getruntime" => _getruntime(connection, _graphs, _runtime)
     else
-      connection.send_text( Message.err( "runtime", "Unknown command in runtime protocol: " + command ).string() )
+      connection.send_text( Message.err( "runtime", "Invalid command: " + command ).string() )
     end

@@ -58,9 +58,9 @@ actor Graphs
     end
     promise( consume result )
 
-  be create_graph( id: String, name: String, description: String, library: String, icon: String, main: Bool ) =>
-    _context(Fine) and _context.log("Graphs.create(" + id  +"," + name +"," + description + "," + library +","  + icon + "," + main.string() + ")")
-    let graph = Graph( this, id, name, description, library, icon, _blocktypes, _context )
+  be create_graph( id: String, name: String, description: String, icon: String, main: Bool ) =>
+    _context(Fine) and _context.log("Graphs.create(" + id  +"," + name +"," + description + "," + icon + "," + main.string() + ")")
+    let graph = Graph( this, id, name, description, icon, _blocktypes, _context )
     register_graph( id, name, graph )
     
   be register_graph( id:String, name: String, graph: Graph ) =>
@@ -106,28 +106,40 @@ actor Graphs
       s.err( type', message ) 
     end
     
-  be _added(graph: String, block:String, component:String, x:I64, y:I64) =>
-    _context.log( "added: " + graph + " : " + block + " : " + component + " : (" + x.string() + "," + y.string() + ")" )
+  be _added_block(graph: String, block:String, component:String, x:I64, y:I64) =>
+    _context.log( "added block: " + graph + " : " + block + " : " + component + " : (" + x.string() + "," + y.string() + ")" )
     for s in _subscribers.values() do 
       s.added_block( graph, block, component, x, y ) 
     end
     
-  be _removed(graph: String, block:String) =>
-    _context.log( "removed: " + graph + " : " + block )
+  be _removed_block(graph: String, block:String) =>
+    _context.log( "removed block: " + graph + " : " + block )
     for s in _subscribers.values() do 
       s.removed_block( graph, block ) 
     end
   
-  be _renamed(graph:String, from:String, to:String) =>
-    _context.log( "renamed: " + graph + " : " + from + " -> " + to )
+  be _renamed_block(graph:String, from:String, to:String) =>
+    _context.log( "renamed block: " + graph + " : " + from + " -> " + to )
     for s in _subscribers.values() do 
       s.renamed_block( graph, from, to ) 
     end
 
-  be _changed(graph: String, block:String, x:I64, y:I64) =>
-    _context.log( "changed: " + graph + " : " + block + " : (" + x.string() + "," + y.string() + ")" )
+  be _changed_block(graph: String, block:String, x:I64, y:I64) =>
+    _context.log( "changed block: " + graph + " : " + block + " : (" + x.string() + "," + y.string() + ")" )
     for s in _subscribers.values() do 
       s.changed_block( graph, block, x, y ) 
+    end
+
+  be _added_connection(graph: String, from_block:String, from_output:String, to_block:String, to_input:String) =>
+    _context.log( "added connection: " + graph + " : "  + from_block + "." + from_output + " ==> " + to_block + "." + to_input )
+    for s in _subscribers.values() do 
+      s.added_connection(graph, from_block, from_output, to_block, to_input) 
+    end
+    
+  be _removed_connection(graph: String, from_block:String, from_output:String, to_block:String, to_input:String) =>
+    _context.log( "removed connection: " + graph + " : "  + from_block + "." + from_output + " ==> " + to_block + "." + to_input )
+    for s in _subscribers.values() do 
+      s.removed_connection(graph, from_block, from_output, to_block, to_input) 
     end
     
   be _started(graph: String, time_started:PosixDate val, started':Bool, running:Bool, debug:Bool) =>

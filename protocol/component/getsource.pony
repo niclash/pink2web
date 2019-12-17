@@ -1,10 +1,10 @@
 
 use "../../blocktypes"
 use "jay"
-use "websocket"
+use "../../web"
 
 class GetSourceMessage
 
-  fun apply( connection: WebSocketConnection, blocktypes: BlockTypes, payload: JObj ) =>
+  fun apply( connection: WebSocketSender, blocktypes: BlockTypes, payload: JObj ) =>
     SourceMessage( connection, blocktypes, payload )
 

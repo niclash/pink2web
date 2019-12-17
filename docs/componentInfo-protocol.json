@@ -2,34 +2,50 @@
     "protocol": "component",
     "command": "component",
     "payload": {
-        "name": "Add",
-        "description": "Adding 2 inputs",
-        "subgraph": false,
-        "icon": "coffee",
-        "inPorts": [
-            {
-                "id": "in1",
-                "type": "number",
-                "description": "Input port",
-                "addressable": false,
-                "required": false
-            },
-            {
-                "id": "in2",
-                "type": "double",
-                "description": "Input port",
-                "addressable": false,
-                "required": false
-            }
-        ],
-        "outPorts": [
-            {
-                "id": "out",
-                "type": "double",
-                "description": "Output port",
-                "addressable": false,
-                "required": false
-            }
-        ]
+        "vco": {
+            "name": "VCO",
+            "description": "VCO",
+            "icon": "plus",
+            "subgraph": false,
+            "inPorts": [
+                {
+                    "id": "freq",
+                    "description": "Frequency input",
+                    "type": "number",
+                    "required": false,
+                    "addressable": false
+                },
+                {
+                    "id": "ampl",
+                    "description": "Amplitude input",
+                    "type": "number",
+                    "required": false,
+                    "addressable": false
+                },
+                {
+                    "id": "mute",
+                    "description": "Mute input",
+                    "type": "bool",
+                    "required": false,
+                    "addressable": false
+                },
+                {
+                    "id": "mute",
+                    "description": "Frequency input",
+                    "type": "bool",
+                    "required": false,
+                    "addressable": false
+                }
+            ],
+            "outPorts": [
+                {
+                    "id": "out",
+                    "description": "Output",
+                    "type": "number",
+                    "required": false,
+                    "addressable": false
+                }
+            ]
+        }
     }
 }

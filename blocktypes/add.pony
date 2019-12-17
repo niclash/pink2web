@@ -8,8 +8,8 @@ use "../system"
 actor AddBlock is Block
   var _name: String
   let _descriptor: BlockTypeDescriptor
-  let _input1: Input[Number]
-  let _input2: Input[Number]
+  let _input1: Input[F64]
+  let _input2: Input[F64]
   let _output: Output[F64]
   let _context:SystemContext
   var _started:Bool = false
@@ -24,14 +24,13 @@ actor AddBlock is Block
     _x = x
     _y = y
     let zero:F64 = 0.0
-    _input1 = InputImpl[Number]( name, _descriptor.input(0), zero )
-    _input2 = InputImpl[Number]( name, _descriptor.input(1), zero )
+    _input1 = InputImpl[F64]( name, _descriptor.input(0), zero )
+    _input2 = InputImpl[F64]( name, _descriptor.input(1), zero )
     _output = OutputImpl[F64]( name, _descriptor.output(0), zero )
 
   be change( x:I64, y:I64 ) =>
     _x = x
     _y = y
-    
     
   be start() =>
     _context(Fine) and _context.log("start()")
@@ -66,7 +65,7 @@ actor AddBlock is Block
   be rename( new_name: String ) =>
     _name = new_name
     
-  be update(input: String, new_value: Linkable) =>
+  be update(input: String, new_value:Linkable) =>
     _context(Fine) and _context.log("Add[ " + _name + "." + input + " = " + new_value.string() + " ]")
     match new_value
     | let v: F64 => 
@@ -97,6 +96,7 @@ actor AddBlock is Block
     let out = _output.describe()
     let m = JObj
       + ("name", _name )
+      + ("type", _descriptor.name() )
       + ("started", _started )
       + ("input1", in1 )
       + ("input2", in2 )

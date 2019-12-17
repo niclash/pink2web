@@ -40,9 +40,8 @@ class Loader
       end
     end
     let description = try root("description") as String else "<unknown>" end
-    let library = try root("library") as String else "<unknown>" end
     let icon = try root("icon") as String else "<unknown>" end
-    let graph = Graph( _graphs, id, name, description, library, icon, _blocktypes, _context )
+    let graph = Graph( _graphs, id, name, description, icon, _blocktypes, _context )
     _graphs.register_graph( id, name, graph )
     
     try

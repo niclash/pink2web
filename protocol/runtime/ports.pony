@@ -1,20 +1,20 @@
 use "jay"
 use "promises"
-use "websocket"
+use "../../web"
 use "../../graphs"
 
 primitive PortsMessage
     
-  fun apply( graph: Graph, conn: WebSocketConnection ) =>
-    let promise = Promise[String]
-    promise.next[None]( { (name: String) => 
-        let text = "{ \"graph\": \"" + name +"\"," + 
+  fun apply( graph: Graph, conn: WebSocketSender ) =>
+    let promise = Promise[GraphDescriptor]
+    promise.next[None]( { (descr: GraphDescriptor) => 
+        let text = "{ \"graph\": \"" + descr.name +"\"," + 
           "\"inPorts\": [], " + 
           "\"outPorts\": []" + 
         " }\n"
         conn.send_text( text )
     } )
-    graph.name( promise )
+    graph.descriptor( promise )
     
     
     

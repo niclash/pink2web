@@ -1,12 +1,12 @@
 use "jay"
 use "promises"
-use "websocket"
+use "../../web"
 use ".."
 use "../../graphs"
 
 class StatusMessage
 
-  fun reply( connection: WebSocketConnection, graph: String, uptime:I64, started:Bool, running:Bool, debug:Bool ) =>
+  fun reply( connection: WebSocketSender, graph: String, uptime:I64, started:Bool, running:Bool, debug:Bool ) =>
     let json = JObj 
       + ("graph", graph)
       + ("uptime", uptime)

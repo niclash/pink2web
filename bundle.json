@@ -2,10 +2,6 @@
   "deps": [
     {
       "type": "github",
-      "repo": "ponylang/http"
-    },
-    {
-      "type": "github",
       "repo": "ponylang/net-ssl"
     },
     {
@@ -27,6 +23,14 @@
     {
       "type": "github",
       "repo": "ponylang/net-ssl"
+    },
+    {
+      "type": "github",
+      "repo": "ponylang/http"
+    },
+    {
+      "type": "github",
+      "repo": "niclash/jennet"
     },
     {
       "type": "github",

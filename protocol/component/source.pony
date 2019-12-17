@@ -1,12 +1,12 @@
 
 use "../../blocktypes"
 use "jay"
-use "websocket"
+use "../../web"
 use ".."
 
 class SourceMessage
 
-  fun apply( connection: WebSocketConnection, blocktypes: BlockTypes, payload: JObj ) =>
+  fun apply( connection: WebSocketSender, blocktypes: BlockTypes, payload: JObj ) =>
     let json = JObj 
       + ("name", "main2" )
       + ("language", "json" )

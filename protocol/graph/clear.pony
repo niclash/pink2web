@@ -1,21 +1,34 @@
 
 use "jay"
-use "websocket"
+use "../../web"
 use "../../graphs"
 use ".."
 
 primitive ClearMessage
 
-  fun apply( connection: WebSocketConnection, graphs: Graphs, payload: JObj ) =>
+  fun apply( connection: WebSocketSender, graphs: Graphs, payload: JObj ) =>
     try
       let id = payload( "id" ) as String
-      let name = payload( "name" ) as String
-      let description = payload( "description" ) as String
-      let library = payload( "library" ) as String
-      let icon = payload( "icon" ) as String
       let main = payload( "main" ) as Bool
-      graphs.create_graph( id, name, description, library, icon, main )
-      connection.send_text( Message( "graph", "clear", payload).string() )
+      var name = _get_name(payload)
+      let description = try payload( "description" ) as String else "" end
+      let library = try payload( "library" ) as String else "" end
+      let icon = try payload( "icon" ) as String else "" end
+      graphs.create_graph( id, name, description, icon, main )
+      let p = payload("name") = name
+      connection.send_text( Message( "graph", "clear", p).string() )
     else
       connection.send_text( Message.err( "graph", "Invalid payload structure." ).string() )
+    end
+
+  fun _get_name( payload:JObj ): String =>
+    try 
+      let name = payload( "name" ) as String 
+      if name == "" then 
+        "NoFlo runtime" 
+      else 
+        name
+      end
+    else 
+      "NoFlo runtime" 
     end

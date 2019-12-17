@@ -1,12 +1,12 @@
 use "jay"
 use "promises"
-use "websocket"
+use "../../web"
 use ".."
 use "../../graphs"
 
-class RenameNodeMessage
+primitive RenameNodeMessage
 
-  fun apply( connection: WebSocketConnection, graphs: Graphs, payload: JObj ) =>
+  fun apply( connection: WebSocketSender, graphs: Graphs, payload: JObj ) =>
     try
       let from = payload("from") as String
       let to = payload("to") as String
@@ -20,7 +20,7 @@ class RenameNodeMessage
       connection.send_text( Message.err( "graph", "Invalid payload" ).string() )
     end
 
-  fun reply(connection: WebSocketConnection, graph:String, from:String, to:String ) =>
+  fun reply(connection: WebSocketSender, graph:String, from:String, to:String ) =>
     let json = JObj
       + ("graph", graph)
       + ("from", from )

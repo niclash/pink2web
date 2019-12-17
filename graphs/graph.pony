@@ -13,61 +13,53 @@ actor Graph
   let _graphs:Graphs
   let _blocks: Map[String,Block tag] 
   let _block_types: MapIs[Block tag, BlockTypeDescriptor val] 
+  let _descriptor: GraphDescriptor
   
-  let _id: String
-  let _name: String
-  let _description: String
-  let _icon: String
-  let _library: String
   var _time_started:PosixDate val= recover val PosixDate end
   var _started: Bool = false
   var _running: Bool = false
   var _debug: Bool = false
   var _uptime: I64 = 0  // in seconds
   
-  new create(graphs:Graphs, id': String, name': String, description':String, library': String, icon': String, types: BlockTypes, context: SystemContext) =>
+  new create(graphs:Graphs, id': String, name': String, description':String, icon': String, types: BlockTypes, context: SystemContext) =>
     _graphs = graphs
-    _id = id'
-    _name = name'
-    _description = description'
-    _library = library'
-    _icon = icon'
+    _descriptor = GraphDescriptor( id', name', description', icon' )
     _context = context
     _types = types
     _blocks = Map[String,Block tag]
     _block_types = MapIs[Block tag, BlockTypeDescriptor val]
 
   be start() =>
-    _context.log( "Starting graph: " + _name )
+    _context.log( "Starting graph: " + _descriptor.name )
     _time_started = DateTime.now()
     _started = true
     for block in _blocks.values() do
       block.start()
     end
     _running = true
-    _graphs._started( _id, _time_started, _started, _running, _debug )
+    _graphs._started(_descriptor.id, _time_started, _started, _running, _debug)
     
   be stop() =>
     _stop()
     
   fun ref _stop() =>
-    _context.log( "Stopping graph: " + _name )
+    _context.log( "Stopping graph: " + _descriptor.name )
     _running = false
     for block in _blocks.values() do
       block.stop()
     end
-    _graphs._stopped(_id, _time_started, _started, _running, _uptime, _debug)
+    _graphs._stopped(_descriptor.id, _time_started, _started, _running, _uptime, _debug)
     
   be destroy() =>
     if _running then _stop() end
-    _context.log( "Destroying graph: " + _name )
+    _context.log( "Destroying graph: " + _descriptor.name )
     for block in _blocks.values() do
       block.destroy()
     end
     _blocks.clear()
     
   be status() =>
-    _graphs._status( _id, _uptime, _running, _started, _debug )
+    _graphs._status(_descriptor.id, _uptime, _running, _started, _debug )
     
   be tick() =>
     if _running then
@@ -83,17 +75,25 @@ actor Graph
   be register_block(block:Block, name':String, blocktype: BlockTypeDescriptor) =>
     _register_block(block, name', blocktype)
     
+  be set_initial( block':String, input:String, initial_value:Linkable) =>
+    try
+      let block = _blocks( block' )?
+      block.update( input, initial_value )
+    else
+      _graphs._error( "graph", "Unknown Node: " + block' )
+    end
+  
   fun ref _register_block(block:Block tag, name':String, blocktype: BlockTypeDescriptor) =>
     _blocks( name' ) = block
     _block_types(block) = blocktype
-    _graphs._added(_id, name', blocktype.name(), 0, 0)
+    _graphs._added_block(_descriptor.id, name', blocktype.name(), 0, 0)
     _context(Info) and _context.log("Available Blocks: " + _available_blocks() )
 
   be change_block( name':String, x:I64, y:I64 ) =>
     try
       let block = _blocks( name' )?
       block.change(x, y)
-      _graphs._changed( _id, name', x, y )
+      _graphs._changed_block(_descriptor.id, name', x, y )
     else
       _graphs._error( "graph", "Unknown Node" )
     end
@@ -111,7 +111,7 @@ actor Graph
       try
         _block_types.remove( block )?
       end
-      _graphs._removed(_id, name')
+      _graphs._removed_block(_descriptor.id, name')
     end
     
   be rename_block( from': String, to': String ) =>
@@ -124,7 +124,7 @@ actor Graph
         (let block', let type') = _block_types.remove(block)?
         block.rename(to')
         register_block(block, to', type')
-        _graphs._renamed(_id, from', to')
+        _graphs._renamed_block(_descriptor.id, from', to')
       end
     end
     
@@ -133,6 +133,7 @@ actor Graph
         let src:Block tag = _get_block(src_block)?
         let dest:Block tag = _get_block(dest_block)?
         src.connect( src_output, dest, dest_input )
+        _graphs._added_connection(_descriptor.id, src_block, src_output, dest_block, dest_input )
         _context(Info) and _context.log("connected:" + src_block + "." + src_output + " ==> " + dest_block + "." + dest_input )
     else
       _context(Error) and _context.log("Unable to connect " + src_block + "." + src_output + " to " + dest_block + "." + dest_input )
@@ -160,8 +161,9 @@ actor Graph
     try
         let src:Block tag = _blocks(src_block)?
         let dest:Block tag = _blocks(dest_block)?
-        src.disconnect_edge( src_output, dest, dest_input )
+        src.disconnect_edge(src_output, dest, dest_input)
         _context(Info) and _context.log("connected:" + src_block + "." + src_output + " ==> " + dest_block + "." + dest_input )
+        _graphs._removed_connection(_descriptor.id, src_block, src_output, dest_block, dest_input)
     else
       _context(Error) and _context.log("Unable to connect " + src_block + "." + src_output + " to " + dest_block )
     end
@@ -189,10 +191,10 @@ actor Graph
     end
     promise( consume result )
     
-  be name( promise: Promise[String val] ) =>
-    promise(_name)
+  be descriptor( promise: Promise[GraphDescriptor] ) =>
+    promise(_descriptor)
     
-  be describe( promise: Promise[ JArr val ] tag ) =>
+  be describe( promise: Promise[JObj] tag ) =>
     _context(Fine) and _context.log("Graph.describe()")
     let promises = Array[Promise[JObj val] tag]
     for (blockname, block) in _blocks.pairs() do
@@ -201,19 +203,43 @@ actor Graph
       _context(Fine) and _context.log("Make a describe to " + blockname )
       block.describe(p)
     end
-    let root = Promise[JObj val]
-    root.join(promises.values()).next[None]( 
-      {
-        (a: Array[JObj val] val) =>
-          _context(Fine) and _context.log("Blocks are done..." )
+    try
+      let root = promises.pop()?
+      root.join(promises.values()).next[None]( 
+        {
+          (a: Array[JObj val] val) =>
+            _context(Fine) and _context.log("Blocks are done..." )
         
-          var result = JArr
-          for s in a.values() do
-            _context(Fine) and _context.log("Block is reporting " + s.string() )
-            result = result + s
-          end
-          promise( result )
-      }      
-    )
-    root(JObj)
+            var result = JArr
+            for s in a.values() do
+              _context(Fine) and _context.log("Block is reporting " + s.string() )
+              result = result + s
+            end
+            _context.log("Describe Graph:" + result.string() )
+            var block' = _descriptor.to_json()
+            block' = block' + ("blocks", result)
+            promise(block')
+        }      
+      )
+      root(JObj)
+    else
+      var block' = _descriptor.to_json()
+      block' = block' + ("blocks", JArr)
+      promise(block')
+    end
 
+class val GraphDescriptor
+  let id:String
+  let name:String
+  let description: String
+  let icon: String
+  
+  new val create( id':String, name':String val, description':String, icon':String ) =>
+    id = id'
+    name = name'
+    description = description'
+    icon = icon'
+
+  fun to_json():JObj =>
+    JObj + ("id",id) + ("name",name) + ("description",description) + ("icon", icon)
+    

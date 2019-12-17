@@ -13,6 +13,10 @@ interface val GraphNotify is Equatable[GraphNotify]
   
   fun removed_block(graph:String, block:String)
 
+  fun added_connection(graph:String, from_block:String, from_output:String, to_block:String, to_input:String)
+  
+  fun removed_connection(graph:String, from_block:String, from_output:String, to_block:String, to_input:String)
+
   fun started(graph: String, time_started:PosixDate val, started':Bool, running:Bool, debug:Bool)
   
   fun stopped(graph: String, time_started:PosixDate val, uptime:I64, started':Bool, running:Bool, debug:Bool)

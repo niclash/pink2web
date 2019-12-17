@@ -1,12 +1,12 @@
 use "jay"
 use "promises"
-use "websocket"
+use "../../web"
 use ".."
 use "../../graphs"
 
 class GetStatusMessage
 
-  fun apply( connection: WebSocketConnection, graphs: Graphs, payload: JObj ) =>
+  fun apply( connection: WebSocketSender, graphs: Graphs, payload: JObj ) =>
     try
       let graph = payload("graph") as String
       let promise = Promise[ Graph ]

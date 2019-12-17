@@ -1,11 +1,11 @@
 
 use "../../blocktypes"
 use "jay"
-use "websocket"
+use "../../web"
 
 class ComponentMessage
     
-  fun apply( connection: WebSocketConnection, blocktypes: BlockTypes ) =>
+  fun apply( connection: WebSocketSender, blocktypes: BlockTypes ) =>
     let components = blocktypes.list_types()
     for descriptor in components.values() do
       let payload: JObj = descriptor.describe()
