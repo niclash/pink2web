@@ -142,7 +142,7 @@ class val AddBlockDescriptor is BlockTypeDescriptor
     end
     
   fun val name(): String =>
-    "Add"
+    "math/Add"
     
   fun val description(): String =>
     "Adds two input and outputs the sum."

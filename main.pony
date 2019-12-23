@@ -6,6 +6,7 @@ use "./system"
 use "./web"
 use "cli"
 use "collections"
+use "files"
 use "jay"
 use "logger"
 use "promises"
@@ -60,7 +61,7 @@ actor Main
                 let ws_port:String val = (port+1).string()
                 _websocketListener = WebSocketListener(auth,ListenNotify(fbp,context),host,ws_port)
                 context(Info) and context.log("Started to listen: ws://"+host+":"+ws_port)
-                _rest = RestServer(host, port, "/home/niclas/dev/pony/pink2web/ui", context )
+                _rest = RestServer(host, port,  Path.cwd(), context )
             | "pink2web/describe/type" => describe_type(c.arg("typename" ).string(),blocktypes,context)
             | "pink2web/describe/topology" => 
                 describe_topology(c.arg("filename" ).string(),blocktypes,context)?
