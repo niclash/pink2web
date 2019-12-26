@@ -24,14 +24,19 @@
 ## BlockTypes Library
 The following block types are needed
 
-* Add
-* Subtract
-* Multiply
+* Add4
+* Subtract4
+* Multiply4
 * Divide
-* And
-* Or
-* Xor
+* Nand4
+* And4
+* Or4
+* Nor4
+* Xor4
 * Not
+* Max4 (1)
+* Min4 (1)
+* Absolute (1)
 * Sine
 * Cosine
 * Tangent
@@ -46,22 +51,47 @@ The following block types are needed
 * Pi
 * Tau
 * e
+* Random (1)
 
 * PID
-* Weather
+* Curve (1)
+* WeatherInput (1)
 * Clock
 * Timer
 * Counter
+* Demux12 (1)
+* Starter (1)
+* AlarmPoint (1)
+* Mux12 (1)
 
-* DelayFilter
+* Gate (1)
 * Oneshot
 * Threshold
 * Hysteresis
 * Limit
 * Scale
+* AutoManual (1)
+* ManualOverride (1)
+* Choice (1)
+* SampleHold (1)
+* Delay (1)
+* Filter (1)
+* RsLatch (1)
+* RangeCheck (1)
+* DataSequencer (1)
+
+* EnergyMeter (1)
+* WaterMeter (1)
 
 * WeekSchedule
 * YearSchedule
+* Calendar (1)
+* OneCycle (1)
+* PeriodicCycle (1)
+
+* Statistics (1)
+* Reporting (1)
+* IndoorRegulator (1)
 
 * Hardware
     1. Link2Web Triac
@@ -71,6 +101,7 @@ The following block types are needed
     1. Link2Web LoRa
     
 * ModBus Master
+
 
 
 

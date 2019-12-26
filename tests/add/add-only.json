@@ -4,7 +4,7 @@
     ],
     "processes": {
         "block": {
-            "component": "math/Add"
+            "component": "math/Add4"
         }
     }
 }

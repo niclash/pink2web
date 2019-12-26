@@ -28,25 +28,25 @@
     ],
     "processes": {
         "block1": {
-            "component": "math/Add"
+            "component": "math/Add4"
         },
         "block2": {
-            "component": "math/Add"
+            "component": "math/Add4"
         },
         "block3": {
-            "component": "math/Add"
+            "component": "math/Add4"
         },
         "block4": {
-            "component": "math/Add"
+            "component": "math/Add4"
         },
         "block5": {
-            "component": "math/Add"
+            "component": "math/Add4"
         },
         "block6": {
-            "component": "math/Add"
+            "component": "math/Add4"
         },
         "block7": {
-            "component": "math/Add"
+            "component": "math/Add4"
         }
     }
 }

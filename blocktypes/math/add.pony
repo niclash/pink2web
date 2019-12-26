@@ -2,14 +2,17 @@ use "collections"
 use "jay"
 use "logger"
 use "promises"
-use "../graphs"
-use "../system"
+use ".."
+use "../../graphs"
+use "../../system"
 
 actor AddBlock is Block
   var _name: String
   let _descriptor: BlockTypeDescriptor
   let _input1: Input[F64]
   let _input2: Input[F64]
+  let _input3: Input[F64]
+  let _input4: Input[F64]
   let _output: Output[F64]
   let _context:SystemContext
   var _started:Bool = false
@@ -26,6 +29,8 @@ actor AddBlock is Block
     let zero:F64 = 0.0
     _input1 = InputImpl[F64]( _name, _descriptor.input(0), zero )
     _input2 = InputImpl[F64]( _name, _descriptor.input(1), zero )
+    _input3 = InputImpl[F64]( _name, _descriptor.input(2), zero )
+    _input4 = InputImpl[F64]( _name, _descriptor.input(3), zero )
     _output = OutputImpl[F64]( _name, _descriptor.output(0), zero )
 
   be change( x:I64, y:I64 ) =>
@@ -71,17 +76,21 @@ actor AddBlock is Block
     | let v: F64 => 
         if input == "input1" then _input1.set( v ) end
         if input == "input2" then _input2.set( v ) end
+        if input == "input3" then _input3.set( v ) end
+        if input == "input4" then _input4.set( v ) end
     | let v: String => 
       try
         if input == "input1" then _input1.set( v.f64()? ) end
         if input == "input2" then _input2.set( v.f64()? ) end
+        if input == "input3" then _input3.set( v.f64()? ) end
+        if input == "input4" then _input4.set( v.f64()? ) end
       end // ignore if we can't convert it. Later we introduce a error message channel.
     end
     refresh()
 
   be refresh() =>
     if _started then
-      let value : F64 = _input1.value().f64() + _input2.value().f64()
+      let value : F64 = _input1.value().f64() + _input2.value().f64() + _input3.value().f64() + _input4.value().f64()
       _output.set( value )
     end
     
@@ -98,15 +107,19 @@ actor AddBlock is Block
 class val AddBlockDescriptor is BlockTypeDescriptor
   let _in1:InputDescriptor
   let _in2:InputDescriptor
+  let _in3:InputDescriptor
+  let _in4:InputDescriptor
   let _out:OutputDescriptor
 
   new val create() =>
       _in1 = InputDescriptor("input1", PNum, "first term in addition", false, true )
       _in2 = InputDescriptor("input2", PNum, "second term in addition", false, true )
+      _in3 = InputDescriptor("input3", PNum, "second term in addition", false, true )
+      _in4 = InputDescriptor("input4", PNum, "second term in addition", false, true )
       _out = OutputDescriptor("output", PNum, "output=input1+input2", false, true )
 
   fun val inputs(): Array[InputDescriptor] val =>
-    [ _in1; _in2 ]
+    [ _in1; _in2; _in3; _in4 ]
 
   fun val outputs(): Array[OutputDescriptor] val =>
     [ _out ]
@@ -121,6 +134,8 @@ class val AddBlockDescriptor is BlockTypeDescriptor
     match index
     | 0 => _in1
     | 1 => _in2
+    | 2 => _in3
+    | 3 => _in4
     else
       InputDescriptor( "INVALID", PNum, "INVALID", false, false)
     end
@@ -133,7 +148,7 @@ class val AddBlockDescriptor is BlockTypeDescriptor
     end
     
   fun val name(): String =>
-    "math/Add"
+    "math/Add4"
     
   fun val description(): String =>
     "Adds two input and outputs the sum."
