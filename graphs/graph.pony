@@ -5,6 +5,7 @@ use "logger"
 use "promises"
 use "time"
 use "../blocktypes"
+use "../collectors"
 use "../system"
 
 actor Graph
@@ -196,37 +197,15 @@ actor Graph
     
   be describe( promise: Promise[JObj] tag ) =>
     _context(Fine) and _context.log("Graph.describe()")
-    let promises = Array[Promise[JObj val] tag]
-    for (blockname, block) in _blocks.pairs() do
-      let p = Promise[JObj val]
-      promises.push( p )
-      _context(Fine) and _context.log("Make a describe to " + blockname )
-      block.describe(p)
-    end
-    try
-      let root = promises.pop()?
-      root.join(promises.values()).next[None]( 
-        {
-          (a: Array[JObj val] val) =>
-            _context(Fine) and _context.log("Blocks are done..." )
-        
-            var result = JArr
-            for s in a.values() do
-              _context(Fine) and _context.log("Block is reporting " + s.string() )
-              result = result + s
-            end
-            _context.log("Describe Graph:" + result.string() )
-            var block' = _descriptor.to_json()
-            block' = block' + ("blocks", result)
-            promise(block')
-        }      
-      )
-      root(JObj)
-    else
+    Collector[Block,JObj]( _blocks.values(), { (b,p) => b.describe(p) }, { (a) => 
+      var result = JArr
+      for s in a.values() do
+        result = result + s
+      end
       var block' = _descriptor.to_json()
-      block' = block' + ("blocks", JArr)
+      block' = block' + ("blocks", result)
       promise(block')
-    end
+    })
 
 class val GraphDescriptor
   let id:String

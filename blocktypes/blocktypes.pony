@@ -4,6 +4,11 @@ use "promises"
 use "jay"
 use "../graphs"
 use "../system"
+use "../collectors"
+
+primitive _Helper
+  fun _add_component(factory:BlockFactory, types': Map[String,BlockFactory]) =>
+    types'(factory.block_type_descriptor().name()) = factory
 
 class val BlockTypes
   let _types: Map[String,BlockFactory] val
@@ -15,10 +20,11 @@ class val BlockTypes
     _dummy = recover DummyFactory end
     _types = recover 
       let types = Map[String,BlockFactory]
-      types("Add") = AddBlockFactory
+      _Helper._add_component(AddBlockFactory,types)
       types
     end
 
+    
   fun get(typename: String): BlockFactory =>
     _types.get_or_else( typename, _dummy )
     
@@ -65,3 +71,25 @@ trait val BlockTypeDescriptor
       + ("inPorts", inps)
       + ("outPorts", outps )
     json6
+
+primitive BlockDescription[INTYPES: Linkable, OUTTYPES:Linkable]
+  fun apply(promise:Promise[JObj], name':String, type':String, started':Bool, inputs': Array[Input[INTYPES]], outputs':Array[Output[OUTTYPES]] ) =>
+    var inputs = JArr
+    for inp in inputs'.values() do
+      inputs = inputs + inp.describe()
+    end
+    Collector[Output[OUTTYPES],JObj]( 
+        outputs'.values(), 
+        { (out, p) => out.describe(p) },
+        { (result) =>
+            var outputs = JArr
+            for out in result.values() do outputs = outputs + out end
+            let json = JObj
+            + ("name", name' )
+            + ("type", type' )
+            + ("started", started' )
+            + ("inputs", inputs )
+            + ("outputs", outputs )
+            promise( json )
+        }
+    )

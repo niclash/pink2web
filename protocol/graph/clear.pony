@@ -25,10 +25,10 @@ primitive ClearMessage
     try 
       let name = payload( "name" ) as String 
       if name == "" then 
-        "NoFlo runtime" 
+        "Pinkflow runtime" 
       else 
         name
       end
     else 
-      "NoFlo runtime" 
+      "Pinkflow runtime" 
     end

@@ -60,7 +60,7 @@ class val WebSocketSender is Equatable[WebSocketSender]
     _context = context
     
   fun send_text(text: String val) =>
-    _context.log( "  <== " + text )
+    _context.log( "\n  <== " + text )
     _connection.send_text(text)
 
   fun send_binary(data: Array[U8] val) =>

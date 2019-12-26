@@ -1,3 +1,4 @@
+use "promises"
 
 primitive PNum is Stringable
   fun string(): String iso^ => "number".string()
@@ -20,12 +21,16 @@ class Link[TYPE: Linkable val]
   let block: Block tag
   let input: String
   
-  new create( destBlock: Block tag, destInput: String ) =>
-    block = destBlock
-    input =  destInput
+  new create( dest_block: Block tag, dest_input: String ) =>
+    block = dest_block
+    input = dest_input
     
   fun update( new_value: Linkable ) =>
     block.update(input, new_value )
   
-  fun describe(): (String,Block tag) =>
-    (input, block)
+  fun describe( promise: Promise[String] tag ) =>
+    let p = Promise[String]
+    p.next[None]( { (name: String) =>
+      promise( name + "." + input )
+    })
+    block.name(p)

@@ -18,7 +18,6 @@ class val DummyFactory is BlockFactory
   fun describe(): JObj val =>
     recover JObj end
     
-
 class DummyDescriptor is BlockTypeDescriptor
   fun val inputs():  Array[InputDescriptor] val =>
     recover Array[InputDescriptor] end
@@ -33,7 +32,7 @@ class DummyDescriptor is BlockTypeDescriptor
     OutputDescriptor( "INVALID", PNum, "INVALID", false, false)
 
   fun val name(): String =>
-    "dummy"
+    "tests/dummy"
     
   fun val description(): String =>
     "dummy block created when missing type information is found in json files."
@@ -47,8 +46,8 @@ actor DummyBlock is Block
   let _context:SystemContext
   let _descriptor:BlockTypeDescriptor
   
-  new create( name: String, descriptor':BlockTypeDescriptor, context:SystemContext) =>
-    _name = name
+  new create( name': String, descriptor':BlockTypeDescriptor, context:SystemContext) =>
+    _name = name'
     _descriptor = descriptor'
     _context = context
   
@@ -75,6 +74,9 @@ actor DummyBlock is Block
 
   be refresh() =>
     None
+
+  be name( promise: Promise[String] tag ) =>
+    promise(_name)
 
   be describe( promise:Promise[JObj val] tag ) =>
     _context(Fine) and _context.log("describe")

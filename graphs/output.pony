@@ -1,9 +1,10 @@
 use "collections"
 use "jay"
+use "promises"
 use "../system"
 
 trait Output[TYPE: Linkable val]
-  fun ref set( newValue: TYPE val )
+  fun ref set( newValue: TYPE )
   fun value() : this->TYPE
   fun ref connect( dest: Block tag, input: String )
   fun ref disconnect_block( dest: Block tag )
@@ -11,7 +12,7 @@ trait Output[TYPE: Linkable val]
   fun ref disconnect_all()
   fun description() : String 
   fun ref set_description( new_description:String )
-  fun describe(): JObj val
+  fun describe( promise: Promise[JObj val] tag )
   
 class OutputImpl[TYPE: Linkable val] is Output[TYPE]
   var _value: TYPE
@@ -37,7 +38,7 @@ class OutputImpl[TYPE: Linkable val] is Output[TYPE]
     _value = newValue
 
   fun ref connect(dest_block: Block tag, input: String) =>
-    var link:Link[TYPE] val = recover Link[TYPE]( dest_block, input ) end
+    var link:Link[TYPE] val = recover Link[TYPE](dest_block, input) end
     _dest.push(link)
 
   fun ref disconnect_block( dest: Block ) =>
@@ -73,12 +74,38 @@ class OutputImpl[TYPE: Linkable val] is Output[TYPE]
   fun ref set_description( new_description: String ) =>
     _description = new_description
 
-  fun describe(): JObj val =>
-    let json = JObj
-      + ("id", _name )
-      + ("description", _description)
-      + ("descriptor", _descriptor.describe() )
-    json
+  fun describe( promise: Promise[JObj val] tag ) =>
+    let promises = Array[Promise[String val] tag]
+    for link in _dest.values() do
+      let p = Promise[String val]
+      link.describe( p )
+      promises.push(p)
+    end
+    try
+      let root = promises.pop()?
+      root.join(promises.values()).next[None]( { (result:Array[String val] val) => 
+        var links = JArr
+        for out in result.values() do 
+          links = links + out 
+        end
+        let j = JObj
+          + ("id", _name )
+          + ("value", _value.string() )
+          + ("links", links )
+          + ("description", _description)
+          + ("descriptor", _descriptor.describe() )
+        promise(j)
+      })
+    else
+      // there were no output links
+      let j = JObj
+          + ("id", _name )
+          + ("value", _value.string() )
+          + ("links", JArr )
+          + ("description", _description)
+          + ("descriptor", _descriptor.describe() )
+      promise(j)
+    end
     
 class val OutputDescriptor
   let name:String

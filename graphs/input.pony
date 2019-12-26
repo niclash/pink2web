@@ -40,6 +40,7 @@ class InputImpl[TYPE: Linkable val] is Input[TYPE]
   fun describe(): JObj val =>
     let j = JObj
       + ("id", _name)
+      + ("value", _value.string())
       + ("description", _description )
       + ("descriptor", _descriptor.describe() )
     j

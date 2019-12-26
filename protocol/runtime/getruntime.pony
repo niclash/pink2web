@@ -1,6 +1,7 @@
 use "jay"
 use "logger"
 use "promises"
+use "../graph"
 use "../../web"
 use "../../graphs"
 use "../../system"
@@ -44,9 +45,26 @@ class GraphParser
         let b = b' as JObj
         let block_id = b("name") as String
         let component = b("type") as String
-        let metadata = JObj
-        let block = JObj + ("id",block_id) + ("component", component) + ("metadata", metadata) + ("graph", name) + ("secret","1234")
-        _connection.send_text( Message( "graph", "addnode", block).string() )
+        AddNodeMessage.reply(_connection, id, block_id, component, 100, 100 )
+      end
+      for b' in blocks.values() do
+        let b = b' as JObj
+        let outputs = b("outputs") as JArr
+        for outp in outputs.values() do
+          let out = outp as JObj
+          let src_id = out("id") as String
+          let src = src_id.split(".")
+          let src_block = src(0)?
+          let src_output = src(1)?
+          let links = out("links") as JArr
+          for link in links.values() do
+            let link_name = link as String
+            let dest = link_name.split(".")
+            let dest_block = dest(0)?
+            let dest_input = dest(1)?
+            AddEdgeMessage.reply(_connection, id, src_block, src_output, dest_block, dest_input)
+          end
+        end
       end
     end
     

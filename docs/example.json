@@ -1,5 +1,5 @@
 {
-    "id": "main2", 
+    "id": "main", 
     "name": "pink2web main process", 
     "connections": [
         {
@@ -29,56 +29,56 @@
     ],
     "processes": {
         "block1": {
-            "component": "Add",
+            "component": "math/Add",
             "metadata": {
               "x": 10,
               "y": 10
             }
         },
         "block2": {
-            "component": "Add",
+            "component": "math/Add",
             "metadata": {
               "x": 10,
               "y": 30
             }
         },
         "block3": {
-            "component": "Add",
+            "component": "math/Add",
             "metadata": {
               "x": 30,
               "y": 20
             }
         },
         "block4": {
-            "component": "Add",
+            "component": "math/Add",
             "metadata": {
               "x": 10,
               "y": 50
             }
         },
         "block5": {
-            "component": "Add",
+            "component": "math/Add",
             "metadata": {
               "x": 10,
               "y": 70
             }
         },
         "block6": {
-            "component": "Add",
+            "component": "math/Add",
             "metadata": {
               "x": 30,
               "y": 60
             }
         },
         "block7": {
-            "component": "Add",
+            "component": "math/Add",
             "metadata": {
               "x": 50,
               "y": 40
             }
         },
         "block8": {
-            "component": "Add",
+            "component": "math/Add",
             "metadata": {
               "x": 0,
               "y": 0

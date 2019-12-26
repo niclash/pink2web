@@ -16,17 +16,17 @@ actor AddBlock is Block
   var _x:I64
   var _y:I64
   
-  new create(name: String, descriptor': BlockTypeDescriptor, context:SystemContext, x:I64, y:I64 ) =>
-    context(Fine) and context.log("create("+name+")")
+  new create(name': String, descriptor': BlockTypeDescriptor, context:SystemContext, x:I64, y:I64 ) =>
+    context(Fine) and context.log("create("+name'+")")
     _context = context
-    _name = name
+    _name = name'
     _descriptor = descriptor'
     _x = x
     _y = y
     let zero:F64 = 0.0
-    _input1 = InputImpl[F64]( name, _descriptor.input(0), zero )
-    _input2 = InputImpl[F64]( name, _descriptor.input(1), zero )
-    _output = OutputImpl[F64]( name, _descriptor.output(0), zero )
+    _input1 = InputImpl[F64]( _name, _descriptor.input(0), zero )
+    _input2 = InputImpl[F64]( _name, _descriptor.input(1), zero )
+    _output = OutputImpl[F64]( _name, _descriptor.output(0), zero )
 
   be change( x:I64, y:I64 ) =>
     _x = x
@@ -81,28 +81,19 @@ actor AddBlock is Block
 
   be refresh() =>
     if _started then
-      _context(Fine) and _context.log("refresh()")
       let value : F64 = _input1.value().f64() + _input2.value().f64()
       _output.set( value )
     end
     
+  be name( promise: Promise[String] tag ) =>
+    promise(_name)
+
   be descriptor( promise: Promise[BlockTypeDescriptor] tag ) =>
     promise(_descriptor)
 
   be describe( promise:Promise[JObj val] tag ) =>
-    _context(Fine) and _context.log("describe")
-    let in1 = _input1.describe()
-    let in2 = _input2.describe()
-    let out = _output.describe()
-    let m = JObj
-      + ("name", _name )
-      + ("type", _descriptor.name() )
-      + ("started", _started )
-      + ("input1", in1 )
-      + ("input2", in2 )
-      + ("output", out )
-    _context(Fine) and _context.log( "Reporting " + m.string() )
-    promise(m)
+    BlockDescription[F64,F64](promise, _name, _descriptor.name(), _started, [_input1; _input2], [_output] )
+
     
 class val AddBlockDescriptor is BlockTypeDescriptor
   let _in1:InputDescriptor

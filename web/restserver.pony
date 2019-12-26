@@ -11,7 +11,7 @@ actor RestServer
   new create( host': String, port': U32, basedir:String, context: SystemContext ) =>
     context.log("Rest Server starting on: " + host' + ":" + port'.string())
     let auth = context.auth()
-    let jennet = Jennet(auth, context.stdout(), port'.string())
+    let jennet = Jennet(auth, context.stdout(), host', port'.string())
     jennet.get("/", RedirectTo("editor/index.html" ) )
     jennet.serve_dir(auth, "/css/*filepath", basedir + "/ui/css")
     jennet.serve_dir(auth, "/js/*filepath", basedir + "/ui/js")

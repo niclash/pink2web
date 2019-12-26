@@ -6,7 +6,7 @@ use "../system"
 use "../blocktypes"
 
 trait val BlockFactory
-  fun create_block( name: String, context:SystemContext val, x:I64, y:I64): Block tag
+  fun create_block( name': String, context:SystemContext val, x:I64, y:I64): Block tag
   
   fun val block_type_descriptor(): BlockTypeDescriptor
   
@@ -33,6 +33,8 @@ trait tag Block
   be start()
 
   be stop()
+  
+  be name( promise: Promise[String] tag )
   
   be describe( promise: Promise[JObj] tag )
   
