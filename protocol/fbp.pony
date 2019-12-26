@@ -76,7 +76,7 @@ class val Fbp
 class val Subscription is GraphNotify
   let _connection: WebSocketSender val
   
-  new val create( conn: WebSocketSender val) =>
+  new val create(conn: WebSocketSender val) =>
     _connection = conn
     
   fun err( type':String, message:String ) =>
@@ -120,5 +120,3 @@ class val Subscription is GraphNotify
         false
       end
     end
-    
-

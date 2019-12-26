@@ -31,6 +31,5 @@ primitive ChangeNodeMessage
       + ("id", block )
       + ("graph", graph )
       + ("metadata", meta )
-    
     connection.send_text( Message("graph", "changenode", json).string() )
       

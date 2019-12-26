@@ -42,14 +42,14 @@ class iso _BlockTest is UnitTest
   
     // 0. set up test application
     let testcase:Array[(Array[(String,String)] val,Assertion, Graph)] = setup( h )?
-    h.long_test(1000000000)  // indicate long test.
+    h.long_test(100000000)  // indicate long test.
     
     // 1. For each topology
     for (inputs,assertion,graph) in testcase.values() do
       
       // The following construct is to ensure that all blocks in the topology has started before we start inputting data
-      let promise = Promise[JArr]
-      promise.next[None]( { (json: JArr) => 
+      let promise = Promise[JObj]
+      promise.next[None]( { (json: JObj) => 
         assertion.run( inputs, graph )
       } )
       graph.describe( promise )
@@ -62,7 +62,8 @@ class iso _BlockTest is UnitTest
     let env:Env = h.env
     let context = SystemContext(env, Warn)?
     let blocktypes = BlockTypes(context)
-    let loader = Loader(blocktypes, context)
+    let graphs = Graphs( blocktypes, context )
+    let loader = Loader(graphs, blocktypes, context)
     let root: JObj = parse_test(_pathname, env)?
     let result = Array[(Array[(String,String)] val,Assertion, Graph)]
     for test_descr in root.keys() do
@@ -70,11 +71,12 @@ class iso _BlockTest is UnitTest
       let topology = unittest("topology") as String
       (let dir, let file) = Path.split(_pathname)
       let testdefinition = Path.join(dir,topology)
-      let test_graph = loader.load( testdefinition )?
+      (let graph_name, let test_graph) = loader.load( testdefinition )?
 
       let factory = AssertionFactory(h)
-      let assertion_block = factory.create_block("assertions", context) as Assertion
-      test_graph.register_block( assertion_block, "assertions", factory.block_type_descriptor() )
+      let assertion_block = factory.create_block("assertions", context, 50, 50) as Assertion
+      let descriptor = factory.block_type_descriptor()
+      test_graph.register_block( assertion_block, "assertions", descriptor )
       
       let inputs: JArr val = unittest("inputs") as JArr
       let feed = recover val 
@@ -99,11 +101,10 @@ class iso _BlockTest is UnitTest
             let typ:String = output_value("type") as String
             let expected:String = output_value("value") as String
             match typ
-            | "F64" => e.push( expected.f64()? )
-            | "U64" => e.push( expected.u64()? )
-            | "I32" => e.push( expected.i32()? )
-            | "Bool" => e.push( expected.bool()? )
-            | "String" => e.push( expected )
+            | "nil" => e.push( None )
+            | "number" => e.push( expected.f64()? )
+            | "bool" => e.push( expected.bool()? )
+            | "text" => e.push( expected )
             else
               h.fail("Test harness contains unknown type: " + typ )
             end

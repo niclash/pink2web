@@ -21,24 +21,24 @@
         { "block.input2": "32769"}
     ],
     "expects": [
-      { "block.output": { "type": "F64", "value": "1" } },
-      { "block.output": { "type": "F64", "value": "-1" } },
-      { "block.output": { "type": "F64", "value": "0" } },
-      { "block.output": { "type": "F64", "value": "1" } },
-      { "block.output": { "type": "F64", "value": "2" } },
-      { "block.output": { "type": "F64", "value": "32768" } },
-      { "block.output": { "type": "F64", "value": "-65535" } },
-      { "block.output": { "type": "F64", "value": "-32767" } },
-      { "block.output": { "type": "F64", "value": "1.1" } },
-      { "block.output": { "type": "F64", "value": "0.9" } },
+      { "block.output": { "type": "number", "value": "1" } },
+      { "block.output": { "type": "number", "value": "-1" } },
+      { "block.output": { "type": "number", "value": "0" } },
+      { "block.output": { "type": "number", "value": "1" } },
+      { "block.output": { "type": "number", "value": "2" } },
+      { "block.output": { "type": "number", "value": "32768" } },
+      { "block.output": { "type": "number", "value": "-65535" } },
+      { "block.output": { "type": "number", "value": "-32767" } },
+      { "block.output": { "type": "number", "value": "1.1" } },
+      { "block.output": { "type": "number", "value": "0.9" } },
       
-      { "block.output": { "type": "F64", "value": "0.0" } },
-      { "block.output": { "type": "F64", "value": "0.9" } },
-      { "block.output": { "type": "F64", "value": "-32767.1" } },
-      { "block.output": { "type": "F64", "value": "-32768.1" } },
-      { "block.output": { "type": "F64", "value": "32766.9" } },
-      { "block.output": { "type": "F64", "value": "32767.9" } },
-      { "block.output": { "type": "F64", "value": "32768.9" } }
+      { "block.output": { "type": "number", "value": "0.0" } },
+      { "block.output": { "type": "number", "value": "0.9" } },
+      { "block.output": { "type": "number", "value": "-32767.1" } },
+      { "block.output": { "type": "number", "value": "-32768.1" } },
+      { "block.output": { "type": "number", "value": "32766.9" } },
+      { "block.output": { "type": "number", "value": "32767.9" } },
+      { "block.output": { "type": "number", "value": "32768.9" } }
     ]
     },
   "Check Many Add": {
@@ -54,14 +54,14 @@
         { "block5.input2": "19"}
     ],
     "expects": [
-      { "block7.output": { "type": "F64", "value": "2" } },
-      { "block7.output": { "type": "F64", "value": "5" } },
-      { "block7.output": { "type": "F64", "value": "10" } },
-      { "block7.output": { "type": "F64", "value": "17" } },
-      { "block7.output": { "type": "F64", "value": "28" } },
-      { "block7.output": { "type": "F64", "value": "41" } },
-      { "block7.output": { "type": "F64", "value": "58" } },
-      { "block7.output": { "type": "F64", "value": "77" } }
+      { "block7.output": { "type": "number", "value": "2" } },
+      { "block7.output": { "type": "number", "value": "5" } },
+      { "block7.output": { "type": "number", "value": "10" } },
+      { "block7.output": { "type": "number", "value": "17" } },
+      { "block7.output": { "type": "number", "value": "28" } },
+      { "block7.output": { "type": "number", "value": "41" } },
+      { "block7.output": { "type": "number", "value": "58" } },
+      { "block7.output": { "type": "number", "value": "77" } }
     ]
     }
 

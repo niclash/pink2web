@@ -9,7 +9,7 @@ use "ponytest"
 use "promises"
 
 actor Assertion is Block
-  let _name: String
+  var _name: String
   let _descriptor: BlockTypeDescriptor
   let _equality: Input[Linkable]
   let _completed: Input[Bool]
@@ -24,15 +24,15 @@ actor Assertion is Block
   var _feed:Array[(String,String)] val = []
   var _graph: (Graph|None) = None
   
-  new create(name: String, descriptor': BlockTypeDescriptor, context:SystemContext, helper:TestHelper ) =>
-    context(Fine) and context.log("create("+name+")")
+  new create(name': String, descriptor': BlockTypeDescriptor, context:SystemContext, helper:TestHelper ) =>
+    context(Fine) and context.log("create("+name'+")")
     _helper = helper
     _context = context
-    _name = name
+    _name = name'
     _descriptor = descriptor'
     let zero = "0"
-    _equality = InputImpl[Linkable]( name, _descriptor.input(0), zero )
-    _completed = InputImpl[Bool]( name, _descriptor.input(2), false )
+    _equality = InputImpl[Linkable]( name', _descriptor.input(0), zero )
+    _completed = InputImpl[Bool]( name', _descriptor.input(2), false )
 
   be run(inputs:Array[(String,String)] val, graph:Graph) =>
     _context(Fine) and _context.log( "Starting data feed" )
@@ -78,6 +78,25 @@ actor Assertion is Block
   be connect( output: String, to_block: Block, to_input: String) =>
     None
     
+  be disconnect_block( block: Block ) =>
+    None
+
+  be disconnect_edge( output:String, dest_block: Block, dest_input: String ) =>
+    None
+
+  be destroy() =>
+    refresh()
+    _started = false
+    
+  be rename( new_name: String ) =>
+    _name = new_name
+    
+  be name( promise: Promise[String] tag ) =>
+    promise(_name)
+
+  be change( x:I64, y:I64 ) =>
+    None
+    
   be update(input: String, new_value: Linkable) =>
     if _graph is None then
       return
@@ -120,9 +139,10 @@ actor Assertion is Block
     
   fun type_of( value: Linkable ): String =>
     match value
-    | let s: Bool => "Bool"
-    | let s: Number => "Number"
-    | let s: String => "String"
+    | let s: None => "nil"
+    | let s: Bool => "bool"
+    | let s: F64 => "number"
+    | let s: String => "text"
     end
 
   be refresh() =>
@@ -150,8 +170,8 @@ class val AssertionDescriptor is BlockTypeDescriptor
   let completed:InputDescriptor
 
   new val create() =>
-      equality = InputDescriptor("equality", Num, "value to assert", false, true )
-      completed = InputDescriptor("completed", Num, "signal that testing is done and to be evaluated", false, true )
+      equality = InputDescriptor("equality", PNum, "value to assert", false, true )
+      completed = InputDescriptor("completed", PNum, "signal that testing is done and to be evaluated", false, true )
 
   fun val inputs(): Array[InputDescriptor] val =>
     [ equality; completed ]
@@ -164,11 +184,11 @@ class val AssertionDescriptor is BlockTypeDescriptor
       let inputs':Array[InputDescriptor] val = inputs()
       inputs'(index)?
     else
-      InputDescriptor( "INVALID", Num, "INVALID", false, false)
+      InputDescriptor( "INVALID", PNum, "INVALID", false, false)
     end
     
   fun val output( index: USize ): OutputDescriptor val =>
-    OutputDescriptor( "INVALID", Num, "INVALID", false, false)
+    OutputDescriptor( "INVALID", PNum, "INVALID", false, false)
     
   fun val name(): String =>
     "Assertion"
@@ -187,7 +207,7 @@ class val AssertionFactory is BlockFactory
   fun val block_type_descriptor() : BlockTypeDescriptor val^ =>
     _descriptor
 
-  fun create_block( instance_name: String, context:SystemContext val):Block =>
+  fun create_block( instance_name: String, context:SystemContext val, x:I64, y:I64):Block =>
     context(Fine) and context.log("create Assertion")
     Assertion( instance_name, _descriptor, context, helper )
 

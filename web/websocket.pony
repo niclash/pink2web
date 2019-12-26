@@ -16,14 +16,15 @@ class val ListenNotify is WebSocketListenNotify
     _context.log( "Created websocket" )
     _fbp = fbp
     
-  fun ref connected(): ConnectionNotify iso^ =>
-    _context.log( "Connected websocket" )
-    ConnectionNotify.create(_fbp, _context)
+  fun ref connected(): _ConnectionNotify iso^ =>
+    _context.log( "Connected websocket..." )
+    _ConnectionNotify.create(_fbp, _context)
 
   fun ref not_listening() =>
     _context.log( "Stopped listening on websocket" )
 
-class ConnectionNotify is WebSocketConnectionNotify
+    
+class _ConnectionNotify is WebSocketConnectionNotify
   let _fbp: Fbp val
   var _connection: (WebSocketConnection | None) = None
   let _context:SystemContext

@@ -1,9 +1,10 @@
 {
+    "name": "Add Test",
     "connections": [
     ],
     "processes": {
         "block": {
-            "component": "Add"
+            "component": "math/Add"
         }
     }
 }

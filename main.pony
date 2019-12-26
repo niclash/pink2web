@@ -13,83 +13,6 @@ use "net"
 use "promises"
 use "websocket"
 
-class MyConnectionNotify is TCPConnectionNotify
-  let _env:Env
-  
-  new create( env:Env ) => _env = env
-
-  fun ref accepted(conn: TCPConnection ref) =>
-    _env.out.print("NH: Accepted")
-
-  fun ref proxy_via(host: String, service: String): (String, String) =>
-    _env.out.print("NH: proxy_via")
-    (host, service)
-
-  fun ref connecting(conn: TCPConnection ref, count: U32) =>
-    _env.out.print("NH: Connecting")
-    None
-
-  fun ref connected(conn: TCPConnection ref) =>
-    _env.out.print("NH: Connected")
-    None
-
-  fun ref connect_failed(conn: TCPConnection ref) =>
-    _env.out.print("NH: Connect Failed")
-    
-
-  fun ref auth_failed(conn: TCPConnection ref) =>
-    _env.out.print("NH: Auth Failed")
-
-  fun ref sent(conn: TCPConnection ref, data: ByteSeq): ByteSeq =>
-    _env.out.print("NH: Sent")
-    data
-
-  fun ref sentv(conn: TCPConnection ref, data: ByteSeqIter): ByteSeqIter =>
-    _env.out.print("NH: SentV")
-    data
-
-  fun ref received(
-    conn: TCPConnection ref,
-    data: Array[U8] iso,
-    times: USize)
-    : Bool
-  =>
-    _env.out.print("NH: Received")
-    true
-
-  fun ref expect(conn: TCPConnection ref, qty: USize): USize =>
-    _env.out.print("NH: Expect")
-    qty
-
-  fun ref closed(conn: TCPConnection ref) =>
-    _env.out.print("NH: Closed")
-    None
-
-  fun ref throttled(conn: TCPConnection ref) =>
-    _env.out.print("NH: Throttled")
-    None
-
-  fun ref unthrottled(conn: TCPConnection ref) =>
-    _env.out.print("NH: Unthrottled")
-    None
-
-
-class MyListener is TCPListenNotify
-  let _env:Env
-  new create( env:Env ) => _env = env
-  fun ref listening(listen: TCPListener ref) =>
-    _env.out.print("NH: Listening")
-
-  fun ref not_listening(listen: TCPListener ref) =>
-    _env.out.print("NH: Not Listening")
-
-  fun ref closed(listen: TCPListener ref) =>
-    _env.out.print("NH: Closed")
-
-  fun ref connected(listen: TCPListener ref): TCPConnectionNotify iso^  =>
-    _env.out.print("NH: Connected")
-    recover MyConnectionNotify(_env) end
-
 actor Main
   var _rest: (RestServer|None) = None
   var _websocketListener: (WebSocketListener|None) = None
@@ -103,8 +26,6 @@ actor Main
       return
     end
     try
-    
-     let listener = TCPListener( env.root as AmbientAuth, recover MyListener(env) end, "2001:470:ed82:0:5060:909a:f1e7:5ef2","5353")
       handle_cli(context, env.args, env.vars, env.root as AmbientAuth)?
     else
       env.err.print( "Can not handle command line." )

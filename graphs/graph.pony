@@ -163,7 +163,7 @@ actor Graph
         let src:Block tag = _blocks(src_block)?
         let dest:Block tag = _blocks(dest_block)?
         src.disconnect_edge(src_output, dest, dest_input)
-        _context(Info) and _context.log("connected:" + src_block + "." + src_output + " ==> " + dest_block + "." + dest_input )
+        _context(Info) and _context.log("disconnected:" + src_block + "." + src_output + " ==> " + dest_block + "." + dest_input )
         _graphs._removed_connection(_descriptor.id, src_block, src_output, dest_block, dest_input)
     else
       _context(Error) and _context.log("Unable to connect " + src_block + "." + src_output + " to " + dest_block )

@@ -15,7 +15,7 @@ primitive LinkTypeList
   fun tag apply(): Array[LinkType] =>
     [PNum; PBoolean; PText]
 
-type Linkable is ( F64 | I64 | Bool | String | None )
+type Linkable is ( F64 | Bool | String | None)
 
 class Link[TYPE: Linkable val]
   let block: Block tag

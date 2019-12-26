@@ -23,5 +23,8 @@ class RemoveEdgeMessage
   fun reply(connection:WebSocketSender, graph:String, from_block:String, from_output:String, to_block:String, to_input:String ) =>
     let src = JObj + ("node", from_block) + ("port", from_output) 
     let tgt = JObj + ("node", to_block) + ("port", to_input) 
-    let payload:JObj = JObj + ("graph", graph) + ("src", src ) + ("tgt", tgt)
+    let payload:JObj = JObj 
+      + ("graph", graph) 
+      + ("src", src ) 
+      + ("tgt", tgt)
     connection.send_text( Message("graph", "removeedge", payload ).string() )
