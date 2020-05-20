@@ -1,4 +1,5 @@
 use "promises"
+use "pony-metric"
 
 primitive PNum is Stringable
   fun string(): String iso^ => "number".string()
@@ -15,7 +16,7 @@ primitive LinkTypeList
   fun tag apply(): Array[LinkType] =>
     [PNum; PBoolean; PText]
 
-type Linkable is ( F64 | Bool | String | None)
+type Linkable is ( Metric | F64 | Bool | String )
 
 class Link[TYPE: Linkable val]
   let block: Block tag

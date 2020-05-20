@@ -1,0 +1,29 @@
+{
+  "deps": [
+    {
+      "locator": "github.com/ponylang/regex.git"
+    },
+    {
+      "locator": "github.com/ponylang/net-ssl.git"
+    },
+    {
+      "locator": "github.com/niclash/jay.git"
+    },
+    {
+      "locator": "github.com/ponylang/crypto.git"
+    },
+    {
+      "locator": "github.com/niclash/pony-metric.git"
+    },
+    {
+      "locator": "github.com/niclash/jennet.git"
+    },
+    {
+      "locator": "github.com/niclash/pony-websocket.git"
+    },
+    {
+      "locator": "github.com/ponylang/http.git"
+    }
+  ],
+  "info": {}
+}

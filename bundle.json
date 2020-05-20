@@ -34,6 +34,10 @@
     },
     {
       "type": "github",
+      "repo": "niclash/pony-metric"
+    },
+    {
+      "type": "github",
       "repo": "niclash/pony-websocket"
     },
     {

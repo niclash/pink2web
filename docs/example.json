@@ -29,56 +29,56 @@
     ],
     "processes": {
         "block1": {
-            "component": "math/Add",
+            "component": "math/Add4",
             "metadata": {
               "x": 10,
               "y": 10
             }
         },
         "block2": {
-            "component": "math/Add",
+            "component": "math/Add4",
             "metadata": {
               "x": 10,
               "y": 30
             }
         },
         "block3": {
-            "component": "math/Add",
+            "component": "math/Add4",
             "metadata": {
               "x": 30,
               "y": 20
             }
         },
         "block4": {
-            "component": "math/Add",
+            "component": "math/Add4",
             "metadata": {
               "x": 10,
               "y": 50
             }
         },
         "block5": {
-            "component": "math/Add",
+            "component": "math/Add4",
             "metadata": {
               "x": 10,
               "y": 70
             }
         },
         "block6": {
-            "component": "math/Add",
+            "component": "math/Add4",
             "metadata": {
               "x": 30,
               "y": 60
             }
         },
         "block7": {
-            "component": "math/Add",
+            "component": "math/Add4",
             "metadata": {
               "x": 50,
               "y": 40
             }
         },
         "block8": {
-            "component": "math/Add",
+            "component": "math/Add4",
             "metadata": {
               "x": 0,
               "y": 0

@@ -1,4 +1,3 @@
-
 use "jay"
 use "websocket"
 use "collections"
@@ -23,7 +22,7 @@ class val ListenNotify is WebSocketListenNotify
   fun ref not_listening() =>
     _context.log( "Stopped listening on websocket" )
 
-    
+
 class _ConnectionNotify is WebSocketConnectionNotify
   let _fbp: Fbp val
   var _connection: (WebSocketConnection | None) = None
@@ -51,7 +50,7 @@ class _ConnectionNotify is WebSocketConnectionNotify
     _context.log( "Closed websocket" )
     _fbp.unsubscribe( WebSocketSender(conn, _context) )
     _connection = None
-  
+
 class val WebSocketSender is Equatable[WebSocketSender]
   let _connection:WebSocketConnection
   let _context:SystemContext

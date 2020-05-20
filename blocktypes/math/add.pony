@@ -41,7 +41,7 @@ actor AddBlock is Block
     _context(Fine) and _context.log("start()")
     _started = true
     refresh()
-    
+
   be stop() =>
     refresh()
     _context(Fine) and _context.log("stop()")

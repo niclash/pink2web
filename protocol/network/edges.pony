@@ -37,7 +37,7 @@ primitive EdgesMessage
 //       let graph = payload("graph") as String
 //       let edges = payload("edges") as JArr
 //       let subscriptions = HashMap[String,String]
-      
+
 //       let promise = Promise[ Graph ]
 //       promise.next[None]( { (graph: Graph) =>
 //         graph.rename_block( from, to )

@@ -1,7 +1,9 @@
+// hello
 use "collections"
 use "debug"
 use "jay"
 use "logger"
+use "pony-metric"
 use "promises"
 use "time"
 use "../blocktypes"
@@ -9,19 +11,19 @@ use "../collectors"
 use "../system"
 
 actor Graph
-  let _context: SystemContext
+  let _context:SystemContext
   let _types: BlockTypes
   let _graphs:Graphs
-  let _blocks: Map[String,Block tag] 
-  let _block_types: MapIs[Block tag, BlockTypeDescriptor val] 
+  let _blocks: Map[String,Block tag]
+  let _block_types: MapIs[Block tag, BlockTypeDescriptor val]
   let _descriptor: GraphDescriptor
-  
+
   var _time_started:PosixDate val= recover val PosixDate end
   var _started: Bool = false
   var _running: Bool = false
   var _debug: Bool = false
   var _uptime: I64 = 0  // in seconds
-  
+
   new create(graphs:Graphs, id': String, name': String, description':String, icon': String, types: BlockTypes, context: SystemContext) =>
     _graphs = graphs
     _descriptor = GraphDescriptor( id', name', description', icon' )
@@ -71,7 +73,9 @@ actor Graph
     _context(Info) and _context.log("create_block " + name' + " of type " + block_type )
     let factory = _types.get(block_type)
     let block:Block tag = factory.create_block( name', _context, x, y )
-    _register_block(block, name', factory.block_type_descriptor())
+    let blocktype = factory.block_type_descriptor()
+    _register_block(block, name', blocktype)
+    _graphs._added_block(_descriptor.id, name', blocktype.name(), 0, 0)
 
   be register_block(block:Block, name':String, blocktype: BlockTypeDescriptor) =>
     _register_block(block, name', blocktype)
@@ -87,7 +91,6 @@ actor Graph
   fun ref _register_block(block:Block tag, name':String, blocktype: BlockTypeDescriptor) =>
     _blocks( name' ) = block
     _block_types(block) = blocktype
-    _graphs._added_block(_descriptor.id, name', blocktype.name(), 0, 0)
     _context(Info) and _context.log("Available Blocks: " + _available_blocks() )
 
   be change_block( name':String, x:I64, y:I64 ) =>
@@ -124,7 +127,7 @@ actor Graph
       try
         (let block', let type') = _block_types.remove(block)?
         block.rename(to')
-        register_block(block, to', type')
+        _register_block(block, to', type')
         _graphs._renamed_block(_descriptor.id, from', to')
       end
     end

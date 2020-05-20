@@ -16,7 +16,7 @@ use "websocket"
 actor Main
   var _rest: (RestServer|None) = None
   var _websocketListener: (WebSocketListener|None) = None
-  
+
   new create( env: Env ) =>
     let context = try
       SystemContext(env, Info)?
@@ -34,17 +34,17 @@ actor Main
 
   fun ref handle_cli(context:SystemContext, args:Array[String] val, vars:Array[String] val, auth:AmbientAuth )? =>
     let blocktypes:BlockTypes val = BlockTypes(context)
-    let cs = CommandSpec.parent("pink2web", "Flow Based Programming engine", [ 
+    let cs = CommandSpec.parent("pink2web", "Flow Based Programming engine", [
             OptionSpec.bool("warn", "Warn Logging Level" where default' = false)
             OptionSpec.bool("info", "Info Logging Level" where default' = false)
             OptionSpec.bool("fine", "Fine Logging Level" where default' = false)
-        ],  [ 
-            list_command()?; run_command()?; describe_command()? 
+        ],  [
+            list_command()?; run_command()?; describe_command()?
         ] )? .> add_help()?
-    
+
     let cmd =
       match CommandParser(cs).parse(args, vars)
-      | let c: Command => 
+      | let c: Command =>
             match c.fullname()
             | "pink2web/list/types" => list_types(blocktypes, context)
             | "pink2web/run/process" =>
@@ -64,7 +64,7 @@ actor Main
                 context(Info) and context.log("Started to listen: ws://"+host+":"+ws_port)
                 _rest = RestServer(host, port,  Path.cwd(), context )
             | "pink2web/describe/type" => describe_type(c.arg("typename" ).string(),blocktypes,context)
-            | "pink2web/describe/topology" => 
+            | "pink2web/describe/topology" =>
                 describe_topology(c.arg("filename" ).string(),blocktypes,context)?
             end
       | let ch: CommandHelp =>
@@ -79,7 +79,7 @@ actor Main
     ],[
       CommandSpec.leaf( "types", "List types", [], [] )?
     ])?
-    
+
   fun describe_command() : CommandSpec ? =>
     CommandSpec.parent("describe", "Describe a part of the system", [
     ],[
@@ -90,7 +90,7 @@ actor Main
         ArgSpec.string("filename", "Name of toppology to be described.", None )
       ] )?
     ])?
-    
+
   fun run_command() : CommandSpec ?=>
     CommandSpec.parent("run", "", [
       OptionSpec.string("host", "Host interface to connect to" where default' = "0.0.0.0")
@@ -105,29 +105,29 @@ actor Main
   fun list_types(blocktypes:BlockTypes, context:SystemContext) =>
     let m = blocktypes.list_types()
     for t in m.keys() do
-      context.to_stdout( t ) 
+      context.to_stdout( t )
     end
-     
+
   fun describe_type(typ:String, blocktypes:BlockTypes, context:SystemContext) =>
     let json = blocktypes.describe_type( typ )
-    context.to_stdout( json.string() )    
-    
+    context.to_stdout( json.string() )
+
   fun describe_topology(filename:String, blocktypes:BlockTypes, context:SystemContext) ? =>
     context(Fine) and context.log( "Describe topology" )
     let graphs = Graphs( blocktypes, context )
     let loader = Loader( graphs, blocktypes, context )
     (let id:String, let graph:Graph) = loader.load( filename )?
     let promise = Promise[JObj]
-    promise.next[None]( { (json: JObj) => 
+    promise.next[None]( { (json: JObj) =>
       context(Fine) and context.log( "Topology Description" )
-      context.to_stdout( json.string() ) 
+      context.to_stdout( json.string() )
       graphs.shutdown()
     } )
     graph.describe( promise )
-    
+
   fun run_process(filename:String, graphs: Graphs, blocktypes:BlockTypes, context:SystemContext):(String, Graph) ? =>
     let loader = Loader(graphs, blocktypes, context)
-    (let id:String, let graph:Graph) = loader.load( filename )?  
+    (let id:String, let graph:Graph) = loader.load( filename )?
     graph.start()
     context.log("Main graph: " + id )
     (id, graph)
