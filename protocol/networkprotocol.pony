@@ -6,10 +6,10 @@ use "../graphs"
 
 class val NetworkProtocol
   let _graphs: Graphs tag
-  
+
   new val create( graphs: Graphs ) =>
     _graphs = graphs
-  
+
   fun execute( connection: WebSocketSender, command: String, payload: JObj ) =>
     match command
     |   "start" => StartMessage(connection, _graphs, payload )

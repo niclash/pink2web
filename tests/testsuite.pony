@@ -102,7 +102,7 @@ class iso _BlockTest is UnitTest
             let expected:String = output_value("value") as String
             match typ
             | "nil" => e.push( None )
-            | "number" => e.push( expected.f64()? )
+            | "real" => e.push( expected.f64()? )
             | "bool" => e.push( expected.bool()? )
             | "text" => e.push( expected )
             else

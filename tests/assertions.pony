@@ -141,7 +141,7 @@ actor Assertion is Block
     match value
     | let s: None => "nil"
     | let s: Bool => "bool"
-    | let s: F64 => "number"
+    | let s: Real => "real"
     | let s: String => "text"
     end
 
@@ -170,8 +170,8 @@ class val AssertionDescriptor is BlockTypeDescriptor
   let completed:InputDescriptor
 
   new val create() =>
-      equality = InputDescriptor("equality", PNum, "value to assert", false, true )
-      completed = InputDescriptor("completed", PNum, "signal that testing is done and to be evaluated", false, true )
+      equality = InputDescriptor("equality", PReal, "value to assert", false, true )
+      completed = InputDescriptor("completed", PReal, "signal that testing is done and to be evaluated", false, true )
 
   fun val inputs(): Array[InputDescriptor] val =>
     [ equality; completed ]
@@ -184,11 +184,11 @@ class val AssertionDescriptor is BlockTypeDescriptor
       let inputs':Array[InputDescriptor] val = inputs()
       inputs'(index)?
     else
-      InputDescriptor( "INVALID", PNum, "INVALID", false, false)
+      InputDescriptor( "INVALID", PReal, "INVALID", false, false)
     end
     
   fun val output( index: USize ): OutputDescriptor val =>
-    OutputDescriptor( "INVALID", PNum, "INVALID", false, false)
+    OutputDescriptor( "INVALID", PReal, "INVALID", false, false)
     
   fun val name(): String =>
     "Assertion"

@@ -19,9 +19,9 @@ class OutputImpl[TYPE: Linkable val] is Output[TYPE]
   var _name: String
   var _description: String
   var _dest: List[Link[TYPE] val]
-  let _descriptor: OutputDescriptor
+  let _descriptor: OutputDescriptor[TYPE]
   
-  new create(container_name: String, descriptor: OutputDescriptor, initialValue: TYPE, desc: String = "") =>
+  new create(container_name: String, descriptor: OutputDescriptor[TYPE], initialValue: TYPE, desc: String = "") =>
     _name = container_name + "." + descriptor.name  // TODO is this the best naming system?
     _description = desc
     _descriptor = descriptor
@@ -107,20 +107,22 @@ class OutputImpl[TYPE: Linkable val] is Output[TYPE]
       promise(j)
     end
     
-class val OutputDescriptor
+class val OutputDescriptor[A:Linkable val]
   let name:String
   let description: String
   let typ: LinkType
+  let initial_value: A
   let addressable: Bool
   let required: Bool
   
-  new val create( name':String, typ':LinkType, description':String, addressable': Bool, required': Bool ) =>
+  new val create( name':String, typ':LinkType, description':String, initial:A, addressable': Bool, required': Bool ) =>
     name = name'
     description = description'
     typ = typ'
+    initial_value = inital
     addressable = addressable'
     required = required'
-    
+
   fun describe() : JObj val =>
     let j = JObj
       + ("id", name )

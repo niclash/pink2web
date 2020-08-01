@@ -1,8 +1,8 @@
 use "promises"
 use "pony-metric"
 
-primitive PNum is Stringable
-  fun string(): String iso^ => "number".string()
+primitive PReal is Stringable
+  fun string(): String iso^ => "real".string()
   
 primitive PBoolean is Stringable
   fun string(): String iso^ => "bool".string()
@@ -10,13 +10,37 @@ primitive PBoolean is Stringable
 primitive PText is Stringable
   fun string(): String iso^ => "string".string()
 
-type LinkType is (PNum | PBoolean | PText )
+type LinkType is (PReal | PBoolean | PText )
 
 primitive LinkTypeList
   fun tag apply(): Array[LinkType] =>
-    [PNum; PBoolean; PText]
+    [PReal; PBoolean; PText]
 
-type Linkable is ( Metric | F64 | Bool | String )
+type Linkable is ( Float | Signed | Metric | Bool | String | None )
+
+primitive FNum
+  fun apply( value:Linkable):F64 =>
+    match value
+    | let v:Float => v.f64()
+    | let v:Signed => v.f64()
+    | let v:Metric => v.f64()
+    | let v:Bool => if v then 1.0 else 0.0 end
+    | let v:String => try v.f64()? else 0 end
+    else
+      0
+    end
+
+primitive INum
+  fun apply( value:Linkable):I64 =>
+    match value
+    | let v:Float => v.i64()
+    | let v:Signed => v.i64()
+    | let v:Metric => v.i64()
+    | let v:Bool => if v then 1 else 0 end
+    | let v:String => try v.i64()? else 0 end
+    else
+      0
+    end
 
 class Link[TYPE: Linkable val]
   let block: Block tag

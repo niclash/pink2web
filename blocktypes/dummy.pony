@@ -19,17 +19,17 @@ class val DummyFactory is BlockFactory
     recover JObj end
     
 class DummyDescriptor is BlockTypeDescriptor
-  fun val inputs():  Array[InputDescriptor] val =>
-    recover Array[InputDescriptor] end
+  fun val inputs():  Array[InputDescriptor[None]] val =>
+    recover Array[InputDescriptor[None]] end
     
-  fun val outputs():  Array[OutputDescriptor] val =>
-    recover Array[OutputDescriptor] end
+  fun val outputs():  Array[OutputDescriptor[None]] val =>
+    recover Array[OutputDescriptor[None]] end
 
-  fun val input( index: USize ): InputDescriptor val =>
-    InputDescriptor( "INVALID", PNum, "INVALID", false, false)
+  fun val input( index: USize ): InputDescriptor[None] val =>
+    InputDescriptor( "INVALID", PReal, "INVALID", false, false)
     
-  fun val output( index: USize ): OutputDescriptor val =>
-    OutputDescriptor( "INVALID", PNum, "INVALID", false, false)
+  fun val output( index: USize ): OutputDescriptor[None] val =>
+    OutputDescriptor( "INVALID", PReal, "INVALID", false, false)
 
   fun val name(): String =>
     "tests/dummy"

@@ -6,9 +6,6 @@
 
 * Undo/Redo
 
-* Metrics library? This needs to be changed a lot from the approach in Java, since types are not available in
-  the same way in Pony. Perhaps `Linkable` should become a class, which may carry a number and a unit.
-  
 * Save programs that are altered over the websocket.
 
 * Timeseries capture and storage, preferably on every Linkable. RRDtool?

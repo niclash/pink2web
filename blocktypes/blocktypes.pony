@@ -2,10 +2,9 @@ use "collections"
 use "debug"
 use "promises"
 use "jay"
-use "./math"
 // use "./advanced"
 // use "./timing"
-// use "./process"
+use "./process"
 use "../graphs"
 use "../system"
 use "../collectors"
@@ -24,7 +23,70 @@ class val BlockTypes
     _dummy = recover DummyFactory end
     _types = recover 
       let types = Map[String,BlockFactory]
-      _Helper._add_component(AddBlockFactory,types)
+      _Helper._add_component( Function4BlockFactory("math/Add4", "out = in1 + in2 + in3 + in4",
+                                 {(in1:Linkable,in2:Linkable,in3:Linkable,in4:Linkable) => FNum(in1) + FNum(in2) + FNum(in3) + FNum(in4)})
+                              ,types)
+      _Helper._add_component( Function2BlockFactory("math/Add2", "out = in1 + in2",
+                                 {(in1:Linkable,in2:Linkable) => FNum(in1) + FNum(in2)})
+                              ,types)
+      _Helper._add_component( Function2BlockFactory("math/Mult2", "out = in1 * in2",
+                                 {(in1:Linkable,in2:Linkable) => FNum(in1) * FNum(in2)})
+                              ,types)
+      _Helper._add_component( Function2BlockFactory("math/Divide", "out = in1 / in2",
+                                 {(in1:Linkable,in2:Linkable) => FNum(in1) * FNum(in2)})
+                              ,types)
+      _Helper._add_component( Function2BlockFactory("math/Subtract", "out = in1 - in2",
+                                 {(in1:Linkable,in2:Linkable) => FNum(in1) - FNum(in2)})
+                              ,types)
+
+      _Helper._add_component( Function2BlockFactory("math/Modulo", "out = in1 MOD in2",
+                                 {(in1:Linkable,in2:Linkable) => FNum(in1) %% FNum(in2)})
+                              ,types)
+
+      _Helper._add_component( Function2BlockFactory("math/Remainder", "out = in1 REMAINDER in2",
+                                 {(in1:Linkable,in2:Linkable) => FNum(in1) % FNum(in2)})
+                              ,types)
+
+      _Helper._add_component( Function2BlockFactory("math/And2", "out = in1 AND in2",
+                                 {(in1:Linkable,in2:Linkable) => INum(in1) and INum(in2)})
+                              ,types)
+      _Helper._add_component( Function2BlockFactory("math/Or2", "out = in1 OR in2",
+                                 {(in1:Linkable,in2:Linkable) => INum(in1) or INum(in2)})
+                              ,types)
+      _Helper._add_component( Function2BlockFactory("math/Xor", "out = in1 XOR in2",
+                                 {(in1:Linkable,in2:Linkable) => INum(in1) xor INum(in2)})
+                              ,types)
+      _Helper._add_component( Function4BlockFactory("math/And4", "out = in1 AND in2 AND in3 AND in4",
+                                 {(in1:Linkable,in2:Linkable,in3:Linkable,in4:Linkable) => INum(in1) and INum(in2) and INum(in3) and INum(in4)})
+                              ,types)
+
+      _Helper._add_component( Function4BlockFactory("math/Or4", "out = in1 OR in2 OR in3 OR in4",
+                                 {(in1:Linkable,in2:Linkable,in3:Linkable,in4:Linkable) => INum(in1) or INum(in2) or INum(in3) or INum(in4)})
+                              ,types)
+
+      _Helper._add_component( Function2BlockFactory("math/Greater", "out = in1 > in2",
+                                 {(in1:Linkable,in2:Linkable) => FNum(in1) > FNum(in2)})
+                              ,types)
+      _Helper._add_component( Function2BlockFactory("math/Less", "out = in1 < in2",
+                                 {(in1:Linkable,in2:Linkable) => FNum(in1) < FNum(in2)})
+                              ,types)
+      _Helper._add_component( Function2BlockFactory("math/Equal", "out = in1 == in2",
+                                 {(in1:Linkable,in2:Linkable) => FNum(in1) == FNum(in2)})
+                              ,types)
+      _Helper._add_component( Function2BlockFactory("math/NotEqual", "out = in1 != in2",
+                                 {(in1:Linkable,in2:Linkable) => FNum(in1) != FNum(in2)})
+                              ,types)
+      _Helper._add_component( Function2BlockFactory("math/LessEqual", "out = in1 <= in2",
+                                 {(in1:Linkable,in2:Linkable) => FNum(in1) <= FNum(in2)})
+                              ,types)
+      _Helper._add_component( Function2BlockFactory("math/GreaterEqual", "out = in1 >= in2",
+                                 {(in1:Linkable,in2:Linkable) => FNum(in1) >= FNum(in2)})
+                              ,types)
+
+
+      _Helper._add_component( Function2BlockFactory("process/Linear", "out = k * in + m",
+                                 {(in1:Linkable,in2:Linkable) => FNum(in1) >= FNum(in2)})
+                              ,types)
       types
     end
 
@@ -50,13 +112,13 @@ trait val BlockTypeDescriptor
 
   fun val description(): String
 
-  fun val inputs(): Array[InputDescriptor] val
+  fun val inputs(): Array[InputDescriptor[Linkable]] val
   
-  fun val outputs(): Array[OutputDescriptor] val
+  fun val outputs(): Array[OutputDescriptor[Linkable]] val
   
-  fun val input( index: USize ): InputDescriptor val
+  fun val input( index: USize ): InputDescriptor[Linkable] val
 
-  fun val output( index: USize ): OutputDescriptor val
+  fun val output( index: USize ): OutputDescriptor[Linkable] val
 
   fun val describe() : JObj val =>
     var inps = JArr

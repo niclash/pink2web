@@ -91,7 +91,7 @@ actor Main
       ] )?
     ])?
 
-  fun run_command() : CommandSpec ?=>
+  fun run_command() : CommandSpec ? =>
     CommandSpec.parent("run", "", [
       OptionSpec.string("host", "Host interface to connect to" where default' = "0.0.0.0")
       OptionSpec.i64("port", "Port number to listen on" where default' = 3568)
