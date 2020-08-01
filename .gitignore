@@ -1,2 +1,12 @@
 /.deps/
 /pink2web
+.idea/
+_corral/
+_repos/
+fbp-config.json
+line_count.sh
+my-darling.txt
+node_modules/
+package-lock.json
+testrun.txt
+
