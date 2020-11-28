@@ -17,11 +17,11 @@ class val BlockTypes
   let _types: Map[String,BlockFactory] val
   let _context:SystemContext
   let _dummy: BlockFactory val
-  
+
   new val create(context: SystemContext) =>
     _context = context
     _dummy = recover DummyFactory end
-    _types = recover 
+    _types = recover
       let types = Map[String,BlockFactory]
       _Helper._add_component( Function4BlockFactory("math/Add4", "out = in1 + in2 + in3 + in4",
                                  {(in1:Linkable,in2:Linkable,in3:Linkable,in4:Linkable) => FNum(in1) + FNum(in2) + FNum(in3) + FNum(in4)})
@@ -83,17 +83,16 @@ class val BlockTypes
                                  {(in1:Linkable,in2:Linkable) => FNum(in1) >= FNum(in2)})
                               ,types)
 
-
-      _Helper._add_component( Function2BlockFactory("process/Linear", "out = k * in + m",
-                                 {(in1:Linkable,in2:Linkable) => FNum(in1) >= FNum(in2)})
+      _Helper._add_component( Function3BlockFactory("process/Linear", "out = k * in + m",
+                                 {(in:Linkable,k:Linkable,m:Linkable) => FNum(in) * FNum(k) + FNum(m)})
                               ,types)
       types
     end
 
-    
+
   fun get(typename: String): BlockFactory =>
     _types.get_or_else( typename, _dummy )
-    
+
   fun list_types(): Map[String, BlockTypeDescriptor val] val =>
     let result = recover iso Map[String, BlockTypeDescriptor val] end
     for (typename, factory) in _types.pairs() do
@@ -105,7 +104,7 @@ class val BlockTypes
     let factory = get(typename)
     factory.describe()
 
-    
+
 trait val BlockTypeDescriptor
 
   fun val name(): String
@@ -113,20 +112,20 @@ trait val BlockTypeDescriptor
   fun val description(): String
 
   fun val inputs(): Array[InputDescriptor[Linkable]] val
-  
+
   fun val outputs(): Array[OutputDescriptor[Linkable]] val
-  
+
   fun val input( index: USize ): InputDescriptor[Linkable] val
 
   fun val output( index: USize ): OutputDescriptor[Linkable] val
 
   fun val describe() : JObj val =>
     var inps = JArr
-    for inp in inputs().values() do 
+    for inp in inputs().values() do
       inps = inps + inp.describe()
     end
     var outps = JArr
-    for outp in outputs().values() do 
+    for outp in outputs().values() do
       outps = outps + outp.describe()
     end
     var json6 = JObj
@@ -144,8 +143,8 @@ primitive BlockDescription[INTYPES: Linkable, OUTTYPES:Linkable]
     for inp in inputs'.values() do
       inputs = inputs + inp.describe()
     end
-    Collector[Output[OUTTYPES],JObj]( 
-        outputs'.values(), 
+    Collector[Output[OUTTYPES],JObj](
+        outputs'.values(),
         { (out, p) => out.describe(p) },
         { (result) =>
             var outputs = JArr
