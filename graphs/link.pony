@@ -1,31 +1,16 @@
 use "promises"
 
-primitive PNum is Stringable
-  fun string(): String iso^ => "number".string()
-  
-primitive PBoolean is Stringable
-  fun string(): String iso^ => "bool".string()
-
-primitive PText is Stringable
-  fun string(): String iso^ => "string".string()
-
-type LinkType is (PNum | PBoolean | PText )
-
-primitive LinkTypeList
-  fun tag apply(): Array[LinkType] =>
-    [PNum; PBoolean; PText]
-
-type Linkable is ( F64 | Bool | String | None)
-
-class Link[TYPE: Linkable val]
+class val Link
   let block: Block tag
   let input: String
-  
-  new create( dest_block: Block tag, dest_input: String ) =>
-    block = dest_block
-    input = dest_input
+  let datatype: String
+
+  new create( dest_block': Block tag, dest_input': String, datatype': String ) =>
+    block = dest_block'
+    input = dest_input'
+    datatype = datatype'
     
-  fun update( new_value: Linkable ) =>
+  fun update( new_value: Any val ) =>
     block.update(input, new_value )
   
   fun describe( promise: Promise[String] tag ) =>

@@ -76,13 +76,13 @@ trait val BlockTypeDescriptor
       + ("outPorts", outps )
     json6
 
-primitive BlockDescription[INTYPES: Linkable, OUTTYPES:Linkable]
-  fun apply(promise:Promise[JObj], name':String, type':String, started':Bool, inputs': Array[Input[INTYPES]], outputs':Array[Output[OUTTYPES]] ) =>
+primitive BlockDescription
+  fun apply(promise:Promise[JObj], name':String, type':String, started':Bool, inputs': Array[Input], outputs':Array[Output] ) =>
     var inputs = JArr
     for inp in inputs'.values() do
       inputs = inputs + inp.describe()
     end
-    Collector[Output[OUTTYPES],JObj]( 
+    Collector[Output,JObj](
         outputs'.values(), 
         { (out, p) => out.describe(p) },
         { (result) =>

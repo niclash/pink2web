@@ -20,7 +20,7 @@ trait tag Block
   
   be disconnect_edge( output:String, dest_block: Block, dest_input: String )
   
-  be update(input: String, new_value: Linkable)
+  be update(input: String, new_value: Any val)
 
   be rename( new_name: String )
   

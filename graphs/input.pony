@@ -2,30 +2,32 @@ use "collections"
 use "jay"
 use "../system"
 
-trait Input[TYPE: Linkable val]
-  fun ref set( newValue: TYPE)
-  fun value() : this->TYPE
+trait Input is Stringable
+  fun ref set( newValue: Any val)
+  fun value() : Any val
   fun description() : String
   fun ref set_description( new_description:String )
   fun describe(): JObj val
   
-class InputImpl[TYPE: Linkable val] is Input[TYPE]
+class InputImpl is Input
   let _name: String
-  var _value: TYPE
+  var _value: Any val
   var _description: String
   let _descriptor:InputDescriptor
-  
-  new create(container_name: String, descriptor:InputDescriptor, initialValue: TYPE, description': String  = "") =>
+  let _converter:TypeConverter box
+
+  new create(container_name: String, descriptor:InputDescriptor, initialValue: Any val, description': String  = "", converter:TypeConverter = DefaultConverter ) =>
     _name = container_name + "." + descriptor.name   // TODO is this the best naming system?
     _description = description'
     _descriptor = descriptor
-    _value = consume initialValue
+    _value = initialValue
+    _converter = converter
 
-  fun value() : this->TYPE =>
+  fun value() : Any val =>
     _value
 
-  fun ref set( newValue: TYPE) =>
-    _value = consume newValue
+  fun ref set( newValue: Any val) =>
+    _value = newValue
 
   fun description() : String =>
     if _description == "" then 
@@ -36,11 +38,14 @@ class InputImpl[TYPE: Linkable val] is Input[TYPE]
 
   fun ref set_description( new_description: String ) =>
     _description = new_description
-    
+
+  fun string() : String iso^ =>
+    _converter.string(_value).clone()
+
   fun describe(): JObj val =>
     let j = JObj
       + ("id", _name)
-      + ("value", _value.string())
+      + ("value", string())
       + ("description", _description )
       + ("descriptor", _descriptor.describe() )
     j
@@ -48,11 +53,11 @@ class InputImpl[TYPE: Linkable val] is Input[TYPE]
 class val InputDescriptor
   let name:String
   let description: String
-  let typ: LinkType
+  let typ: String
   let addressable: Bool
   let required: Bool
   
-  new val create( name':String, typ':LinkType, description':String, addressable': Bool, required': Bool ) =>
+  new val create( name':String, typ':String, description':String, addressable': Bool, required': Bool ) =>
     name = name'
     description = description'
     typ = typ'
@@ -63,7 +68,7 @@ class val InputDescriptor
     let j = JObj
       + ("id", name)
       + ("description", description)
-      + ("type", typ.string() )
+      + ("type", typ )
       + ("required", required)
       + ("addressable", addressable )
     j

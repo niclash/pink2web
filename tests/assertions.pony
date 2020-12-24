@@ -11,11 +11,11 @@ use "promises"
 actor Assertion is Block
   var _name: String
   let _descriptor: BlockTypeDescriptor
-  let _equality: Input[Linkable]
-  let _completed: Input[Bool]
+  let _equality: Input
+  let _completed: Input
   let _context:SystemContext
   let _helper:TestHelper
-  let _expectations:Array[Array[Linkable] val] = []
+  let _expectations:Array[Array[Any val] val] = []
   
   var _success: Bool = true
   var _counter: USize = 0
@@ -31,8 +31,8 @@ actor Assertion is Block
     _name = name'
     _descriptor = descriptor'
     let zero = "0"
-    _equality = InputImpl[Linkable]( name', _descriptor.input(0), zero )
-    _completed = InputImpl[Bool]( name', _descriptor.input(2), false )
+    _equality = InputImpl( name', _descriptor.input(0), zero )
+    _completed = InputImpl( name', _descriptor.input(2), false )
 
   be run(inputs:Array[(String,String)] val, graph:Graph) =>
     _context(Fine) and _context.log( "Starting data feed" )
@@ -54,7 +54,7 @@ actor Assertion is Block
       None // Ignore as this happens (or may happen) during start up.
     end
     
-  fun ref next_expectation(): Linkable ? =>
+  fun ref next_expectation(): Any val ? =>
     let expectation = _expectations(_counter)?
     if( _sub_counter == -1 ) then 
       _sub_counter = 0
@@ -97,14 +97,14 @@ actor Assertion is Block
   be change( x:I64, y:I64 ) =>
     None
     
-  be update(input: String, new_value: Linkable) =>
+  be update(input: String, new_value: Any val) =>
     if _graph is None then
       return
     end
     _context(Fine) and _context.log("Assertion[ " + _name + "." + input + " = " + new_value.string() + " ]")
     if input == "equality" then
       try
-        let expected:Linkable = next_expectation()?
+        let expected = next_expectation()?
         
         match (new_value, expected)
         | (let actual: Bool, let expect: Bool ) => _helper.assert_eq[Bool]( expect, actual, "[event " + _counter.string() + "]" )
@@ -137,7 +137,7 @@ actor Assertion is Block
       end
     end
     
-  fun type_of( value: Linkable ): String =>
+  fun type_of( value: Any val ): String =>
     match value
     | let s: None => "nil"
     | let s: Bool => "bool"
@@ -162,7 +162,7 @@ actor Assertion is Block
     _context(Fine) and _context.log( "Reporting " + m.string() )
     promise(m)
 
-  be add_expectation( expected: Array[Linkable] val) =>
+  be add_expectation( expected: Array[Any val] val) =>
     _expectations.push( expected )
 
 class val AssertionDescriptor is BlockTypeDescriptor

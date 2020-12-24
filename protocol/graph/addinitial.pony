@@ -12,7 +12,7 @@ primitive AddInitialMessage
       let graph = try payload("graph") as String else @printf[I32]("No 'graph' property.".cstring()) ; error end
       (let block, let input, let index) = Util._parse( payload("tgt") as JObj )?
       let src = payload("src") as JObj
-      let initial_value = src("data") as Linkable
+      let initial_value = src("data")
       let promise = Promise[ Graph ]
       promise.next[None]( { (graph: Graph) =>
         graph.set_initial( block, input, initial_value )

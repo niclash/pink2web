@@ -76,7 +76,7 @@ actor Graph
   be register_block(block:Block, name':String, blocktype: BlockTypeDescriptor) =>
     _register_block(block, name', blocktype)
     
-  be set_initial( block':String, input:String, initial_value:Linkable) =>
+  be set_initial( block':String, input:String, initial_value:Any val) =>
     try
       let block = _blocks( block' )?
       block.update( input, initial_value )

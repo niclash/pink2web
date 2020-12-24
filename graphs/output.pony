@@ -3,9 +3,9 @@ use "jay"
 use "promises"
 use "../system"
 
-trait Output[TYPE: Linkable val]
-  fun ref set( newValue: TYPE )
-  fun value() : this->TYPE
+trait Output is Stringable
+  fun ref set( newValue: Any val )
+  fun value() : Any val
   fun ref connect( dest: Block tag, input: String )
   fun ref disconnect_block( dest: Block tag )
   fun ref disconnect_edge( dest: Block tag, input: String )
@@ -14,31 +14,33 @@ trait Output[TYPE: Linkable val]
   fun ref set_description( new_description:String )
   fun describe( promise: Promise[JObj val] tag )
   
-class OutputImpl[TYPE: Linkable val] is Output[TYPE]
-  var _value: TYPE
+class OutputImpl is Output
+  var _value: Any val
   var _name: String
   var _description: String
-  var _dest: List[Link[TYPE] val]
+  var _dest: List[Link]
   let _descriptor: OutputDescriptor
-  
-  new create(container_name: String, descriptor: OutputDescriptor, initialValue: TYPE, desc: String = "") =>
+  let _converter:TypeConverter box
+
+  new create(container_name: String, descriptor: OutputDescriptor, initialValue: Any val, desc: String = "", converter:TypeConverter = DefaultConverter) =>
     _name = container_name + "." + descriptor.name  // TODO is this the best naming system?
     _description = desc
     _descriptor = descriptor
     _value = initialValue
-    _dest = List[Link[TYPE] val]
+    _dest = List[Link val]
+    _converter = converter
 
-  fun value() : this->TYPE =>
+  fun value() : Any val=>
     _value
     
-  fun ref set( newValue: TYPE val ) =>
+  fun ref set( newValue: Any val ) =>
     for dest in _dest.values() do
       dest.update( newValue )
     end
     _value = newValue
 
   fun ref connect(dest_block: Block tag, input: String) =>
-    var link:Link[TYPE] val = recover Link[TYPE](dest_block, input) end
+    var link:Link val = recover Link(dest_block, input, _descriptor.typ) end
     _dest.push(link)
 
   fun ref disconnect_block( dest: Block ) =>
@@ -74,6 +76,9 @@ class OutputImpl[TYPE: Linkable val] is Output[TYPE]
   fun ref set_description( new_description: String ) =>
     _description = new_description
 
+  fun string() : String iso^ =>
+    _converter.string(_value).clone()
+
   fun describe( promise: Promise[JObj val] tag ) =>
     let promises = Array[Promise[String val] tag]
     for link in _dest.values() do
@@ -83,6 +88,7 @@ class OutputImpl[TYPE: Linkable val] is Output[TYPE]
     end
     try
       let root = promises.pop()?
+      let value':String val = string()
       root.join(promises.values()).next[None]( { (result:Array[String val] val) => 
         var links = JArr
         for out in result.values() do 
@@ -90,7 +96,7 @@ class OutputImpl[TYPE: Linkable val] is Output[TYPE]
         end
         let j = JObj
           + ("id", _name )
-          + ("value", _value.string() )
+          + ("value", value' )
           + ("links", links )
           + ("description", _description)
           + ("descriptor", _descriptor.describe() )
@@ -100,7 +106,7 @@ class OutputImpl[TYPE: Linkable val] is Output[TYPE]
       // there were no output links
       let j = JObj
           + ("id", _name )
-          + ("value", _value.string() )
+          + ("value", string() )
           + ("links", JArr )
           + ("description", _description)
           + ("descriptor", _descriptor.describe() )
@@ -110,11 +116,11 @@ class OutputImpl[TYPE: Linkable val] is Output[TYPE]
 class val OutputDescriptor
   let name:String
   let description: String
-  let typ: LinkType
+  let typ: String
   let addressable: Bool
   let required: Bool
   
-  new val create( name':String, typ':LinkType, description':String, addressable': Bool, required': Bool ) =>
+  new val create( name':String, typ':String, description':String, addressable': Bool, required': Bool ) =>
     name = name'
     description = description'
     typ = typ'

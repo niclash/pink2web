@@ -9,11 +9,11 @@ use "../../system"
 actor AddBlock is Block
   var _name: String
   let _descriptor: BlockTypeDescriptor
-  let _input1: Input[F64]
-  let _input2: Input[F64]
-  let _input3: Input[F64]
-  let _input4: Input[F64]
-  let _output: Output[F64]
+  let _input1: Input
+  let _input2: Input
+  let _input3: Input
+  let _input4: Input
+  let _output: Output
   let _context:SystemContext
   var _started:Bool = false
   var _x:I64
@@ -27,11 +27,11 @@ actor AddBlock is Block
     _x = x
     _y = y
     let zero:F64 = 0.0
-    _input1 = InputImpl[F64]( _name, _descriptor.input(0), zero )
-    _input2 = InputImpl[F64]( _name, _descriptor.input(1), zero )
-    _input3 = InputImpl[F64]( _name, _descriptor.input(2), zero )
-    _input4 = InputImpl[F64]( _name, _descriptor.input(3), zero )
-    _output = OutputImpl[F64]( _name, _descriptor.output(0), zero )
+    _input1 = InputImpl( _name, _descriptor.input(0), zero )
+    _input2 = InputImpl( _name, _descriptor.input(1), zero )
+    _input3 = InputImpl( _name, _descriptor.input(2), zero )
+    _input4 = InputImpl( _name, _descriptor.input(3), zero )
+    _output = OutputImpl( _name, _descriptor.output(0), zero )
 
   be change( x:I64, y:I64 ) =>
     _x = x
@@ -70,16 +70,17 @@ actor AddBlock is Block
   be rename( new_name: String ) =>
     _name = new_name
     
-  be update(input: String, new_value:Linkable) =>
-    _context(Fine) and _context.log("Add[ " + _name + "." + input + " = " + new_value.string() + " ]")
+  be update(input: String, new_value:Any val) =>
     match new_value
-    | let v: F64 => 
+    | let v: F64 =>
+        _context(Fine) and _context.log("Add[ " + _name + "." + input + " = " + v.string() + " ]")
         if input == "input1" then _input1.set( v ) end
         if input == "input2" then _input2.set( v ) end
         if input == "input3" then _input3.set( v ) end
         if input == "input4" then _input4.set( v ) end
     | let v: String => 
       try
+        _context(Fine) and _context.log("Add[ " + _name + "." + input + " = " + v + " ]")
         if input == "input1" then _input1.set( v.f64()? ) end
         if input == "input2" then _input2.set( v.f64()? ) end
         if input == "input3" then _input3.set( v.f64()? ) end
@@ -90,7 +91,7 @@ actor AddBlock is Block
 
   be refresh() =>
     if _started then
-      let value : F64 = _input1.value().f64() + _input2.value().f64() + _input3.value().f64() + _input4.value().f64()
+      let value : F64 = ToF64(_input1.value()) + ToF64(_input2.value()) + ToF64(_input3.value()) + ToF64(_input4.value())
       _output.set( value )
     end
     
@@ -101,7 +102,7 @@ actor AddBlock is Block
     promise(_descriptor)
 
   be describe( promise:Promise[JObj val] tag ) =>
-    BlockDescription[F64,F64](promise, _name, _descriptor.name(), _started, [_input1; _input2], [_output] )
+    BlockDescription(promise, _name, _descriptor.name(), _started, [_input1; _input2], [_output] )
 
     
 class val AddBlockDescriptor is BlockTypeDescriptor
@@ -112,11 +113,11 @@ class val AddBlockDescriptor is BlockTypeDescriptor
   let _out:OutputDescriptor
 
   new val create() =>
-      _in1 = InputDescriptor("input1", PNum, "first term in addition", false, true )
-      _in2 = InputDescriptor("input2", PNum, "second term in addition", false, true )
-      _in3 = InputDescriptor("input3", PNum, "second term in addition", false, true )
-      _in4 = InputDescriptor("input4", PNum, "second term in addition", false, true )
-      _out = OutputDescriptor("output", PNum, "output=input1+input2", false, true )
+      _in1 = InputDescriptor("input1", "number", "first term in addition", false, true )
+      _in2 = InputDescriptor("input2", "number", "second term in addition", false, true )
+      _in3 = InputDescriptor("input3", "number", "second term in addition", false, true )
+      _in4 = InputDescriptor("input4", "number", "second term in addition", false, true )
+      _out = OutputDescriptor("output", "number", "output=input1+input2", false, true )
 
   fun val inputs(): Array[InputDescriptor] val =>
     [ _in1; _in2; _in3; _in4 ]
@@ -137,14 +138,14 @@ class val AddBlockDescriptor is BlockTypeDescriptor
     | 2 => _in3
     | 3 => _in4
     else
-      InputDescriptor( "INVALID", PNum, "INVALID", false, false)
+      InputDescriptor( "INVALID", "number", "INVALID", false, false)
     end
     
   fun val output( index: USize ): OutputDescriptor val =>
     match index
     | 0 => _out
     else
-      OutputDescriptor( "INVALID", PNum, "INVALID", false, false)
+      OutputDescriptor( "INVALID", "number", "INVALID", false, false)
     end
     
   fun val name(): String =>

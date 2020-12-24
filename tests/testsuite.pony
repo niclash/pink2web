@@ -93,8 +93,8 @@ class iso _BlockTest is UnitTest
       let assertions = Set[String]
       for expectation in expects.values() do
         let exp = expectation as JObj
-        let expectations:Array[Linkable] val = recover
-          let e = Array[Linkable]
+        let expectations:Array[Any val] val = recover
+          let e = Array[Any val]
           for output_ref in exp.keys() do
             assertions.set(output_ref)
             let output_value = exp(output_ref) as JObj

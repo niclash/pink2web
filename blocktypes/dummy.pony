@@ -26,10 +26,10 @@ class DummyDescriptor is BlockTypeDescriptor
     recover Array[OutputDescriptor] end
 
   fun val input( index: USize ): InputDescriptor val =>
-    InputDescriptor( "INVALID", PNum, "INVALID", false, false)
+    InputDescriptor( "INVALID", "number", "INVALID", false, false)
     
   fun val output( index: USize ): OutputDescriptor val =>
-    OutputDescriptor( "INVALID", PNum, "INVALID", false, false)
+    OutputDescriptor( "INVALID", "INVALID", "INVALID", false, false)
 
   fun val name(): String =>
     "tests/dummy"
@@ -69,7 +69,7 @@ actor DummyBlock is Block
   be rename( new_name: String ) => 
     _name = new_name
   
-  be update(input: String, new_value: Linkable val) =>
+  be update(input: String, new_value: Any val) =>
     None
 
   be refresh() =>
