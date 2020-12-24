@@ -119,7 +119,7 @@ class val OutputDescriptor[A:Linkable val]
     name = name'
     description = description'
     typ = typ'
-    initial_value = inital
+    initial_value = initial
     addressable = addressable'
     required = required'
 

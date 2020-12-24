@@ -159,6 +159,24 @@ class val Function4BlockDescriptor is BlockTypeDescriptor
   fun val description(): String =>
     _description
 
+  fun val describe() : JObj val =>
+    var inps = JArr
+    for inp in inputs().values() do
+      inps = inps + inp.describe()
+    end
+    var outps = JArr
+    for outp in outputs().values() do
+      outps = outps + outp.describe()
+    end
+    var json6 = JObj
+      + ("name", name() )
+      + ("description", description() )
+      + ("subgraph", false )
+      + ("icon", "plus" )
+      + ("inPorts", inps)
+      + ("outPorts", outps )
+    json6
+
 class val Function4BlockFactory is BlockFactory
   let _descriptor: Function4BlockDescriptor val
   let _function:Function4
@@ -177,7 +195,7 @@ class val Function4BlockFactory is BlockFactory
 
   fun create_block( instance_name: String, context:SystemContext val, x:I64, y:I64):Block =>
     context(Fine) and context.log("create Add")
-    AddBlock( instance_name, _descriptor, context, x, y )
+    Function4Block( instance_name, _descriptor, _function, context, x, y )
 
   fun val describe(): JObj val =>
     JObj + ("descriptor", _descriptor.describe() )

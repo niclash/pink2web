@@ -17,7 +17,7 @@ class InputImpl[TYPE: Linkable val] is Input[TYPE]
   let _descriptor:InputDescriptor[TYPE]
   
   new create(container_name: String, descriptor':InputDescriptor[TYPE], initialValue: TYPE, description': String  = "") =>
-    _name = container_name + "." + descriptor.name   // TODO is this the best naming system?
+    _name = container_name + "." + descriptor'.name   // TODO is this the best naming system?
     _description = description'
     _descriptor = descriptor'
     _value = consume initialValue

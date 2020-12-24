@@ -13,8 +13,8 @@ interface val Algorithm
 actor GenericBlock is Block
   var _name: String
   let _descriptor: BlockTypeDescriptor
-  let _inputs: Array[Input[Linkable]]
-  let _outputs: Array[Output[Linkable]]
+  let _inputs: Array[Input[Linkable]] = []
+  let _outputs: Array[Output[Linkable]] = []
   let _context:SystemContext
   let _algorithm:Algorithm
   var _started:Bool = false
@@ -29,6 +29,7 @@ actor GenericBlock is Block
     _algorithm = algo
     _x = x
     _y = y
+
     for inp in descriptor'.inputs().values() do
       _inputs.push( InputImpl[Linkable]( inp.name(), inp, inp.initial_value() ) )
     end
@@ -58,9 +59,11 @@ actor GenericBlock is Block
     refresh()
 
   be disconnect_block( block: Block ) =>
-    try
-      let outp = _find_output(output)
-      outp.disconnect_block(block)
+    for output in _outputs.values() do
+      try
+        let outp = _find_output(output)
+        outp.disconnect_block(block)
+      end
     end
     refresh()
 
@@ -74,7 +77,7 @@ actor GenericBlock is Block
     refresh()
     _context(Fine) and _context.log("destroy()")
     _started = false
-    for outp in outputs do
+    for outp in _outputs.values() do
       outp.disconnect_all()
     end
     
@@ -82,7 +85,7 @@ actor GenericBlock is Block
     _name = new_name
 
   fun _find_input( input_name:String ): Input[Linkable] ? =>
-    for inp in inputs do
+    for inp in _inputs.values() do
       if inp.descriptor.name() == input_name then
         return inp
       end
@@ -90,7 +93,7 @@ actor GenericBlock is Block
     error
 
   fun _find_output( output_name:String ): Output[Linkable] ? =>
-    for outp in outputs do
+    for outp in _outputs.values() do
       if outp.descriptor.name() == output_name then
         return outp
       end
@@ -126,7 +129,7 @@ actor GenericBlock is Block
     promise(_descriptor)
 
   be describe( promise:Promise[JObj val] tag ) =>
-    BlockDescription[F64,F64](promise, _name, _descriptor.name(), _started, [_input1; _input2; _input3; _input4], [_output] )
+    BlockDescription[F64,F64](promise, _name, _descriptor.name(), _started, _inputs, _outputs )
 
 class val GenericBlockFactory is (BlockFactory & BlockTypeDescriptor)
   let _inputs:Array[InputDescriptor[Linkable]] val
@@ -172,3 +175,21 @@ class val GenericBlockFactory is (BlockFactory & BlockTypeDescriptor)
 
   fun val description(): String =>
     _description
+
+  fun val describe() : JObj val =>
+    var inps = JArr
+    for inp in inputs().values() do
+      inps = inps + inp.describe()
+    end
+    var outps = JArr
+    for outp in outputs().values() do
+      outps = outps + outp.describe()
+    end
+    var json6 = JObj
+      + ("name", name() )
+      + ("description", description() )
+      + ("subgraph", false )
+      + ("icon", "plus" )
+      + ("inPorts", inps)
+      + ("outPorts", outps )
+    json6

@@ -19,17 +19,18 @@ class val DummyFactory is BlockFactory
     recover JObj end
     
 class DummyDescriptor is BlockTypeDescriptor
-  fun val inputs():  Array[InputDescriptor[None]] val =>
-    recover Array[InputDescriptor[None]] end
-    
-  fun val outputs():  Array[OutputDescriptor[None]] val =>
-    recover Array[OutputDescriptor[None]] end
+
+  fun val inputs(): Array[InputDescriptor[None]] val =>
+    recover val Array[InputDescriptor[None]] end
+
+  fun val outputs(): Array[OutputDescriptor[None]] val =>
+    recover val Array[OutputDescriptor[None]] end
 
   fun val input( index: USize ): InputDescriptor[None] val =>
-    InputDescriptor( "INVALID", PReal, "INVALID", false, false)
+    InputDescriptor[None]( "INVALID", PReal, "INVALID", None, false, false)
     
   fun val output( index: USize ): OutputDescriptor[None] val =>
-    OutputDescriptor( "INVALID", PReal, "INVALID", false, false)
+    OutputDescriptor[None]( "INVALID", PReal, "INVALID", None, false, false)
 
   fun val name(): String =>
     "tests/dummy"
@@ -37,10 +38,10 @@ class DummyDescriptor is BlockTypeDescriptor
   fun val description(): String =>
     "dummy block created when missing type information is found in json files."
     
-  fun describe(): JObj val =>
+  fun val describe(): JObj val =>
     let result:JObj val = JObj
     result
-  
+
 actor DummyBlock is Block
   var _name: String
   let _context:SystemContext

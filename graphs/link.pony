@@ -16,14 +16,14 @@ primitive LinkTypeList
   fun tag apply(): Array[LinkType] =>
     [PReal; PBoolean; PText]
 
-type Linkable is ( Float | Signed | Metric | Bool | String | None )
+type Linkable is ( Float val | Signed val | Metric val | Bool val | String val | None val)
 
 primitive FNum
   fun apply( value:Linkable):F64 =>
     match value
     | let v:Float => v.f64()
     | let v:Signed => v.f64()
-    | let v:Metric => v.f64()
+    | let v:Metric => v.value()
     | let v:Bool => if v then 1.0 else 0.0 end
     | let v:String => try v.f64()? else 0 end
     else
@@ -35,7 +35,7 @@ primitive INum
     match value
     | let v:Float => v.i64()
     | let v:Signed => v.i64()
-    | let v:Metric => v.i64()
+    | let v:Metric => v.value().i64()
     | let v:Bool => if v then 1 else 0 end
     | let v:String => try v.i64()? else 0 end
     else

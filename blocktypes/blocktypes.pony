@@ -84,7 +84,7 @@ class val BlockTypes
                               ,types)
 
       _Helper._add_component( Function3BlockFactory("process/Linear", "out = k * in + m",
-                                 {(in:Linkable,k:Linkable,m:Linkable) => FNum(in) * FNum(k) + FNum(m)})
+                                 {(inp:Linkable,k:Linkable,m:Linkable) => (FNum(inp) * FNum(k)) + FNum(m)})
                               ,types)
       types
     end
@@ -107,6 +107,25 @@ class val BlockTypes
 
 trait val BlockTypeDescriptor
 
+  fun val describe() : JObj val
+//  fun val describe() : JObj val =>
+//    var inps = JArr
+//    for inp in inputs().values() do
+//      inps = inps + inp.describe()
+//    end
+//    var outps = JArr
+//    for outp in outputs().values() do
+//      outps = outps + outp.describe()
+//    end
+//    var json6 = JObj
+//      + ("name", name() )
+//      + ("description", description() )
+//      + ("subgraph", false )
+//      + ("icon", "plus" )
+//      + ("inPorts", inps)
+//      + ("outPorts", outps )
+//    json6
+
   fun val name(): String
 
   fun val description(): String
@@ -119,23 +138,6 @@ trait val BlockTypeDescriptor
 
   fun val output( index: USize ): OutputDescriptor[Linkable] val
 
-  fun val describe() : JObj val =>
-    var inps = JArr
-    for inp in inputs().values() do
-      inps = inps + inp.describe()
-    end
-    var outps = JArr
-    for outp in outputs().values() do
-      outps = outps + outp.describe()
-    end
-    var json6 = JObj
-      + ("name", name() )
-      + ("description", description() )
-      + ("subgraph", false )
-      + ("icon", "plus" )
-      + ("inPorts", inps)
-      + ("outPorts", outps )
-    json6
 
 primitive BlockDescription[INTYPES: Linkable, OUTTYPES:Linkable]
   fun apply(promise:Promise[JObj], name':String, type':String, started':Bool, inputs': Array[Input[INTYPES]], outputs':Array[Output[OUTTYPES]] ) =>

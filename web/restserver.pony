@@ -1,7 +1,7 @@
 use "files"
 use "format"
 use "jennet"
-use "http"
+use "http_server"
 use "net"
 
 use "../system"
@@ -24,15 +24,12 @@ actor RestServer
       context.log("invalid routes.")
     end
 
-class val RedirectTo is Handler
+class val RedirectTo is RequestHandler
   let _location:String
   
   new val create(location:String) =>
     _location = location
     
-  fun apply(c: Context, req: Payload val): Context iso^ =>
-    let res = Payload.response()
-    res.status = 301
-    res("Location") = _location
-    c.respond(req, consume res)
+  fun apply(c: Context): Context iso^ =>
+    c.respond(StatusResponse(StatusMovedPermanently, [("Location", _location)]))
     consume c

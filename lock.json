@@ -1,12 +1,51 @@
 {
   "locks": [
     {
+      "locator": "github.com/mfelsche/ponycheck.git",
+      "revision": "0.5.4"
+    },
+    {
+      "locator": "github.com/ponylang/http-server.git",
+      "revision": "0.2.1"
+    },
+    {
+      "locator": "github.com/ponylang/valbytes.git",
+      "revision": "0.5.0"
+    },
+    {
+      "locator": "github.com/niclash/pony-websocket.git",
+      "revision": "master"
+    },
+    {
+      "locator": "https:/github.com/ponylang/http_server",
+      "revision": "master"
+    },
+    {
+      "locator": "github.com/niclash/jay.git",
+      "revision": "master"
+    },
+    {
       "locator": "github.com/ponylang/net-ssl.git",
+      "revision": "1.0.0"
+    },
+    {
+      "locator": "github.com/ponylang/net_ssl.git",
+      "revision": "1.0.0"
+    },
+    {
+      "locator": "github.com/ponylang/crypto.git",
       "revision": "1.0.0"
     },
     {
       "locator": "github.com/ponylang/regex.git",
       "revision": "1.0.0"
+    },
+    {
+      "locator": "github.com/niclash/pony-metric.git",
+      "revision": "master"
+    },
+    {
+      "locator": "https://github.com/ponylang/http_server"
     }
   ]
 }
