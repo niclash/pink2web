@@ -1,0 +1,23 @@
+{
+  "deps": [
+    {
+      "locator": "github.com/niclash/jay.git"
+    },
+    {
+      "locator": "github.com/niclash/pony-websocket.git"
+    },
+    {
+      "locator": "github.com/niclash/jennet.git"
+    },
+    {
+      "locator": "https://github.com/ponylang/http_server"
+    },
+    {
+      "locator": "github.com/niclash/pony-metric.git"
+    },
+    {
+      "locator": "github.com/ponylang/http.git"
+    }
+  ],
+  "info": {}
+}

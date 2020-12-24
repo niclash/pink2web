@@ -1,6 +1,8 @@
 use "jay"
 use "logger"
 use "promises"
+use "../../blocktypes"
+use "../component"
 use "../graph"
 use "../../web"
 use "../../graphs"
@@ -13,8 +15,9 @@ class GetRuntimeMessage
   new create(context':SystemContext) =>
     _context = context'
 
-  fun apply(connection: WebSocketSender, graphs:Graphs, runtime: RuntimeMessage ) =>
+  fun apply(connection: WebSocketSender, graphs:Graphs, blocktypes:BlockTypes, runtime: RuntimeMessage ) =>
     connection.send_text( runtime.string() )
+    ComponentMessage( connection, blocktypes )
     let promise = Promise[ Graph ]
     promise.next[None]( { (graph: Graph) =>
       let p = Promise[JObj]

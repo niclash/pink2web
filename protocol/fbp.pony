@@ -39,7 +39,7 @@ class val Fbp
     let repository_version: String = ""
     let runtime = RuntimeMessage( uuid, label, version, all_capabilities, capabilities, graph_name, type', namespace, repository, repository_version )
 
-    _runtime_protocol = RuntimeProtocol(runtime, graphs, context)
+    _runtime_protocol = RuntimeProtocol(runtime, graphs, blocktypes, context)
     _network_protocol = NetworkProtocol.create(graphs)
     _graph_protocol = GraphProtocol.create(graphs)
     _component_protocol = ComponentProtocol.create(blocktypes)
