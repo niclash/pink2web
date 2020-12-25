@@ -1,8 +1,4 @@
-/.deps/
 /pink2web
 /_repos
 /_corral
-junk.*
-/.idea/
 *.sh
-/fbp-config.json
