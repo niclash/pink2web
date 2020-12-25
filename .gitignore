@@ -6,4 +6,3 @@ junk.*
 /.idea/
 *.sh
 /fbp-config.json
-/ui
