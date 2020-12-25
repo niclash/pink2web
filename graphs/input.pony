@@ -6,6 +6,7 @@ trait Input is Stringable
   fun ref set( newValue: Any val)
   fun value() : Any val
   fun description() : String
+  fun descriptor() : InputDescriptor
   fun ref set_description( new_description:String )
   fun describe(): JObj val
   
@@ -16,10 +17,10 @@ class InputImpl is Input
   let _descriptor:InputDescriptor
   let _converter:TypeConverter box
 
-  new create(container_name: String, descriptor:InputDescriptor, initialValue: Any val, description': String  = "", converter:TypeConverter = DefaultConverter ) =>
-    _name = container_name + "." + descriptor.name   // TODO is this the best naming system?
+  new create(container_name: String, descriptor':InputDescriptor, initialValue: Any val, description': String  = "", converter:TypeConverter = DefaultConverter ) =>
+    _name = container_name + "." + descriptor'.name   // TODO is this the best naming system?
     _description = description'
-    _descriptor = descriptor
+    _descriptor = descriptor'
     _value = initialValue
     _converter = converter
 
@@ -35,6 +36,9 @@ class InputImpl is Input
     else
       _description
     end
+
+  fun descriptor() : InputDescriptor =>
+    _descriptor
 
   fun ref set_description( new_description: String ) =>
     _description = new_description

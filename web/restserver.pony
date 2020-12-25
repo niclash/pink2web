@@ -12,7 +12,7 @@ actor RestServer
     context.log("Rest Server starting on: " + host' + ":" + port'.string() + ", basedir=" + basedir)
     let auth = context.auth()
     let jennet = Jennet(auth, context.stdout(), host', port'.string())
-    jennet.get("/", RedirectTo("editor/index.html" ) )
+    jennet.get("/", RedirectTo("index.html" ) )
     try
       jennet.serve_dir(auth, "/css/*filepath", basedir + "/ui/css")?
       jennet.serve_dir(auth, "/js/*filepath", basedir + "/ui/js")?

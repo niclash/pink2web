@@ -10,25 +10,30 @@ trait Output is Stringable
   fun ref disconnect_block( dest: Block tag )
   fun ref disconnect_edge( dest: Block tag, input: String )
   fun ref disconnect_all()
+  fun name(): String val
   fun description() : String 
+  fun descriptor() : OutputDescriptor
   fun ref set_description( new_description:String )
   fun describe( promise: Promise[JObj val] tag )
   
 class OutputImpl is Output
   var _value: Any val
-  var _name: String
+  var _name: String val
   var _description: String
   var _dest: List[Link]
   let _descriptor: OutputDescriptor
   let _converter:TypeConverter box
 
-  new create(container_name: String, descriptor: OutputDescriptor, initialValue: Any val, desc: String = "", converter:TypeConverter = DefaultConverter) =>
-    _name = container_name + "." + descriptor.name  // TODO is this the best naming system?
+  new create(container_name: String, descriptor': OutputDescriptor, initialValue: Any val, desc: String = "", converter:TypeConverter = DefaultConverter) =>
+    _name = container_name + "." + descriptor'.name  // TODO is this the best naming system?
     _description = desc
-    _descriptor = descriptor
+    _descriptor = descriptor'
     _value = initialValue
     _dest = List[Link val]
     _converter = converter
+
+  fun name() : String val =>
+    _name
 
   fun value() : Any val=>
     _value
@@ -40,7 +45,7 @@ class OutputImpl is Output
     _value = newValue
 
   fun ref connect(dest_block: Block tag, input: String) =>
-    var link:Link val = recover Link(dest_block, input, _descriptor.typ) end
+    var link:Link val = recover Link(dest_block, input) end
     _dest.push(link)
 
   fun ref disconnect_block( dest: Block ) =>
@@ -72,6 +77,9 @@ class OutputImpl is Output
     else
       _description
     end
+
+  fun descriptor() : OutputDescriptor =>
+    _descriptor
 
   fun ref set_description( new_description: String ) =>
     _description = new_description
@@ -116,14 +124,14 @@ class OutputImpl is Output
 class val OutputDescriptor
   let name:String
   let description: String
-  let typ: String
+  let taip: String
   let addressable: Bool
   let required: Bool
   
   new val create( name':String, typ':String, description':String, addressable': Bool, required': Bool ) =>
     name = name'
     description = description'
-    typ = typ'
+    taip = typ'
     addressable = addressable'
     required = required'
     
@@ -131,7 +139,7 @@ class val OutputDescriptor
     let j = JObj
       + ("id", name )
       + ("description", description )
-      + ("type", typ.string() )
+      + ("type", taip.string() )
       + ("required", required )
       + ("addressable", addressable )
     j

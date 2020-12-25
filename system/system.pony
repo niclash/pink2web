@@ -52,3 +52,6 @@ class val SystemContext
 
   fun val auth(): AmbientAuth val =>
     _auth
+
+  fun val timers(): Timers =>
+    _timers
