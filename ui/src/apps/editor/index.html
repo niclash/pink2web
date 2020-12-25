@@ -1,0 +1,257 @@
+<!doctype html>
+<html lang="en" xmlns:v-on="http://www.w3.org/1999/xhtml" xmlns:v-bind="http://www.w3.org/1999/xhtml">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+  <meta name="description" content="">
+  <meta name="author" content="Mark Otto, Jacob Thornton, and Bootstrap contributors">
+  <meta name="generator" content="Jekyll v3.8.5">
+  <title>Link2Web - Next Generation</title>
+  <link href="../../../css/bootstrap-4.4.0.min.css" rel="stylesheet">
+  <link href="../../../css/dashboard.css" rel="stylesheet">
+  <link rel="stylesheet" href="../../../node_modules/@fortawesome/fontawesome-free/css/all.css" />
+  <style>
+    .bd-placeholder-img {
+      font-size: 1.125rem;
+      text-anchor: middle;
+      -webkit-user-select: none;
+      -moz-user-select: none;
+      -ms-user-select: none;
+      user-select: none;
+    }
+
+    @media (min-width: 768px) {
+      .bd-placeholder-img-lg {
+        font-size: 3.5rem;
+      }
+    }
+
+    .nopad {
+      padding: 0
+    }
+
+    html, body {
+      height: 100%;
+      margin: 0;
+      padding: 0;
+    }
+
+    footer {
+      position: absolute;
+      color: #e2e6ea;
+      background-color: #1d2124;
+      bottom: 0px;
+      width: 100%;
+    }
+  </style>
+</head>
+<body onload="init()">
+<nav class="navbar navbar-lg fixed-top bg-light flex-md-nowrap p-0 shadow">
+  <a class="navbar-brand col-sm-3 col-md-2 mr-0" href="#">volvo.sunnana.link2web.se</a>
+  <ul class="navbar-nav px-3 al">
+    <li class="nav-item text-nowrap">
+      <a class="nav-link" href="#">Home</a>
+    </li>
+  </ul>
+  <ul class="navbar-nav px-3 al">
+    <li class="nav-item text-nowrap">
+      <a class="nav-link" href="#">Volvo</a>
+    </li>
+  </ul>
+  <ul class="navbar-nav px-3 al">
+    <li class="nav-item text-nowrap">
+      <a class="nav-link" href="#">Trianon</a>
+    </li>
+  </ul>
+  <ul class="navbar-nav px-3 al">
+    <li class="nav-item text-nowrap">
+      <a class="nav-link" href="#">Idoff</a>
+    </li>
+  </ul>
+  <ul class="navbar-nav px-3">
+    <li class="nav-item text-nowrap">
+      <a class="nav-link" href="#">SBC</a>
+    </li>
+  </ul>
+  <ul class="navbar-nav px-3">
+    <li class="nav-item text-nowrap">
+      <a class="nav-link" href="#">Other</a>
+    </li>
+  </ul>
+  <ul class="navbar-nav px-3">
+    <li class="nav-item text-nowrap">
+      <a class="nav-link" href="#">Sign out</a>
+    </li>
+  </ul>
+</nav>
+<div class="container-fluid" style="height:100%">
+  <div class="row" style="height:100%;">
+    <nav class="col-md-1 d-none d-md-block bg-light sidebar">
+      <div class="sidebar-sticky">
+        <div class="h5 ml-2">Systems</div>
+        <div class="accordion" id="systems">
+          <div class="card">
+            <div class="card-header nopad" id="system1">
+              <h2 class="mb-0">
+                <button class="btn btn-link" type="button" data-toggle="collapse" data-target="#collapseS1"
+                        aria-expanded="false" aria-controls="collapseS1">
+                  5601-Golv
+                </button>
+              </h2>
+            </div>
+
+            <div id="collapseS1" class="collapse show" aria-labelledby="system1" data-parent="#systems">
+              <div class="card-body">
+                <ul class="nav flex-column">
+                  <li class="nav-item">
+                    <a class="nav-link nopad" href="#">Base</a>
+                  </li>
+                  <li class="nav-item">
+                    <a class="nav-link nopad" href="#">Shunt</a>
+                  </li>
+                  <li class="nav-item">
+                    <a class="nav-link nopad" href="#">Alarms</a>
+                  </li>
+                </ul>
+              </div>
+            </div>
+          </div>
+          <div class="card">
+            <div class="card-header nopad" id="system2">
+              <h2 class="mb-0">
+                <button class="btn btn-link collapsed" type="button" data-toggle="collapse" data-target="#collapseS2"
+                        aria-expanded="false" aria-controls="collapseTwo">
+                  5601-Rad
+                </button>
+              </h2>
+            </div>
+            <div id="collapseS2" class="collapse" aria-labelledby="system2" data-parent="#systems">
+              <div class="card-body">
+                <ul class="nav flex-column">
+                  <li class="nav-item">
+                    <a class="nav-link nopad" href="#">Base</a>
+                  </li>
+                  <li class="nav-item">
+                    <a class="nav-link nopad" href="#">Shunt</a>
+                  </li>
+                  <li class="nav-item">
+                    <a class="nav-link nopad" href="#">Alarms</a>
+                  </li>
+                </ul>
+              </div>
+            </div>
+          </div>
+          <div class="card">
+            <div class="card-header nopad" id="system3">
+              <h2 class="mb-0">
+                <button class="btn btn-link collapsed" type="button" data-toggle="collapse" data-target="#collapseS3"
+                        aria-expanded="false" aria-controls="collapseS3">
+                  5701-VP1
+                </button>
+              </h2>
+            </div>
+            <div id="collapseS3" class="collapse" aria-labelledby="system3" data-parent="#systems">
+              <div class="card-body">
+                <ul class="nav flex-column">
+                  <li class="nav-item">
+                    <a class="nav-link nopad" href="#">Defrost</a>
+                  </li>
+                  <li class="nav-item">
+                    <a class="nav-link nopad" href="#">Metering</a>
+                  </li>
+                  <li class="nav-item">
+                    <a class="nav-link nopad" href="#">Alarms</a>
+                  </li>
+                </ul>
+              </div>
+            </div>
+          </div>
+          <div class="card">
+            <div class="card-header nopad" id="system4">
+              <h2 class="mb-0">
+                <button class="btn btn-link collapsed" type="button" data-toggle="collapse" data-target="#collapseS4"
+                        aria-expanded="false" aria-controls="collapseS4">
+                  5701-VP2
+                </button>
+              </h2>
+            </div>
+            <div id="collapseS4" class="collapse" aria-labelledby="system4" data-parent="#systems">
+              <div class="card-body">
+                <ul class="nav flex-column">
+                  <li class="nav-item">
+                    <a class="nav-link nopad" href="#">Defrost</a>
+                  </li>
+                  <li class="nav-item">
+                    <a class="nav-link nopad" href="#">Metering</a>
+                  </li>
+                  <li class="nav-item">
+                    <a class="nav-link nopad" href="#">Alarms</a>
+                  </li>
+                </ul>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+    </nav>
+    <nav id="blocks" class="col-md-1 d-none d-md-block bg-light sidebar">
+      <div class="sidebar-sticky">
+        <div class="h5 ml-2">Blocks</div>
+        <div class="nav flex-column accordion" id="libraries">
+          <div v-for="(comp,lib) in components" class="card">
+            <div class="card-header nopad" v-bind:id="lib+'Card'">
+              <h2 class="mb-0">
+                <button class="btn btn-link" type="button" data-toggle="collapse" v-bind:data-target="'#'+lib+'Collapse'"
+                        aria-expanded="false" v-bind:aria-controls="lib+'Collapse'">
+                  {{lib}}
+                </button>
+              </h2>
+            </div>
+
+            <div v-bind:id="lib+'Collapse'" class="collapse hide" v-bind:aria-labelledby="lib+'Card'" data-parent="#libraries">
+              <div class="card-body">
+                <ul class="nav flex-column">
+                  <li v-for="c in comp" class="nav-item">
+                    <vue-title :title="c.description"><a v-on:click="instantiateComponent(lib,c)" class="nav-link nopad" href="#">{{c.name}}</a></vue-title>
+                  </li>
+                </ul>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </nav>
+
+    <main role="main" class="col-md-9 ml-sm-auto col-lg-10 px-4">
+      <div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom">
+        <h4 class="h4"></h4>
+        <div class="btn-toolbar mb-2 mb-md-0">
+          <div class="btn-group mr-2">
+            <button type="button" class="btn btn-sm btn-outline-secondary">Share</button>
+            <button type="button" class="btn btn-sm btn-outline-secondary">Export</button>
+            <button type="button" class="btn btn-sm btn-outline-secondary">Import</button>
+          </div>
+        </div>
+      </div>
+      <div id="pinkflow-editor" style="width:100%; height:85%; background-color: #DAE4E4;"></div>
+    </main>
+  </div>
+</div>
+
+<script type="text/javascript" src="../../../js/jquery-3.4.1.slim.min.js"></script>
+<script>window.jQuery || document.write('<script type="text/javascript" src="../../../js/jquery-3.4.1.slim.min.js"><\/script>')</script>
+<script type="text/javascript" src="../../../js/bootstrap-4.4.0.bundle.min.js"></script>
+<script type="text/javascript" src="../../../js/vue-2.6.10.min.js"></script>
+<script type="text/javascript" src="go-debug.js"></script>
+<script type="text/javascript" src="protocols/websocket.js"></script>
+<script type="text/javascript" src="protocols/component.js"></script>
+<script type="text/javascript" src="protocols/graph.js"></script>
+<script type="text/javascript" src="protocols/network.js"></script>
+<script type="text/javascript" src="protocols/runtime.js"></script>
+<script type="text/javascript" src="protocols/trace.js"></script>
+<script type="text/javascript" src="protocols/protocols.js"></script>
+
+<script type="text/javascript" src="index.js"></script>
+</body>
+</html>
