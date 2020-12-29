@@ -13,15 +13,15 @@ class val ListenNotify is WebSocketListenNotify
   
   new iso create( fbp: Fbp val, context:SystemContext) =>
     _context = context
-    _context.log( "Created websocket" )
+    _context(Info) and _context.log(Info, "Created websocket" )
     _fbp = fbp
     
   fun ref connected(): _ConnectionNotify iso^ =>
-    _context.log( "Connected websocket..." )
+    _context(Info) and _context.log(Info, "Connected websocket..." )
     _ConnectionNotify.create(_fbp, _context)
 
   fun ref not_listening() =>
-    _context.log( "Stopped listening on websocket" )
+    _context(Info) and _context.log(Info, "Stopped listening on websocket" )
 
     
 class _ConnectionNotify is WebSocketConnectionNotify
@@ -31,24 +31,24 @@ class _ConnectionNotify is WebSocketConnectionNotify
   
   new iso create( fbp: Fbp val, context:SystemContext ) =>
     _context = context
-    _context.log( "Created websocket" )
+    _context(Info) and _context.log(Info, "Created websocket" )
     _fbp = fbp
 
   fun ref opened(conn: WebSocketConnection ref) =>
-    _context.log( "Opened websocket" )
+    _context(Info) and _context.log(Info, "Opened websocket" )
     _connection = conn
     _fbp.subscribe( WebSocketSender(conn, _context) )
 
   fun ref text_received(conn: WebSocketConnection ref, text: String) =>
-    _context.log( "  ==> " + text )
+    _context(Info) and _context.log(Info, "  ==> " + text )
     _fbp.execute( WebSocketSender(conn, _context), text )
 
   fun ref binary_received(conn: WebSocketConnection ref, data: Array[U8] val) =>
-    _context.log( "binary_received" )
+    _context(Info) and _context.log(Info, "binary_received" )
     conn.send_text( Message.err( "unknown",  "Binary formats not supported").string() )
 
   fun ref closed(conn: WebSocketConnection ref) =>
-    _context.log( "Closed websocket" )
+    _context(Info) and _context.log(Info, "Closed websocket" )
     _fbp.unsubscribe( WebSocketSender(conn, _context) )
     _connection = None
   
@@ -60,8 +60,10 @@ class val WebSocketSender is Equatable[WebSocketSender]
     _connection = connection
     _context = context
     
-  fun send_text(text: String val) =>
-    _context.log( "\n  <== " + text )
+  fun send_text(text: String val, log:Bool = true) =>
+    if log then
+      _context(Info) and _context.log(Info, "  <== " + text )
+    end
     _connection.send_text(text)
 
   fun send_binary(data: Array[U8] val) =>

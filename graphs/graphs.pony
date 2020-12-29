@@ -1,6 +1,5 @@
 
 use "collections"
-use "logger"
 use "promises"
 use "time"
 use "../blocktypes"
@@ -27,7 +26,7 @@ actor Graphs
     end
 
   be start_all() =>
-    _context.log( "start all" )
+    _context(Info) and _context.log(Info, "start all" )
     for graph in _graphs_by_id.values() do
       graph.start()
     end
@@ -36,13 +35,13 @@ actor Graphs
     _stop_all()
     
   fun _stop_all() =>
-    _context.log( "stop all" )
+    _context(Info) and _context.log(Info, "stop all" )
     for graph in _graphs_by_id.values() do
       graph.stop()
     end
 
   be shutdown() =>
-    _context.log( "shutdown all" )
+    _context(Info) and _context.log(Info, "shutdown all" )
     for graph in _graphs_by_id.values() do
       graph.stop()
       graph.destroy()
@@ -59,7 +58,7 @@ actor Graphs
     promise( consume result )
 
   be create_graph( id: String, name: String, description: String, icon: String, main: Bool ) =>
-    _context(Fine) and _context.log("Graphs.create(" + id  +"," + name +"," + description + "," + icon + "," + main.string() + ")")
+    _context(Fine) and _context.log(Fine, "Graphs.create(" + id  +"," + name +"," + description + "," + icon + "," + main.string() + ")")
     let graph = Graph( this, id, name, description, icon, _blocktypes, _context )
     register_graph( id, name, graph )
     
@@ -78,14 +77,14 @@ actor Graphs
         first = false
         graphs = graphs + identity
       end
-      _context(Error) and _context.log( "Graph with id " + id' + " doesn't exist\nAvailable graphs: " + consume graphs + "]" )
+      _context(Error) and _context.log(Error, "Graph with id " + id' + " doesn't exist\nAvailable graphs: " + consume graphs + "]" )
     end
     
   be graph_by_name( name': String, promise: Promise[ Graph ] ) =>
     try
       promise( _graphs_by_name( name' )? )
     else
-      _context(Error) and _context.log( "Graph with name " + name' + " doesn't exist." )
+      _context(Error) and _context.log(Error, "Graph with name " + name' + " doesn't exist." )
     end    
 
   be subscribe( notify:GraphNotify ) =>
@@ -101,61 +100,61 @@ actor Graphs
     end
   
   be _error( type':String, message: String ) =>
-    _context.log( "error: " + type' + " : " + message )
+    _context(Info) and _context.log( Info,"error: " + type' + " : " + message )
     for s in _subscribers.values() do 
       s.err( type', message ) 
     end
     
   be _added_block(graph: String, block:String, component:String, x:I64, y:I64) =>
-    _context.log( "added block: " + graph + " : " + block + " : " + component + " : (" + x.string() + "," + y.string() + ")" )
+    _context(Info) and _context.log(Info, "added block: " + graph + " : " + block + " : " + component + " : (" + x.string() + "," + y.string() + ")" )
     for s in _subscribers.values() do 
       s.added_block( graph, block, component, x, y ) 
     end
     
   be _removed_block(graph: String, block:String) =>
-    _context.log( "removed block: " + graph + " : " + block )
+    _context(Info) and _context.log(Info, "removed block: " + graph + " : " + block )
     for s in _subscribers.values() do 
       s.removed_block( graph, block ) 
     end
   
   be _renamed_block(graph:String, from:String, to:String) =>
-    _context.log( "renamed block: " + graph + " : " + from + " -> " + to )
+    _context(Info) and _context.log(Info, "renamed block: " + graph + " : " + from + " -> " + to )
     for s in _subscribers.values() do 
       s.renamed_block( graph, from, to ) 
     end
 
   be _changed_block(graph: String, block:String, x:I64, y:I64) =>
-    _context.log( "changed block: " + graph + " : " + block + " : (" + x.string() + "," + y.string() + ")" )
+    _context(Info) and _context.log(Info, "changed block: " + graph + " : " + block + " : (" + x.string() + "," + y.string() + ")" )
     for s in _subscribers.values() do 
       s.changed_block( graph, block, x, y ) 
     end
 
   be _added_connection(graph: String, from_block:String, from_output:String, to_block:String, to_input:String) =>
-    _context.log( "added connection: " + graph + " : "  + from_block + "." + from_output + " ==> " + to_block + "." + to_input )
+    _context(Info) and _context.log(Info, "added connection: " + graph + " : "  + from_block + "." + from_output + " ==> " + to_block + "." + to_input )
     for s in _subscribers.values() do 
       s.added_connection(graph, from_block, from_output, to_block, to_input) 
     end
     
   be _removed_connection(graph: String, from_block:String, from_output:String, to_block:String, to_input:String) =>
-    _context.log( "removed connection: " + graph + " : "  + from_block + "." + from_output + " ==> " + to_block + "." + to_input )
+    _context(Info) and _context.log(Info, "removed connection: " + graph + " : "  + from_block + "." + from_output + " ==> " + to_block + "." + to_input )
     for s in _subscribers.values() do 
       s.removed_connection(graph, from_block, from_output, to_block, to_input) 
     end
     
   be _started(graph: String, time_started:PosixDate val, started':Bool, running:Bool, debug:Bool) =>
-    _context.log( "started: " + graph + " : " + started'.string() + " : " + running.string() + " : " + debug.string() )
+    _context(Info) and _context.log(Info, "started: " + graph + " : " + started'.string() + " : " + running.string() + " : " + debug.string() )
     for s in _subscribers.values() do 
       s.started(graph, time_started, started', running, debug) 
     end
   
   be _stopped(graph: String, time_started:PosixDate val, started':Bool, running:Bool, uptime:I64, debug:Bool) =>
-    _context.log( "stopped: " + graph + " : " + uptime.string() + " : " + started'.string() + " : " + running.string() + " : " + debug.string() )
+    _context(Info) and _context.log(Info, "stopped: " + graph + " : " + uptime.string() + " : " + started'.string() + " : " + running.string() + " : " + debug.string() )
     for s in _subscribers.values() do 
       s.stopped( graph, time_started, uptime, started', running, debug ) 
     end
   
   be _status(id:String, uptime:I64, running:Bool, started:Bool, debug:Bool) =>
-    _context.log( "status: " + id + " : " + uptime.string() + " : " + started.string() + " : " + running.string() + " : " + debug.string() )
+    _context(Info) and _context.log(Info, "status: " + id + " : " + uptime.string() + " : " + started.string() + " : " + running.string() + " : " + debug.string() )
     for s in _subscribers.values() do 
       s.status( id, uptime, started, running, debug) 
     end

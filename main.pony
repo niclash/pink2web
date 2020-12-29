@@ -8,7 +8,6 @@ use "cli"
 use "collections"
 use "files"
 use "jay"
-use "logger"
 use "net"
 use "promises"
 use "websocket"
@@ -18,41 +17,42 @@ actor Main
   var _websocketListener: (WebSocketListener|None) = None
   
   new create( env: Env ) =>
-    let context = try
-      SystemContext(env, Info)?
-    else
-      env.err.print( "Unable to get Environment Root. Internal error?" )
-      env.exitcode(-1)  // some kind of coding error
-      return
-    end
     try
-      handle_cli(context, env.args, env.vars, env.root as AmbientAuth)?
+      handle_cli(env)?
     else
       env.err.print( "Can not handle command line." )
       env.exitcode(-1)  // some kind of coding error
     end
 
-  fun ref handle_cli(context:SystemContext, args:Array[String] val, vars:Array[String] val, auth:AmbientAuth )? =>
-    let blocktypes:BlockTypes val = BlockTypes(context)
-    let cs = CommandSpec.parent("pink2web", "Flow Based Programming engine", [ 
+  fun ref handle_cli(env:Env)? =>
+    let args:Array[String] val = env.args
+    let vars:Array[String] val = env.vars
+    let auth:AmbientAuth val = env.root as AmbientAuth
+    let cs = CommandSpec.parent("pink2web", "Flow Based Programming engine", [
             OptionSpec.bool("warn", "Warn Logging Level" where default' = false)
             OptionSpec.bool("info", "Info Logging Level" where default' = false)
             OptionSpec.bool("fine", "Fine Logging Level" where default' = false)
         ],  [ 
             list_command()?; run_command()?; describe_command()? 
         ] )? .> add_help()?
-    
+
     let cmd =
       match CommandParser(cs).parse(args, vars)
-      | let c: Command => 
+      | let c: Command =>
+            let level:LogLevel = if c.option("fine").bool() then Fine
+                                 else if c.option("info").bool() then Info
+                                 else if c.option("warn").bool() then Warn
+                                 else Error end end end
+            let context:SystemContext = SystemContext(auth, env.out, env.err, level)
+            let blocktypes:BlockTypes val = BlockTypes(context)
             match c.fullname()
             | "pink2web/list/types" => list_types(blocktypes, context)
             | "pink2web/run/process" =>
-                context.log( "Starting process")
+                context(Fine) and context.log(Fine, "Starting process")
                 let filename = c.arg("filename").string()
                 let host = c.option("host").string()
                 let p = c.option("port")
-                context.log( "--port=" + p.i64().string() )
+                context(Info) and context.log( Info, "--port=" + p.i64().string() )
                 var port = p.i64().u32()
                 // bug in cli, default port isn't working properly
                 if port == 0 then port = 3568 end
@@ -61,16 +61,22 @@ actor Main
                 let fbp = Fbp("619362b3-1aee-4dca-b109-bef38e0e1ca8", main_graph, graphs, blocktypes, context)
                 let ws_port:String val = (port+1).string()
                 _websocketListener = WebSocketListener(auth,ListenNotify(fbp,context),host,ws_port)
-                context(Info) and context.log("Started to listen: ws://"+host+":"+ws_port)
-                _rest = RestServer(host, port,  Path.cwd(), context )
+                var path:String = c.option("webdir").string()
+                if path == "" then path = Path.cwd() + "/ui/src" end
+                var startpage:String = c.option("startpage").string()
+                if startpage == "" then startpage = "login" end
+                context(Info) and context.log(Info, "Web directory:"+path)
+                context(Info) and context.log(Info, "Start Page:"+startpage)
+                context(Info) and context.log(Info, "Started to listen: ws://"+host+":"+ws_port)
+                _rest = RestServer(host, port,  path, startpage, context )
             | "pink2web/describe/type" => describe_type(c.arg("typename" ).string(),blocktypes,context)
             | "pink2web/describe/topology" => 
-                describe_topology(c.arg("filename" ).string(),blocktypes,context)?
+                describe_topology(c.arg("filename").string(),blocktypes,context)?
             end
       | let ch: CommandHelp =>
-          ch.print_help(context.stdout())
+          ch.print_help(env.out)
       | let se: SyntaxError =>
-          context.log(se.string())
+          env.err.print(se.string())
           error
       end
 
@@ -93,6 +99,8 @@ actor Main
     
   fun run_command() : CommandSpec ?=>
     CommandSpec.parent("run", "", [
+      OptionSpec.string("webdir", "Directory of web resources" where default' = "")
+      OptionSpec.string("startpage", "Start page on the web server" where default' = "")
       OptionSpec.string("host", "Host interface to connect to" where default' = "0.0.0.0")
       OptionSpec.i64("port", "Port number to listen on" where default' = 3568)
     ],[
@@ -113,13 +121,13 @@ actor Main
     context.to_stdout( json.string() )    
     
   fun describe_topology(filename:String, blocktypes:BlockTypes, context:SystemContext) ? =>
-    context(Fine) and context.log( "Describe topology" )
+    context(Fine) and context.log( Fine, "Describe topology" )
     let graphs = Graphs( blocktypes, context )
     let loader = Loader( graphs, blocktypes, context )
     (let id:String, let graph:Graph) = loader.load( filename )?
     let promise = Promise[JObj]
     promise.next[None]( { (json: JObj) => 
-      context(Fine) and context.log( "Topology Description" )
+      context(Fine) and context.log( Fine, "Topology Description" )
       context.to_stdout( json.string() ) 
       graphs.shutdown()
     } )
@@ -129,5 +137,5 @@ actor Main
     let loader = Loader(graphs, blocktypes, context)
     (let id:String, let graph:Graph) = loader.load( filename )?  
     graph.start()
-    context.log("Main graph: " + id )
+    context(Info) and context.log(Info, "Main graph: " + id )
     (id, graph)

@@ -1,7 +1,6 @@
 use "collections"
 use "debug"
 use "jay"
-use "logger"
 use "promises"
 use "time"
 use "../blocktypes"
@@ -31,7 +30,7 @@ actor Graph
     _block_types = MapIs[Block tag, BlockTypeDescriptor val]
 
   be start() =>
-    _context.log( "Starting graph: " + _descriptor.name )
+    _context(Info) and _context.log(Info, "Starting graph: " + _descriptor.name )
     _time_started = DateTime.now()
     _started = true
     for block in _blocks.values() do
@@ -44,7 +43,7 @@ actor Graph
     _stop()
     
   fun ref _stop() =>
-    _context.log( "Stopping graph: " + _descriptor.name )
+    _context(Info) and _context.log(Info, "Stopping graph: " + _descriptor.name )
     _running = false
     for block in _blocks.values() do
       block.stop()
@@ -53,7 +52,7 @@ actor Graph
     
   be destroy() =>
     if _running then _stop() end
-    _context.log( "Destroying graph: " + _descriptor.name )
+    _context(Info) and _context.log(Info, "Destroying graph: " + _descriptor.name )
     for block in _blocks.values() do
       block.destroy()
     end
@@ -68,7 +67,7 @@ actor Graph
     end
     
   be create_block(block_type: String, name': String, x:I64, y:I64) =>
-    _context(Info) and _context.log("create_block " + name' + " of type " + block_type )
+    _context(Info) and _context.log(Info, "create_block " + name' + " of type " + block_type )
     let factory = _types.get(block_type)
     let block:Block tag = factory.create_block( name', _context, x, y )
     _register_block(block, name', factory.block_type_descriptor())
@@ -88,7 +87,7 @@ actor Graph
     _blocks( name' ) = block
     _block_types(block) = blocktype
     _graphs._added_block(_descriptor.id, name', blocktype.name(), 0, 0)
-    _context(Info) and _context.log("Available Blocks: " + _available_blocks() )
+    _context(Fine) and _context.log(Fine, "Available Blocks: " + _available_blocks() )
 
   be change_block( name':String, x:I64, y:I64 ) =>
     try
@@ -135,16 +134,16 @@ actor Graph
         let dest:Block tag = _get_block(dest_block)?
         src.connect( src_output, dest, dest_input )
         _graphs._added_connection(_descriptor.id, src_block, src_output, dest_block, dest_input )
-        _context(Info) and _context.log("connected:" + src_block + "." + src_output + " ==> " + dest_block + "." + dest_input )
+        _context(Info) and _context.log(Info, "connected:" + src_block + "." + src_output + " ==> " + dest_block + "." + dest_input )
     else
-      _context(Error) and _context.log("Unable to connect " + src_block + "." + src_output + " to " + dest_block + "." + dest_input )
+      _context(Error) and _context.log(Error, "Unable to connect " + src_block + "." + src_output + " to " + dest_block + "." + dest_input )
     end
     
   fun _get_block( name': String ):Block ? =>
     try
         _blocks(name')?
     else
-      _context(Error) and _context.log("Unable to find block " + name' + "\nAvailable blocks: " + _available_blocks() )
+      _context(Error) and _context.log(Error, "Unable to find block " + name' + "\nAvailable blocks: " + _available_blocks() )
       error
     end
   
@@ -163,10 +162,10 @@ actor Graph
         let src:Block tag = _blocks(src_block)?
         let dest:Block tag = _blocks(dest_block)?
         src.disconnect_edge(src_output, dest, dest_input)
-        _context(Info) and _context.log("disconnected:" + src_block + "." + src_output + " ==> " + dest_block + "." + dest_input )
+        _context(Info) and _context.log(Info, "disconnected:" + src_block + "." + src_output + " ==> " + dest_block + "." + dest_input )
         _graphs._removed_connection(_descriptor.id, src_block, src_output, dest_block, dest_input)
     else
-      _context(Error) and _context.log("Unable to connect " + src_block + "." + src_output + " to " + dest_block )
+      _context(Error) and _context.log(Error, "Unable to connect " + src_block + "." + src_output + " to " + dest_block )
     end
 
   be set_value_from_string( point: String, value:String ) =>
@@ -175,12 +174,12 @@ actor Graph
       try
         let block:Block tag = _blocks(blockname)?
         block.update( input, value )
-        _context(Fine) and _context.log("update: " + blockname + "." + input + "=" + value )
+        _context(Fine) and _context.log(Fine, "update: " + blockname + "." + input + "=" + value )
       else
-        _context(Error) and _context.log("Failed update: " + blockname + "." + input + "=" + value )
+        _context(Error) and _context.log(Error, "Failed update: " + blockname + "." + input + "=" + value )
       end
     else
-      _context(Error) and _context.log("Failed update: " + point + "=" + value )
+      _context(Error) and _context.log(Error, "Failed update: " + point + "=" + value )
     end
      
   be list_blocks( promise: Promise[Map[String, BlockTypeDescriptor val] val] tag ) =>
@@ -196,7 +195,7 @@ actor Graph
     promise(_descriptor)
     
   be describe( promise: Promise[JObj] tag ) =>
-    _context(Fine) and _context.log("Graph.describe()")
+    _context(Fine) and _context.log(Fine, "Graph.describe()")
     Collector[Block,JObj]( _blocks.values(), { (b,p) => b.describe(p) }, { (a) => 
       var result = JArr
       for s in a.values() do

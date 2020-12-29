@@ -1,6 +1,5 @@
 use "collections"
 use "jay"
-use "logger"
 use "promises"
 use "pony-metric"
 use ".."
@@ -22,7 +21,7 @@ actor GenericBlock is Block
   var _y:I64
   
   new create(name': String, descriptor': BlockTypeDescriptor val, algo:Algorithm, context:SystemContext, x:I64, y:I64 ) =>
-    context(Fine) and context.log("create("+name'+")")
+    context(Fine) and context.log(Fine, "create("+name'+")")
     _context = context
     _name = name'
     _descriptor = descriptor'
@@ -42,13 +41,13 @@ actor GenericBlock is Block
     _y = y
     
   be start() =>
-    _context(Fine) and _context.log("start()")
+    _context(Fine) and _context.log(Fine, "start()")
     _started = true
     refresh()
 
   be stop() =>
     refresh()
-    _context(Fine) and _context.log("stop()")
+    _context(Fine) and _context.log(Fine, "stop()")
     _started = false
     
   be connect( output: String, to_block: Block, to_input: String) =>
@@ -75,7 +74,7 @@ actor GenericBlock is Block
 
   be destroy() =>
     refresh()
-    _context(Fine) and _context.log("destroy()")
+    _context(Fine) and _context.log(Fine, "destroy()")
     _started = false
     for outp in _outputs.values() do
       outp.disconnect_all()
@@ -101,12 +100,12 @@ actor GenericBlock is Block
     error
 
   be update(input: String, new_value:Any val) =>
-    _context(Fine) and _context.log( _descriptor.name() + "[ " + _name + "." + input + " = " + try (new_value as Stringable).string() else "" end + " ]")
+    _context(Fine) and _context.log(Fine, _descriptor.name() + "[ " + _name + "." + input + " = " + try (new_value as Stringable).string() else "" end + " ]")
     try
       let inp = _find_input( input )?
       inp.set( new_value )
     else
-      _context(Error) and _context.log( input + " is not an input name of block type " + _descriptor.name() )
+      _context(Error) and _context.log(Error, input + " is not an input name of block type " + _descriptor.name() )
     end
     refresh()
 
@@ -189,7 +188,7 @@ class val GenericBlockFactory is BlockFactory
     _algorithm = algo
 
   fun create_block( instance_name: String, context:SystemContext val, x:I64, y:I64):Block =>
-    context(Fine) and context.log("create " + instance_name)
+    context(Fine) and context.log(Fine, "create " + instance_name)
     GenericBlock( instance_name, _descriptor, _algorithm, context, x, y )
 
   fun val block_type_descriptor(): BlockTypeDescriptor =>

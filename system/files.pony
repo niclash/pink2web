@@ -1,6 +1,5 @@
 
 use "collections"
-use "logger"
 use "files"
 
 primitive Files

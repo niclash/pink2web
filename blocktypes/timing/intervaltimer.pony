@@ -1,6 +1,5 @@
 use "collections"
 use "jay"
-use "logger"
 use "promises"
 use "time"
 use ".."
@@ -22,7 +21,7 @@ actor IntervalTimerBlock is Block
   var _y:I64
 
   new create(name': String, descriptor': BlockTypeDescriptor, context:SystemContext, x:I64, y:I64 ) =>
-    context(Fine) and context.log("create("+name'+")")
+    context(Fine) and context.log(Fine, "create("+name'+")")
     _context = context
     _name = name'
     _descriptor = descriptor'
@@ -47,7 +46,7 @@ actor IntervalTimerBlock is Block
     end
 
   be start() =>
-    _context(Fine) and _context.log("start()")
+    _context(Fine) and _context.log(Fine, "start()")
     if not _started then
       _started = true
       _arm(ToU64(_initial.value()),ToU64(_initial.value()))
@@ -55,7 +54,7 @@ actor IntervalTimerBlock is Block
 
   be stop() =>
     refresh()
-    _context(Fine) and _context.log("stop()")
+    _context(Fine) and _context.log(Fine, "stop()")
     if _started then
       _started = false
       match timer
@@ -77,7 +76,7 @@ actor IntervalTimerBlock is Block
     end
 
   be connect( output: String, to_block: Block, to_input: String) =>
-    if output == "output"  then
+    if output == "out"  then
       _output.connect(to_block, to_input)
     end
     refresh()
@@ -87,12 +86,12 @@ actor IntervalTimerBlock is Block
 
   be disconnect_edge( output:String, dest_block: Block, dest_input: String ) =>
     match output
-    | "output" => _output.disconnect_edge( dest_block, dest_input )
+    | "out" => _output.disconnect_edge( dest_block, dest_input )
     end
 
   be destroy() =>
     refresh()
-    _context(Fine) and _context.log("destroy()")
+    _context(Fine) and _context.log(Fine, "destroy()")
     _started = false
     _output.disconnect_all()
 
@@ -101,7 +100,7 @@ actor IntervalTimerBlock is Block
 
   be update(input: String, new_value:Any val) =>
     match new_value
-    | let v:Stringable => _context(Fine) and _context.log("IntervalTimer[ " + _name + "." + input + " = " + v.string() + " ]")
+    | let v:Stringable => _context(Fine) and _context.log(Fine, "IntervalTimer[ " + _name + "." + input + " = " + v.string() + " ]")
     end
     match new_value
     | let v: F64 =>
@@ -142,7 +141,7 @@ class val IntervalTimerBlockDescriptor is BlockTypeDescriptor
       _initial = InputDescriptor("initial", "number", "first interval", false, false )
       _rearm = InputDescriptor("rearm", "bool", "restart counting sequence", false, false )
       _oneshot = InputDescriptor("oneshot", "bool", "true if only one count sequence to run", false, false )
-      _out = OutputDescriptor("output", "bool", "true when timer expired, false when timer counting", false, true )
+      _out = OutputDescriptor("out", "bool", "true when timer expired, false when timer counting", false, true )
 
   fun val inputs(): Array[InputDescriptor] val =>
     [ _interval; _initial; _rearm; _oneshot ]
@@ -193,7 +192,7 @@ class val IntervalTimerBlockFactory is BlockFactory
     _descriptor
 
   fun create_block( instance_name: String, context:SystemContext val, x:I64, y:I64):Block =>
-    context(Fine) and context.log("create IntervalTimer")
+    context(Fine) and context.log(Fine, "create IntervalTimer")
     IntervalTimerBlock( instance_name, _descriptor, context, x, y )
 
   fun val describe(): JObj val =>

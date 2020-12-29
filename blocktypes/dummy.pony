@@ -1,5 +1,4 @@
 use "jay"
-use "logger"
 use "promises"
 use "../graphs"
 use "../system"
@@ -8,7 +7,7 @@ class val DummyFactory is BlockFactory
   let descriptor:BlockTypeDescriptor val = recover DummyDescriptor end
   
   fun create_block( container_name: String, context:SystemContext, x:I64, y:I64): Block tag =>
-    context(Error) and context.log("Unknown type for \"" + container_name + "\". Unable to create.")
+    context(Error) and context.log(Error, "Unknown type for \"" + container_name + "\". Unable to create.")
     let result:DummyBlock tag = DummyBlock(descriptor.name(), descriptor, context)
     result
       
@@ -79,7 +78,7 @@ actor DummyBlock is Block
     promise(_name)
 
   be describe( promise:Promise[JObj val] tag ) =>
-    _context(Fine) and _context.log("describe")
+    _context(Fine) and _context.log(Fine, "describe")
     var json = JObj
     promise( json )
 

@@ -13,7 +13,6 @@ use "collections"
 use "debug"
 use "files"
 use "jay"
-use "logger"
 use "ponytest"
 use "promises"
 

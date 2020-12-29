@@ -1,10 +1,9 @@
 {
-  "name": "pinkflow",
+  "name": "pink2web",
   "version": "0.0.0",
   "description": "Visual Designer for Pink2Web platform",
   "main": "src/index.js",
   "dependencies": {
-    "@fortawesome/fontawesome-free": "^5.11.2",
     "resolve": "^1.14.1",
     "vue": "^2.6.10",
     "webpack": "^4.41.2",
@@ -22,7 +21,7 @@
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/niclash/pinkflow.git"
+    "url": "git+https://github.com/niclash/pink2web.git"
   },
   "keywords": [
     "pony-language",
@@ -31,7 +30,7 @@
   "author": "Niclas Hedhman",
   "license": "Apache-2.0",
   "bugs": {
-    "url": "https://github.com/niclash/pinkflow/issues"
+    "url": "https://github.com/niclash/pink2web/issues"
   },
-  "homepage": "https://github.com/niclash/pinkflow#readme"
+  "homepage": "https://github.com/niclash/pink2web#readme"
 }

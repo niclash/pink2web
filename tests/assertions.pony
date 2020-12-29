@@ -4,7 +4,6 @@ use "../system"
 use "collections"
 use "debug"
 use "jay"
-use "logger"
 use "ponytest"
 use "promises"
 
@@ -25,7 +24,7 @@ actor Assertion is Block
   var _graph: (Graph|None) = None
   
   new create(name': String, descriptor': BlockTypeDescriptor, context:SystemContext, helper:TestHelper ) =>
-    context(Fine) and context.log("create("+name'+")")
+    context(Fine) and context.log(Fine, "create("+name'+")")
     _helper = helper
     _context = context
     _name = name'
@@ -35,7 +34,7 @@ actor Assertion is Block
     _completed = InputImpl( name', _descriptor.input(2), false )
 
   be run(inputs:Array[(String,String)] val, graph:Graph) =>
-    _context(Fine) and _context.log( "Starting data feed" )
+    _context(Fine) and _context.log(Fine, "Starting data feed" )
     _feed = inputs
     _graph = graph
     try
@@ -48,7 +47,7 @@ actor Assertion is Block
     match _graph
     | let graph':Graph => 
       (let point, let value) = _feed(_counter)?
-      _context(Fine) and _context.log( "next_input() " + _counter.string() + "  " +  point + " = " + value )
+      _context(Fine) and _context.log(Fine, "next_input() " + _counter.string() + "  " +  point + " = " + value )
       graph'.set_value_from_string( point, value )
     else
       None // Ignore as this happens (or may happen) during start up.
@@ -69,11 +68,11 @@ actor Assertion is Block
     
   be start() =>
     _started = true
-    _context(Fine) and _context.log("start()")
+    _context(Fine) and _context.log(Fine, "start()")
     
   be stop() =>
     _started = false  
-    _context(Fine) and _context.log("stop()")
+    _context(Fine) and _context.log(Fine, "stop()")
     
   be connect( output: String, to_block: Block, to_input: String) =>
     None
@@ -101,7 +100,7 @@ actor Assertion is Block
     if _graph is None then
       return
     end
-    _context(Fine) and _context.log("Assertion[ " + _name + "." + input + " = " + new_value.string() + " ]")
+    _context(Fine) and _context.log(Fine, "Assertion[ " + _name + "." + input + " = " + new_value.string() + " ]")
     if input == "equality" then
       try
         let expected = next_expectation()?
@@ -152,14 +151,14 @@ actor Assertion is Block
     promise(_descriptor)
 
   be describe( promise:Promise[JObj val] tag ) =>
-    _context(Fine) and _context.log("describe")
+    _context(Fine) and _context.log(Fine, "describe")
     let equality = _equality.describe()
     let completed = _completed.describe()
     let m = JObj
       + ("name", _name )
       + ("equality", equality )
       + ("completed", completed )
-    _context(Fine) and _context.log( "Reporting " + m.string() )
+    _context(Fine) and _context.log(Fine, "Reporting " + m.string() )
     promise(m)
 
   be add_expectation( expected: Array[Any val] val) =>
@@ -208,7 +207,7 @@ class val AssertionFactory is BlockFactory
     _descriptor
 
   fun create_block( instance_name: String, context:SystemContext val, x:I64, y:I64):Block =>
-    context(Fine) and context.log("create Assertion")
+    context(Fine) and context.log(Fine, "create Assertion")
     Assertion( instance_name, _descriptor, context, helper )
 
   fun val describe(): JObj val =>

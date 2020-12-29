@@ -17,9 +17,11 @@ class val Fbp
   let _graph_protocol:GraphProtocol
   let _component_protocol:ComponentProtocol
   let _trace_protocol:TraceProtocol
+  let _context:SystemContext
   
   new val create( uuid:String, main_graph:String, graphs:Graphs, blocktypes:BlockTypes, context:SystemContext) =>
     _graphs = graphs
+    _context = context
     let label: String = "Pink2Web - flowbased programming engine written in Pony Language"
     let version: String = "0.1.0"
     let all_capabilities: Array[String val] val = [
@@ -66,12 +68,14 @@ class val Fbp
     end
 
   fun subscribe(websocket: WebSocketSender val) =>
+    _context.add_remote( websocket )
     let subscriber = Subscription(websocket)
     _graphs.subscribe( subscriber )
 
   fun unsubscribe(websocket: WebSocketSender val) =>
     let subscriber = Subscription(websocket)
     _graphs.unsubscribe( subscriber )
+    _context.remove_remote( websocket )
 
 class val Subscription is GraphNotify
   let _connection: WebSocketSender val

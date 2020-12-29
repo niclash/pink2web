@@ -3,7 +3,7 @@ use "jay"
 
 primitive Message
 
-  fun apply( protocol: String, command: String, payload: JObj ): JObj =>
+  fun apply( protocol: String, command: String, payload: J ): JObj =>
     JObj + ( "protocol", protocol ) + ( "command", command ) + ( "payload", payload )
       
   fun err( protocol: String, message: String ): JObj =>

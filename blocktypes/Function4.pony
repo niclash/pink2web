@@ -1,6 +1,5 @@
 use "collections"
 use "jay"
-use "logger"
 use "promises"
 use ".."
 use "../graphs"
@@ -24,7 +23,7 @@ actor Function4Block is Block
   var _y:I64
 
   new create(name': String, descriptor': BlockTypeDescriptor, function':Function4, context:SystemContext, x:I64, y:I64 ) =>
-    context(Fine) and context.log("create("+name'+")")
+    context(Fine) and context.log(Fine, "create("+name'+")")
     _context = context
     _function = function'
     _name = name'
@@ -43,17 +42,17 @@ actor Function4Block is Block
     _y = y
 
   be start() =>
-    _context(Fine) and _context.log("start()")
+    _context(Fine) and _context.log(Fine, "start()")
     _started = true
     refresh()
 
   be stop() =>
     refresh()
-    _context(Fine) and _context.log("stop()")
+    _context(Fine) and _context.log(Fine, "stop()")
     _started = false
 
   be connect( output: String, to_block: Block, to_input: String) =>
-    if output == "output"  then
+    if output == "out"  then
       _output.connect(to_block, to_input)
     end
     refresh()
@@ -63,12 +62,12 @@ actor Function4Block is Block
 
   be disconnect_edge( output:String, dest_block: Block, dest_input: String ) =>
     match output
-    | "output" => _output.disconnect_edge( dest_block, dest_input )
+    | "out" => _output.disconnect_edge( dest_block, dest_input )
     end
 
   be destroy() =>
     refresh()
-    _context(Fine) and _context.log("destroy()")
+    _context(Fine) and _context.log(Fine, "destroy()")
     _started = false
     _output.disconnect_all()
 
@@ -76,7 +75,7 @@ actor Function4Block is Block
     _name = new_name
 
   be update(input: String, new_value:Any val) =>
-    _context(Fine) and _context.log("Function4[ " + _name + "." + input + " = " + try (new_value as Stringable).string() else "<not stringable>" end + " ]")
+    _context(Fine) and _context.log(Fine, "Function4[ " + _name + "." + input + " = " + try (new_value as Stringable).string() else "<not stringable>" end + " ]")
     match input
     | "in1" => _input1.set( new_value )
     | "in2" => _input2.set( new_value )
@@ -122,7 +121,7 @@ class val Function4BlockDescriptor is BlockTypeDescriptor
       _in2 = InputDescriptor(name2, type2, descr2, false, true )
       _in3 = InputDescriptor(name3, type3, descr3, false, true )
       _in4 = InputDescriptor(name4, type4, descr4, false, true )
-      _out = OutputDescriptor("output", output_type, outdescr, false, true )
+      _out = OutputDescriptor("out", output_type, outdescr, false, true )
 
   fun val inputs(): Array[InputDescriptor] val =>
     [ _in1; _in2; _in3; _in4 ]
@@ -221,7 +220,7 @@ class val Function4BlockFactory is BlockFactory
     _descriptor
 
   fun create_block( instance_name: String, context:SystemContext val, x:I64, y:I64):Block =>
-    context(Fine) and context.log("create Add")
+    context(Fine) and context.log(Fine, "create Add")
     Function4Block( instance_name, _descriptor, _function, context, x, y )
 
   fun val describe(): JObj val =>

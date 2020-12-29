@@ -4,7 +4,6 @@ use "../system"
 use "collections"
 use "files"
 use "jay"
-use "logger"
 
 class Loader
   let _blocktypes: BlockTypes
@@ -48,14 +47,14 @@ class Loader
       let processes: JObj val = root("processes") as JObj
       parse_processes( graph, processes )
     else
-      _context(Error) and _context.log( "A 'processes' object must exist in root object." )
+      _context(Error) and _context.log( Error, "A 'processes' object must exist in root object." )
     end
 
     try
       let connections: JArr val = root("connections") as JArr
       parse_connections( graph, connections )
     else
-      _context(Error) and _context.log( "A 'connections' object must exist in root object." )
+      _context(Error) and _context.log( Error, "A 'connections' object must exist in root object." )
     end
 
     (id,graph)
@@ -79,7 +78,7 @@ class Loader
         end
         graph.create_block( blocktype, name, x, y )
       else
-        _context(Error) and _context.log( "Component '" + name + "' has invalid structure." )
+        _context(Error) and _context.log( Error, "Component '" + name + "' has invalid structure." )
       end
     end
   
@@ -93,7 +92,7 @@ class Loader
       else
         try
           let c:Stringable = value as Stringable
-          _context(Error) and _context.log( "Connection "+c.string()+"has invalid structure." )
+          _context(Error) and _context.log( Error, "Connection "+c.string()+"has invalid structure." )
         end
       end
     end

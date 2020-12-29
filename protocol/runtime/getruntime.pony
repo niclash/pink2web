@@ -1,5 +1,4 @@
 use "jay"
-use "logger"
 use "promises"
 use "../../blocktypes"
 use "../component"
@@ -75,7 +74,7 @@ class GraphParser
     try
       graph(prop) as String
     else
-      _context(Error) and _context.log( prop + " is not found or is not a string in " + graph.string() )
+      _context(Error) and _context.log(Error, prop + " is not found or is not a string in " + graph.string() )
       _connection.send_text( Message.err( "runtime", "Invalid payload" ).string() )
       error
     end

@@ -23,3 +23,8 @@ primitive Fail
       loc.file().cstring(),
       loc.line().string().cstring())
     @exit[None](U8(1))
+
+primitive Print
+  fun apply(message:String) =>
+    @fprintf[I32](@pony_os_stderr[Pointer[U8]](),message.cstring())
+    @fprintf[I32](@pony_os_stderr[Pointer[U8]](),"\n".cstring())
