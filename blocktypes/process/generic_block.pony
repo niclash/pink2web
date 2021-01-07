@@ -145,14 +145,14 @@ class val GenericBlockTypeDescriptor is BlockTypeDescriptor
     try
       _inputs(index)?
     else
-      InputDescriptor( "INVALID", "INVALID", "INVALID", false, false)
+      InputDescriptor( "INVALID", "INVALID", "INVALID", false)
     end
 
   fun val output( index: USize ): OutputDescriptor val =>
     try
       _outputs(index)?
     else
-      OutputDescriptor( "INVALID", "INVALID", "INVALID", false, false)
+      OutputDescriptor( "INVALID", "INVALID", "INVALID", false)
     end
 
   fun val name(): String =>

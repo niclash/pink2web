@@ -3,91 +3,122 @@
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
-    <meta name="description" content="">
-    <meta name="author" content="Mark Otto, Jacob Thornton, and Bootstrap contributors">
-    <meta name="generator" content="Jekyll v3.8.5">
-    <title>Dashboard Template · Bootstrap</title>
-    <link href="../../assets/css/bootstrap-4.4.0.min.css" rel="stylesheet">
-    <link href="../../assets/css/app.css" rel="stylesheet">
+    <title>Link2Web - Next Generation</title>
+    <link href="/css/bootstrap-4.4.0.min.css" rel="stylesheet">
+    <link href="/css/app.css" rel="stylesheet">
+    <link rel="stylesheet" href="/css/fontawesome-all-5.15.1.css"/>
+    <script type="text/javascript" src="/js/jquery-3.5.1.js"></script>
 </head>
 <body>
-<nav class="navbar navbar-dark fixed-top bg-dark flex-md-nowrap p-0 shadow">
-    <a class="navbar-brand col-sm-3 col-md-2 mr-0" href="#">Link2Web - {{propertydetails.name}}</a>
-    <a class="nav-item text-nowrap" href="#">5701-VP1</a>
-    <ul class="navbar-nav px-3">
-        <li class="nav-item text-nowrap">
-            <a class="nav-link" href="#">Sign out</a>
-        </li>
-    </ul>
+<nav class="navbar navbar-expand-lg navbar-dark bg-dark fixed-top">
+    <!--<nav class="navbar navbar-expand-lg navbar-light bg-light shadow-lg">-->
+    <img src="/images/logo-64x55.png" style="margin-right: 1em;"/>
+    <a class="navbar-brand" href="#" style="height:54px; margin-bottom:10px; border-bottom: lightgray solid 1px">Pink2Web
+        <span style="font-size:x-small; vertical-align:top; "><br/>Make It Simple</span>
+    </a>
+    <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarNavAltMarkup"
+            aria-controls="navbarNavAltMarkup" aria-expanded="false" aria-label="Toggle navigation">
+        <span class="navbar-toggler-icon"></span>
+    </button>
+    <div class="collapse navbar-collapse" id="navbarNavAltMarkup">
+        <div class="navbar-nav">
+            <a class="nav-item nav-link" href="/pink2web">Home</a>
+            <a class="nav-item nav-link" href="#" onclick="logout()">Sign Out</a>
+        </div>
+    </div>
 </nav>
-<div class="container-fluid">
-    <div class="row">
+<div class="container-fluid" style="height:100%">
+    <div class="row" style="height:100%;">
         <nav class="col-md-2 d-none d-md-block bg-light sidebar">
             <div class="sidebar-sticky">
-                <ul class="nav flex-column">
-                    <li class="nav-item">
-                        <a class="nav-link active" href="#">
-                            <span data-feather="home"></span>
-                            Dashboard <span class="sr-only">(current)</span>
-                        </a>
-                    </li>
-                    <li class="nav-item">
-                        <a class="nav-link" href="#">
-                            <span data-feather="file"></span>
-                            5701-VP1
-                        </a>
-                    </li>
-                    <li class="nav-item">
-                        <a class="nav-link" href="#">
-                            <span data-feather="shopping-cart"></span>
-                            Products
-                        </a>
-                    </li>
-                    <li class="nav-item">
-                        <a class="nav-link" href="#">
-                            <span data-feather="users"></span>
-                            Customers
-                        </a>
-                    </li>
-                    <li class="nav-item">
-                        <a class="nav-link" href="#">
-                            <span data-feather="bar-chart-2"></span>
-                            Reports
-                        </a>
-                    </li>
-                    <li class="nav-item">
-                        <a class="nav-link" href="#">
-                            <span data-feather="layers"></span>
-                            Integrations
-                        </a>
-                    </li>
-                </ul>
-            </div>
-        </nav>
+                <div class="h5 ml-2">Installations</div>
+                <div class="accordion" id="sites">
+                    <div class="card">
+                        <div class="card-header nopad" id="site1">
+                            <h2 class="mb-0">
+                                <button class="btn btn-link" type="button" data-toggle="collapse" data-target="#collapseSite1"
+                                        aria-expanded="false" aria-controls="collapseSite1">
+                                    SBC Malmö
+                                </button>
+                            </h2>
+                        </div>
 
-        <main role="main" class="col-md-9 ml-sm-auto col-lg-10 px-4">
-            <div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom">
-                <h1 class="h2">Dashboard</h1>
-                <div class="btn-toolbar mb-2 mb-md-0">
-                    <div class="btn-group mr-2">
-                        <button type="button" class="btn btn-sm btn-outline-secondary">Share</button>
-                        <button type="button" class="btn btn-sm btn-outline-secondary">Export</button>
+                        <div id="collapseSite1" class="collapse show" aria-labelledby="site1" data-parent="#sites">
+                            <div class="card-body">
+                                <ul class="nav flex-column">
+                                    <li class="nav-item">
+                                        <a class="nav-link nopad" href="#">Brf Benzelius</a>
+                                    </li>
+                                    <li class="nav-item">
+                                        <a class="nav-link nopad" href="#">Brf Lillbragden</a>
+                                    </li>
+                                    <li class="nav-item">
+                                        <a class="nav-link nopad" href="#">Brf Majoren</a>
+                                    </li>
+                                    <li class="nav-item">
+                                        <a class="nav-link nopad" href="#">Brf Schougen</a>
+                                    </li>
+                                </ul>
+                            </div>
+                        </div>
                     </div>
-                    <button type="button" class="btn btn-sm btn-outline-secondary dropdown-toggle">
-                        <span data-feather="calendar"></span>
-                        This week
-                    </button>
+                    <div class="card">
+                        <div class="card-header nopad" id="site2">
+                            <h2 class="mb-0">
+                                <button class="btn btn-link collapsed" type="button" data-toggle="collapse" data-target="#collapseSite2"
+                                        aria-expanded="false" aria-controls="collapseSite2">
+                                    Idoff
+                                </button>
+                            </h2>
+                        </div>
+                        <div id="collapseSite2" class="collapse" aria-labelledby="site2" data-parent="#sites">
+                            <div class="card-body">
+                                <ul class="nav flex-column">
+                                    <li class="nav-item">
+                                        <a class="nav-link nopad" href="#">Kv Häggen</a>
+                                    </li>
+                                </ul>
+                            </div>
+                        </div>
+                    </div>
                 </div>
             </div>
 
-        </main>
+        </nav>
+        <nav class="col-md-2 d-none d-md-block bg-light sidebar">
+            <div class="sidebar-sticky">
+                <div class="h5 ml-2">Systems</div>
+                <div class="accordion" id="systems">
+                    <div class="card">
+                        <div class="card-header nopad" id="system1">
+                            <h2 class="mb-0">
+                                <button class="btn btn-link" type="button" data-toggle="collapse" data-target="#collapseS1"
+                                        aria-expanded="false" aria-controls="collapseS1">
+                                    Fjärrvärme
+                                </button>
+                            </h2>
+                        </div>
+
+                        <div id="collapseS1" class="collapse show" aria-labelledby="system1" data-parent="#systems">
+                            <div class="card-body">
+                                <ul class="nav flex-column">
+                                    <li class="nav-item">
+                                        <a class="nav-link nopad" href="#">Fvc1-standard</a>
+                                    </li>
+                                </ul>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </nav>
     </div>
 </div>
-<script src="../../assets/js/jquery-3.4.1.slim.min.js"></script>
-<script>window.jQuery || document.write('<script src="../../assets/js/jquery-3.4.1.slim.min.js"><\/script>')</script>
-<script src="../../assets/js/bootstrap-4.4.0.bundle.min.js"></script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/feather-icons/4.9.0/feather.min.js"></script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/2.7.3/Chart.min.js"></script>
-<script src="../../assets/js/dashboard.js"></script>
+<div class="footer-copyright text-center text-white bg-dark py-3">Copyright 2020 Bali Automation, All Rights Reserved.</div>
+<script type="text/javascript" src="/js/bootstrap-4.4.0.bundle.min.js"></script>
+<script type="text/javascript" src="/js/vue-2.6.10.min.js"></script>
+<script src="https://unpkg.com/leaflet@1.7.1/dist/leaflet.js"
+        integrity="sha512-XQoYMqMTK8LvdxXYG3nZ448hOEQiglfqkJs1NOQV44cWnUrBc8PkAOcXy20w0vlaXaVUearIOBhiXZ5V3ynxwA=="
+        crossorigin=""></script>
 </body>
 </html>

@@ -107,9 +107,9 @@ class val Function2BlockDescriptor is BlockTypeDescriptor
                  name2:String, type2:String, descr2:String) =>
       _name = blockname
       _description = block_description
-      _in1 = InputDescriptor(name1, type1, descr1, false, true )
-      _in2 = InputDescriptor(name2, type2, descr2, false, true )
-      _out = OutputDescriptor("out", output_type, outdescr, false, true )
+      _in1 = InputDescriptor(name1, type1, descr1, false )
+      _in2 = InputDescriptor(name2, type2, descr2, false )
+      _out = OutputDescriptor("out", output_type, outdescr, false )
 
   fun val inputs(): Array[InputDescriptor] val =>
     [ _in1; _in2 ]
@@ -128,14 +128,14 @@ class val Function2BlockDescriptor is BlockTypeDescriptor
     | 0 => _in1
     | 1 => _in2
     else
-      InputDescriptor( "INVALID", "INVALID", "INVALID", false, false)
+      InputDescriptor( "INVALID", "INVALID", "INVALID", false)
     end
 
   fun val output( index: USize ): OutputDescriptor val =>
     match index
     | 0 => _out
     else
-      OutputDescriptor( "INVALID", "INVALID", "INVALID", false, false)
+      OutputDescriptor( "INVALID", "INVALID", "INVALID", false)
     end
 
   fun val name(): String =>

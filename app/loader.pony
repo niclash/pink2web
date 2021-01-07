@@ -16,7 +16,7 @@ class Loader
     _graphs = graphs
 
   fun load( pathname: String ): (String, Graph) ? =>
-      let content: String = Files.read_lines_from_pathname(pathname, _context.auth())?
+      let content: String = Files.read_text_from_pathname(pathname, _context.auth())?
       let root = JParse.from_string( content )? as JObj
       parse_root(root)
   

@@ -59,21 +59,19 @@ class val InputDescriptor
   let description: String
   let typ: String
   let addressable: Bool
-  let required: Bool
-  
-  new val create( name':String, typ':String, description':String, addressable': Bool, required': Bool ) =>
+  let target:String // for NestedBlocks only
+
+  new val create( name':String, typ':String, description':String, addressable': Bool, target':String="" ) =>
     name = name'
     description = description'
     typ = typ'
     addressable = addressable'
-    required = required'
-    
+    target=target'
+
   fun describe() : JObj val =>
     let j = JObj
       + ("id", name)
       + ("description", description)
       + ("type", typ )
-      + ("required", required)
       + ("addressable", addressable )
     j
-    

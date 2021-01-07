@@ -44,7 +44,7 @@ actor Main
                                  else if c.option("warn").bool() then Warn
                                  else Error end end end
             let context:SystemContext = SystemContext(auth, env.out, env.err, level)
-            let blocktypes:BlockTypes val = BlockTypes(context)
+            let blocktypes:BlockTypes = BlockTypes(context)
             match c.fullname()
             | "pink2web/list/types" => list_types(blocktypes, context)
             | "pink2web/run/process" =>
@@ -111,15 +111,21 @@ actor Main
     ])?
 
   fun list_types(blocktypes:BlockTypes, context:SystemContext) =>
-    let m = blocktypes.list_types()
-    for t in m.keys() do
-      context.to_stdout( t ) 
-    end
-     
+    let promise = Promise[Map[String, BlockTypeDescriptor val] val]
+    promise.next[None]( { (m:Map[String, BlockTypeDescriptor val] val) =>
+      for t in m.keys() do
+        context.to_stdout( t )
+      end
+    })
+    let m = blocktypes.list_types(promise)
+
   fun describe_type(typ:String, blocktypes:BlockTypes, context:SystemContext) =>
-    let json = blocktypes.describe_type( typ )
-    context.to_stdout( json.string() )    
-    
+    let promise = Promise[JObj]
+    promise.next[None]( { (json:JObj) =>
+      context.to_stdout( json.string() )
+    })
+    let json = blocktypes.describe_type( typ, promise )
+
   fun describe_topology(filename:String, blocktypes:BlockTypes, context:SystemContext) ? =>
     context(Fine) and context.log( Fine, "Describe topology" )
     let graphs = Graphs( blocktypes, context )

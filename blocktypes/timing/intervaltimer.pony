@@ -137,11 +137,11 @@ class val IntervalTimerBlockDescriptor is BlockTypeDescriptor
   let _out:OutputDescriptor
 
   new val create() =>
-      _interval = InputDescriptor("interval", "number", "interval after the initial interval", false, false )
-      _initial = InputDescriptor("initial", "number", "first interval", false, false )
-      _rearm = InputDescriptor("rearm", "bool", "restart counting sequence", false, false )
-      _oneshot = InputDescriptor("oneshot", "bool", "true if only one count sequence to run", false, false )
-      _out = OutputDescriptor("out", "bool", "true when timer expired, false when timer counting", false, true )
+      _interval = InputDescriptor("interval", "number", "interval after the initial interval", false )
+      _initial = InputDescriptor("initial", "number", "first interval", false )
+      _rearm = InputDescriptor("rearm", "bool", "restart counting sequence", false )
+      _oneshot = InputDescriptor("oneshot", "bool", "true if only one count sequence to run", false )
+      _out = OutputDescriptor("out", "bool", "true when timer expired, false when timer counting", false )
 
   fun val inputs(): Array[InputDescriptor] val =>
     [ _interval; _initial; _rearm; _oneshot ]
@@ -166,14 +166,14 @@ class val IntervalTimerBlockDescriptor is BlockTypeDescriptor
     | 2 => _rearm
     | 3 => _oneshot
     else
-      InputDescriptor( "INVALID", "number", "INVALID", false, false)
+      InputDescriptor( "INVALID", "number", "INVALID", false)
     end
 
   fun val output( index: USize ): OutputDescriptor val =>
     match index
     | 0 => _out
     else
-      OutputDescriptor( "INVALID", "number", "INVALID", false, false)
+      OutputDescriptor( "INVALID", "number", "INVALID", false)
     end
 
   fun val name(): String =>

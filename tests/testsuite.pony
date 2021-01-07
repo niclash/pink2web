@@ -123,7 +123,7 @@ class iso _BlockTest is UnitTest
     
   fun parse_test(pathname:String, env:Env): JObj ? =>
     try
-      let content = Files.read_lines_from_pathname(pathname, env.root)?
+      let content = Files.read_text_from_pathname(pathname, env.root)?
       try
         let json = JParse.from_string( content )?
           try

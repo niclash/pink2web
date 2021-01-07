@@ -126,20 +126,19 @@ class val OutputDescriptor
   let description: String
   let taip: String
   let addressable: Bool
-  let required: Bool
-  
-  new val create( name':String, typ':String, description':String, addressable': Bool, required': Bool ) =>
+  let source:String  // for NestedBlocks only
+
+  new val create( name':String, typ':String, description':String, addressable': Bool, source':String="" ) =>
     name = name'
     description = description'
     taip = typ'
     addressable = addressable'
-    required = required'
-    
+    source = source'
+
   fun describe() : JObj val =>
     let j = JObj
       + ("id", name )
       + ("description", description )
       + ("type", taip.string() )
-      + ("required", required )
       + ("addressable", addressable )
     j

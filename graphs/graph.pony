@@ -66,15 +66,22 @@ actor Graph
       _uptime = _uptime + 1
     end
     
+  be register_block(block:Block, name':String, blocktype: BlockTypeDescriptor) =>
+    _blocks( name' ) = block
+    _block_types(block) = blocktype
+    _graphs._added_block(_descriptor.id, name', blocktype.name(), 0, 0)
+    _context(Fine) and _context.log(Fine, "Available Blocks: " + _available_blocks() )
+
   be create_block(block_type: String, name': String, x:I64, y:I64) =>
     _context(Info) and _context.log(Info, "create_block " + name' + " of type " + block_type )
-    let factory = _types.get(block_type)
-    let block:Block tag = factory.create_block( name', _context, x, y )
-    _register_block(block, name', factory.block_type_descriptor())
+    let promise = Promise[BlockFactory]
+    let thiss:Graph tag = this
+    promise.next[None]( { (factory) =>
+      let block:Block tag = factory.create_block( name', _context, x, y )
+      thiss.register_block(block, name', factory.block_type_descriptor())
+    })
+    _types.get(block_type, promise)
 
-  be register_block(block:Block, name':String, blocktype: BlockTypeDescriptor) =>
-    _register_block(block, name', blocktype)
-    
   be set_initial( block':String, input:String, initial_value:Any val) =>
     try
       let block = _blocks( block' )?
@@ -83,12 +90,6 @@ actor Graph
       _graphs._error( "graph", "Unknown Node: " + block' )
     end
   
-  fun ref _register_block(block:Block tag, name':String, blocktype: BlockTypeDescriptor) =>
-    _blocks( name' ) = block
-    _block_types(block) = blocktype
-    _graphs._added_block(_descriptor.id, name', blocktype.name(), 0, 0)
-    _context(Fine) and _context.log(Fine, "Available Blocks: " + _available_blocks() )
-
   be change_block( name':String, x:I64, y:I64 ) =>
     try
       let block = _blocks( name' )?

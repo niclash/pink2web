@@ -169,8 +169,8 @@ class val AssertionDescriptor is BlockTypeDescriptor
   let completed:InputDescriptor
 
   new val create() =>
-      equality = InputDescriptor("equality", PNum, "value to assert", false, true )
-      completed = InputDescriptor("completed", PNum, "signal that testing is done and to be evaluated", false, true )
+      equality = InputDescriptor("equality", PNum, "value to assert", false )
+      completed = InputDescriptor("completed", PNum, "signal that testing is done and to be evaluated", false )
 
   fun val inputs(): Array[InputDescriptor] val =>
     [ equality; completed ]
@@ -183,11 +183,11 @@ class val AssertionDescriptor is BlockTypeDescriptor
       let inputs':Array[InputDescriptor] val = inputs()
       inputs'(index)?
     else
-      InputDescriptor( "INVALID", PNum, "INVALID", false, false)
+      InputDescriptor( "INVALID", PNum, "INVALID", false)
     end
     
   fun val output( index: USize ): OutputDescriptor val =>
-    OutputDescriptor( "INVALID", PNum, "INVALID", false, false)
+    OutputDescriptor( "INVALID", PNum, "INVALID", false)
     
   fun val name(): String =>
     "Assertion"

@@ -12,28 +12,24 @@
                     "id": "freq",
                     "description": "Frequency input",
                     "type": "number",
-                    "required": false,
                     "addressable": false
                 },
                 {
                     "id": "ampl",
                     "description": "Amplitude input",
                     "type": "number",
-                    "required": false,
                     "addressable": false
                 },
                 {
                     "id": "mute",
                     "description": "Mute input",
                     "type": "bool",
-                    "required": false,
                     "addressable": false
                 },
                 {
                     "id": "mute",
                     "description": "Frequency input",
                     "type": "bool",
-                    "required": false,
                     "addressable": false
                 }
             ],
@@ -42,7 +38,6 @@
                     "id": "out",
                     "description": "Output",
                     "type": "number",
-                    "required": false,
                     "addressable": false
                 }
             ]
