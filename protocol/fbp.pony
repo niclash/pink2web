@@ -63,7 +63,7 @@ class val Fbp
         conn.send_text( Message.err( protocol, "Unknown protocol" ).string() )
       end
     else
-      @printf[I32](("parse error\n").cstring())
+      Print("parse error\n")
       conn.send_text( Message.err( "unknown", "Badly formatted request" ).string() )
     end
 

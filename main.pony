@@ -57,21 +57,29 @@ actor Main
                 // bug in cli, default port isn't working properly
                 if port == 0 then port = 3568 end
                 let graphs = Graphs( blocktypes, context )
-                (let main_graph:String,let graph:Graph) = run_process(filename,graphs,blocktypes,context)?
-                let fbp = Fbp("619362b3-1aee-4dca-b109-bef38e0e1ca8", main_graph, graphs, blocktypes, context)
-                let ws_port:String val = (port+1).string()
-                _websocketListener = WebSocketListener(auth,ListenNotify(fbp,context),host,ws_port)
                 var path:String = c.option("webdir").string()
                 if path == "" then path = Path.cwd() + "/ui/src" end
                 var startpage:String = c.option("startpage").string()
                 if startpage == "" then startpage = "login" end
-                context(Info) and context.log(Info, "Web directory:"+path)
-                context(Info) and context.log(Info, "Start Page:"+startpage)
-                context(Info) and context.log(Info, "Started to listen: ws://"+host+":"+ws_port)
-                _rest = RestServer(host, port,  path, startpage, context )
+                let promise = Promise[(String, Graph|None)]
+                promise.next[None]({ (pair) =>
+                  (let main_graph:String, let graph:(Graph|None)) = pair
+                  match graph
+                  | let g:Graph =>
+                    let fbp = Fbp("619362b3-1aee-4dca-b109-bef38e0e1ca8", main_graph, graphs, blocktypes, context)
+                    let ws_port:String val = (port+1).string()
+                    _websocketListener = WebSocketListener(auth,ListenNotify(fbp,context),host,ws_port)
+                    context(Info) and context.log(Info, "Web directory:"+path)
+                    context(Info) and context.log(Info, "Start Page:"+startpage)
+                    context(Info) and context.log(Info, "Started to listen: ws://"+host+":"+ws_port)
+                    _rest = RestServer(host, port,  path, startpage, context )
+                  end
+                })
+                run_process(filename,graphs,blocktypes,context, promise)
+
             | "pink2web/describe/type" => describe_type(c.arg("typename" ).string(),blocktypes,context)
             | "pink2web/describe/topology" => 
-                describe_topology(c.arg("filename").string(),blocktypes,context)?
+                describe_topology(c.arg("filename").string(),blocktypes,context)
             end
       | let ch: CommandHelp =>
           ch.print_help(env.out)
@@ -126,22 +134,41 @@ actor Main
     })
     let json = blocktypes.describe_type( typ, promise )
 
-  fun describe_topology(filename:String, blocktypes:BlockTypes, context:SystemContext) ? =>
+  fun describe_topology(filename:String, blocktypes:BlockTypes, context:SystemContext) =>
     context(Fine) and context.log( Fine, "Describe topology" )
     let graphs = Graphs( blocktypes, context )
     let loader = Loader( graphs, blocktypes, context )
-    (let id:String, let graph:Graph) = loader.load( filename )?
+
     let promise = Promise[JObj]
-    promise.next[None]( { (json: JObj) => 
+    promise.next[None]( { (json: JObj) =>
       context(Fine) and context.log( Fine, "Topology Description" )
-      context.to_stdout( json.string() ) 
+      context.to_stdout( json.string() )
       graphs.shutdown()
     } )
-    graph.describe( promise )
+
+    let loadpromise = Promise[(String, Graph|None)]
+    loadpromise.next[None]( { (pair) =>
+      (let id:String, let graph:(Graph|None)) = pair
+      match graph
+      | let g:Graph => g.describe( promise )
+      else
+        context(Error) and context.log( Error, "Unable to load " + filename )
+      end
+    })
+    loader.load( filename, loadpromise )?
     
-  fun run_process(filename:String, graphs: Graphs, blocktypes:BlockTypes, context:SystemContext):(String, Graph) ? =>
+  fun run_process(filename:String, graphs: Graphs, blocktypes:BlockTypes, context:SystemContext, promise:Promise[(String,Graph|None)]) =>
     let loader = Loader(graphs, blocktypes, context)
-    (let id:String, let graph:Graph) = loader.load( filename )?  
-    graph.start()
-    context(Info) and context.log(Info, "Main graph: " + id )
-    (id, graph)
+    let p = Promise[(String, Graph|None)]
+    p.next[None]( { (pair) =>
+      (let id:String, let graph:(Graph|None)) = pair
+      match graph
+      | let g:Graph =>
+        g.start()
+        context(Info) and context.log(Info, "Main graph: " + id )
+      else
+        context(Error) and context.log(Error, "Unable to load " + filename )
+      end
+      promise((id, graph))
+    })
+    loader.load( filename, p )

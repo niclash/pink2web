@@ -22,6 +22,7 @@ actor Graph
   var _uptime: I64 = 0  // in seconds
   
   new create(graphs:Graphs, id': String, name': String, description':String, icon': String, types: BlockTypes, context: SystemContext) =>
+    context(Info) and context.log(Info, "Creating graph: " + name' + ", [" + id' + "], description" )
     _graphs = graphs
     _descriptor = GraphDescriptor( id', name', description', icon' )
     _context = context
@@ -197,7 +198,8 @@ actor Graph
     
   be describe( promise: Promise[JObj] tag ) =>
     _context(Fine) and _context.log(Fine, "Graph.describe()")
-    Collector[Block,JObj]( _blocks.values(), { (b,p) => b.describe(p) }, { (a) => 
+    Collector[Block,JObj]( _blocks.values(), { (b,p) => b.describe(p) }, { (a) =>
+      let asize = a.size()
       var result = JArr
       for s in a.values() do
         result = result + s

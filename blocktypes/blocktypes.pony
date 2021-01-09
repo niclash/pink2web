@@ -145,7 +145,9 @@ primitive BlockDescription
         { (out, p) => out.describe(p) },
         { (result) =>
             var outputs = JArr
-            for out in result.values() do outputs = outputs + out end
+            for out in result.values() do
+              outputs = outputs + out
+            end
             let json = JObj
             + ("name", name' )
             + ("type", type' )

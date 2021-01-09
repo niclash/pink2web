@@ -1,8 +1,9 @@
 use "jay"
 use "promises"
-use "../../web"
 use ".."
 use "../../graphs"
+use "../../system"
+use "../../web"
 
 /* 
 Protocol Spec
@@ -36,7 +37,7 @@ primitive AddEdgeMessage
     try
       (let src_block, let src_output, let src_index) = Util._parse( payload("src") as JObj )?
       (let dest_block, let dest_input, let dest_index) = Util._parse( payload("tgt") as JObj )?
-      let graph = try payload("graph") as String else @printf[I32]("No 'graph' property.".cstring()) ; error end
+      let graph = try payload("graph") as String else Print("No 'graph' property.") ; error end
 
 //       let metadata = payload("metadata") as JObj
 //       let route = (metadata("route") as Number).u64()

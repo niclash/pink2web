@@ -1,5 +1,5 @@
 use "jay"
-
+use "../../system"
 
 primitive Util
   fun _parse( n: JObj ): (String,String, (I64|NotSet))? =>
@@ -9,7 +9,7 @@ primitive Util
     try
       n(prop) as String
     else
-      @printf[I32](("parse error for '" + prop + "', " + n.string() + "\n").cstring())
+      Print("parse error for '" + prop + "', " + n.string() + "\n")
       error
     end
     
@@ -17,6 +17,6 @@ primitive Util
     try
       n("index") as (I64|NotSet)
     else
-      @printf[I32](("parse error for 'index': " + n.string() + "\n").cstring())
+      Print("parse error for 'index': " + n.string() + "\n")
       error
     end

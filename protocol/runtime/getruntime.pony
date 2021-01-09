@@ -20,7 +20,7 @@ class GetRuntimeMessage
     let promise = Promise[ Graph ]
     promise.next[None]( { (graph: Graph) =>
       let p = Promise[JObj]
-      p.next[None](recover iso GraphParser(connection,_context) end)
+      p.next[None](recover GraphParser(connection,_context) end)
       graph.describe(p)
     })
     graphs.graph_by_id( runtime.graph, promise )

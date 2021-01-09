@@ -3,13 +3,14 @@ use "promises"
 use "../../web"
 use ".."
 use "../../graphs"
+use "../../system"
 
 
 primitive AddInitialMessage
 
   fun apply( connection: WebSocketSender, graphs: Graphs, payload: JObj ) =>
     try
-      let graph = try payload("graph") as String else @printf[I32]("No 'graph' property.".cstring()) ; error end
+      let graph = try payload("graph") as String else Print("No 'graph' property.") ; error end
       (let block, let input, let index) = Util._parse( payload("tgt") as JObj )?
       let src = payload("src") as JObj
       let initial_value = src("data")
