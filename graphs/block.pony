@@ -2,6 +2,7 @@ use "collections"
 use "debug"
 use "jay"
 use "promises"
+use "../collectors"
 use "../system"
 use "../blocktypes"
 
@@ -20,6 +21,8 @@ trait tag Block
   
   be disconnect_edge( output:String, dest_block: Block, dest_input: String )
   
+  be set_initial(input: String, initial_value: Any val)
+
   be update(input: String, new_value: Any val)
 
   be rename( new_name: String )
@@ -39,7 +42,11 @@ trait tag Block
   be describe( promise: Promise[JObj] tag )
   
   be descriptor( promise: Promise[BlockTypeDescriptor] tag )
-  
+
+  be subscribe_link( subscription:LinkSubscription )
+
+  be unsubscribe_link( subscription:LinkSubscription )
+
 primitive BlockName
   fun apply( fullname: String box ): (String val, String val )? =>
     let last_index = fullname.rfind(".")?

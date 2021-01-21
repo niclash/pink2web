@@ -64,6 +64,7 @@ actor IntervalTimerBlock is Block
     end
 
   fun ref _arm(initial:U64, interval:U64) =>
+    Print("arm" + initial.string() + ", " + interval.string() )
     let it:IntervalTimerBlock tag = this
     let t':Timer iso = Timer( TimerHandler(it), initial, interval)
     timer = t'
@@ -72,7 +73,10 @@ actor IntervalTimerBlock is Block
   fun ref _rearm() =>
     match timer
     | let t:None => start()
-    | let t:Timer tag => stop(); _arm(ToU64(_interval.value()),ToU64(_initial.value()))
+    | let t:Timer tag =>
+      stop()
+      _arm(ToU64(_interval.value()),ToU64(_initial.value()))
+      _rearm'.set(false)
     end
 
   be connect( output: String, to_block: Block, to_input: String) =>
@@ -116,6 +120,24 @@ actor IntervalTimerBlock is Block
       if input == "initial" then _initial.set( ToF64(v) ) end
     end
 
+  be set_initial(input: String, initial_value:Any val) =>
+    match initial_value
+    | let v:Stringable => _context(Fine) and _context.log(Fine, "IntervalTimer[ " + _name + "." + input + " = " + v.string() + " ]")
+    end
+    match initial_value
+    | let v: F64 =>
+      if input == "interval" then _interval.set_initial( v ) end
+      if input == "initial" then _initial.set_initial( v ) end
+    | let v: Bool =>
+      if input == "rearm" then if v then _rearm() end  end
+      if input == "oneshot" then _oneshot.set_initial( v ) end
+    | let v: String =>
+      if input == "interval" then _interval.set_initial( ToF64(v) ) end
+      if input == "rearm" then if v == "true" then _rearm() end end
+      if input == "oneshot" then _oneshot.set_initial( v == "true" ) end
+      if input == "initial" then _initial.set_initial( ToF64(v) ) end
+    end
+
   be refresh() =>
     None
 
@@ -128,6 +150,23 @@ actor IntervalTimerBlock is Block
   be describe( promise:Promise[JObj val] tag ) =>
     BlockDescription(promise, _name, _descriptor.name(), _started, [_interval; _rearm'; _oneshot; _initial], [_output] )
 
+  be subscribe_link( subscription:LinkSubscription ) =>
+    match subscription.dest_port
+    | "interval" => _interval.subscribe(subscription)
+    | "initial" =>  _initial.subscribe(subscription)
+    | "rearm" =>    _rearm'.subscribe(subscription)
+    | "oneshot" =>  _oneshot.subscribe(subscription)
+    end
+    refresh()
+
+  be unsubscribe_link( subscription:LinkSubscription ) =>
+    match subscription.dest_port
+    | "interval" => _interval.unsubscribe(subscription)
+    | "initial" =>  _initial.unsubscribe(subscription)
+    | "rearm" =>    _rearm'.unsubscribe(subscription)
+    | "oneshot" =>  _oneshot.unsubscribe(subscription)
+    end
+    refresh()
 
 class val IntervalTimerBlockDescriptor is BlockTypeDescriptor
   let _interval:InputDescriptor

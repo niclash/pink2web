@@ -106,6 +106,12 @@ actor NestedBlock is Block
       block.update(input, new_value)
     end
 
+  be set_initial(inputname: String, initial_value:Any val) =>
+    try
+      (let block, let input) = _inputs(inputname)?
+      block.set_initial(input, initial_value)
+    end
+
   be refresh() =>
     for (b, output) in _outputs.values() do
       b.refresh()
@@ -128,6 +134,19 @@ actor NestedBlock is Block
     end
     BlockDescription(promise, _name, _descriptor.name(), _started, inps, outps )
 
+  be subscribe_link( subscription:LinkSubscription ) =>
+    for (n, sub) in _inputs.pairs() do
+      if n == subscription.dest_port then
+        sub._1.subscribe_link(subscription)
+      end
+    end
+
+  be unsubscribe_link( subscription:LinkSubscription ) =>
+    for (n, sub) in _inputs.pairs() do
+      if n == subscription.dest_port then
+        sub._1.unsubscribe_link(subscription)
+      end
+    end
 
 class val NestedBlockFactory is BlockFactory
   let _descriptor: NestedBlockDescriptor val

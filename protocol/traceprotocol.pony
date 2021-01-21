@@ -1,6 +1,7 @@
 
 use "jay"
 use "../web"
+use "./network"
 
 class val TraceProtocol
   
@@ -8,6 +9,6 @@ class val TraceProtocol
     match command
     |   "clear" => None
     else
-      connection.send_text( Message.err( "trace", "Invalid command: " + command ).string() )
+      ErrorMessage( connection, None, "Invalid 'trace' command: " + command, true )
     end
 

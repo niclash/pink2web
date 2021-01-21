@@ -3,6 +3,7 @@ use "../../blocktypes"
 use "jay"
 use "../../web"
 use ".."
+use "../network"
 
 class SourceMessage
 
@@ -14,5 +15,4 @@ class SourceMessage
       + ("code", "" )
       + ("tests", "" )
     connection.send_text( Message( "component", "source", json ).string() )
-//     connection.send_text( Message.err("component", "getsource is not supported.").string() )
 

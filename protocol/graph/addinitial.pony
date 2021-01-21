@@ -4,6 +4,7 @@ use "../../web"
 use ".."
 use "../../graphs"
 use "../../system"
+use "../network"
 
 
 primitive AddInitialMessage
@@ -21,5 +22,11 @@ primitive AddInitialMessage
       })
       graphs.graph_by_id( graph, promise )
     else
-      connection.send_text( Message.err( "graph", "Invalid payload." ).string() )
+      ErrorMessage( connection, None, "Invalid 'addinitial' payload: " + payload.string(), true )
     end
+
+  fun reply(connection:WebSocketSender, graph:String, value:(String|I64|F64|Bool), block:String, input:String ) =>
+    let src = JObj + ("data", value)
+    let tgt = JObj + ("node", block) + ("port", input)
+    let payload:JObj = JObj + ("graph", graph) + ("src", src ) + ("tgt", tgt)
+    connection.send_text( Message("graph", "addinitial", payload ).string() )

@@ -67,8 +67,10 @@ var websocket = {
             graph.startTransaction(protocol + " " + command);
             viewModel.skipsUndoManager = true;
             graph.skipsUndoManager = true;
-            try{
+            try {
                 protocols[protocol][command](websocket.device_connection, payload);
+            } catch(e){
+                console.log("Protocol command not found: ", protocol, command, e );
             } finally {
                 viewModel.skipsUndoManager = false;
                 graph.skipsUndoManager = false;

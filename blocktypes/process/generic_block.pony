@@ -54,8 +54,8 @@ actor GenericBlock is Block
     try
       let outp = _find_output(output)?
       outp.connect(to_block, to_input)
+      refresh()
     end
-    refresh()
 
   be disconnect_block( block: Block ) =>
     for output in _outputs.values() do
@@ -109,6 +109,16 @@ actor GenericBlock is Block
     end
     refresh()
 
+  be set_initial(input: String, initial_value: Any val) =>
+    _context(Fine) and _context.log(Fine, _descriptor.name() + "[ " + _name + "." + input + " = (initial) = " + try (initial_value as Stringable).string() else "" end + " ]")
+    try
+      let inp = _find_input( input )?
+      inp.set_initial( initial_value )
+    else
+      _context(Error) and _context.log(Error, input + " is not an input name of block type " + _descriptor.name() )
+    end
+    refresh()
+
   be refresh() =>
     if _started then
       _algorithm(_inputs, _outputs)
@@ -122,6 +132,20 @@ actor GenericBlock is Block
 
   be describe( promise:Promise[JObj val] tag ) =>
     BlockDescription(promise, _name, _descriptor.name(), _started, _inputs, _outputs )
+
+  be subscribe_link( subscription:LinkSubscription ) =>
+    for inp in _inputs.values() do
+      if inp.name() == subscription.dest_port then
+        inp.subscribe(subscription)
+      end
+    end
+
+  be unsubscribe_link( subscription:LinkSubscription ) =>
+    for inp in _inputs.values() do
+      if inp.name() == subscription.dest_port then
+        inp.unsubscribe(subscription)
+      end
+    end
 
 class val GenericBlockTypeDescriptor is BlockTypeDescriptor
   let _inputs:Array[InputDescriptor] val

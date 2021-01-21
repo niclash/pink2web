@@ -3,28 +3,36 @@
     "name": "pink2web main process", 
     "connections": [
         {
-            "src": { "process": "block1","port": "out","data": "" },
-            "tgt": {"process": "block3","port": "in1","data": ""}
+            "src": { "process": "block1","port": "out" },
+            "tgt": { "process": "block3","port": "in1" }
         },
         {
-            "src": { "process": "block2","port": "out","data": "" },
-            "tgt": {"process": "block3","port": "in2","data": ""}
+            "src": { "process": "block2","port": "out" },
+            "tgt": { "process": "block3","port": "in2" }
         },
         {
-            "src": { "process": "block4","port": "out","data": "" },
-            "tgt": {"process": "block6","port": "in1","data": ""}
+            "src": { "process": "block4","port": "out" },
+            "tgt": { "process": "block6","port": "in1" }
         },
         {
-            "src": { "process": "block5","port": "out","data": "" },
-            "tgt": {"process": "block6","port": "in2","data": ""}
+            "src": { "process": "block5","port": "out" },
+            "tgt": { "process": "block6","port": "in2" }
         },
         {
-            "src": { "process": "block3","port": "out","data": "" },
-            "tgt": {"process": "block7","port": "in1","data": ""}
+            "src": { "process": "block3","port": "out" },
+            "tgt": { "process": "block7","port": "in1" }
         },
         {
-            "src": { "process": "block6","port": "out","data": "" },
-            "tgt": {"process": "block7","port": "in2","data": ""}
+            "src": { "process": "block6","port": "out" },
+            "tgt": { "process": "block7","port": "in2" }
+        },
+        {
+            "src": { "data": 12 },
+            "tgt": { "process": "block8","port": "in1","data": "" }
+        },
+        {
+            "src": { "data": 23 },
+            "tgt": { "process": "block8","port": "in2","data": "" }
         }
     ],
     "processes": {
@@ -78,7 +86,7 @@
             }
         },
         "block8": {
-            "component": "math/Add4",
+            "component": "math/Add2",
             "metadata": {
               "x": 0,
               "y": 0

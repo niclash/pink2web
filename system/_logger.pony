@@ -1,12 +1,12 @@
 
 class _Logger
   var _level:LogLevel
-  let _remote_out: RemoteOutStream
-  let _remote_err: RemoteOutStream
+  let _stdout: OutStream
+  let _stderr: OutStream
 
-  new create(  remote_out: RemoteOutStream, remote_err: RemoteOutStream, level:LogLevel ) =>
-    _remote_out = remote_out
-    _remote_err = remote_err
+  new create(  stdout: OutStream, stderr: OutStream, level:LogLevel ) =>
+    _stdout = stdout
+    _stderr = stderr
     _level = level
 
   fun ref set_log_level(level':LogLevel) =>
@@ -17,9 +17,9 @@ class _Logger
 
   fun box log( level:LogLevel, value:String, loc:SourceLoc val = __loc): Bool =>
     if level() >= Error() then
-      _remote_err.print(LogFormatter(consume value, level, loc))
+      _stderr.print(LogFormatter(consume value, level, loc))
     else
-      _remote_out.print(LogFormatter(consume value, level, loc))
+      _stdout.print(LogFormatter(consume value, level, loc))
     end
     true
 

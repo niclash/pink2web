@@ -5,6 +5,7 @@ use "../graphs"
 use "../system"
 use "../web"
 use "./runtime"
+use "./network"
 
 class val RuntimeProtocol
   let _runtime:RuntimeMessage
@@ -22,5 +23,5 @@ class val RuntimeProtocol
     match command
     |   "getruntime" => _getruntime(connection, _graphs, _blocktypes, _runtime)
     else
-      connection.send_text( Message.err( "runtime", "Invalid command: " + command ).string() )
+      ErrorMessage( connection, None, "Invalid 'runtime' command: " + command, true )
     end

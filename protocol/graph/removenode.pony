@@ -3,6 +3,7 @@ use "promises"
 use "../../web"
 use ".."
 use "../../graphs"
+use "../network"
 
 class RemoveNodeMessage
 
@@ -16,7 +17,7 @@ class RemoveNodeMessage
       })
       graphs.graph_by_id( graph, promise )
     else
-      connection.send_text( Message.err( "graph", "Invalid payload" ).string() )
+      ErrorMessage( connection, None, "Invalid 'removenode' payload: " + payload.string(), true )
     end
 
   fun reply( connection:WebSocketSender, graph:String, block:String ) =>

@@ -71,6 +71,9 @@ actor DummyBlock is Block
   be update(input: String, new_value: Any val) =>
     None
 
+  be set_initial(input: String, new_value: Any val) =>
+    None
+
   be refresh() =>
     None
 
@@ -84,3 +87,7 @@ actor DummyBlock is Block
 
   be descriptor( promise:Promise[BlockTypeDescriptor] tag ) =>
     promise(_descriptor)
+
+  be subscribe_link( subscription:LinkSubscription ) => None
+
+  be unsubscribe_link( subscription:LinkSubscription ) => None

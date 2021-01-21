@@ -3,6 +3,7 @@ use "promises"
 use "../../web"
 use ".."
 use "../../graphs"
+use "../network"
 
 /*
   {
@@ -56,5 +57,5 @@ class ChangeEdgeMessage
       graphs.graph_by_id( graph, promise )
       connection.send_text( Message("graph", "changeedge", payload).string() )
     else
-      connection.send_text( Message.err( "graph", "Invalid payload..." ).string() )
+      ErrorMessage( connection, None, "Invalid 'changeedge' payload: " + payload.string(), true )
     end

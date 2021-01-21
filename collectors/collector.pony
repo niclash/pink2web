@@ -16,3 +16,6 @@ primitive Collector[IN:Any #alias, OUT:Any #share]
     end
     let p = Promises[OUT].join(promises.values())
     p.next[None]( consume reduce )
+
+interface StringCollector
+  fun apply( s:String val )

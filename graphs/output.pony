@@ -15,7 +15,7 @@ trait Output is Stringable
   fun descriptor() : OutputDescriptor
   fun ref set_description( new_description:String )
   fun describe( promise: Promise[JObj val] tag )
-  
+
 class OutputImpl is Output
   var _value: Any val
   var _name: String val
@@ -38,11 +38,11 @@ class OutputImpl is Output
   fun value() : Any val=>
     _value
     
-  fun ref set( newValue: Any val ) =>
+  fun ref set( new_value: Any val ) =>
     for dest in _dest.values() do
-      dest.update( newValue )
+      dest.update( new_value )
     end
-    _value = newValue
+    _value = new_value
 
   fun ref connect(dest_block: Block tag, input: String) =>
     var link:Link val = recover Link(dest_block, input) end

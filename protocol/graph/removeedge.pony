@@ -3,6 +3,7 @@ use "promises"
 use "../../web"
 use ".."
 use "../../graphs"
+use "../network"
 
 class RemoveEdgeMessage
   fun apply( connection: WebSocketSender, graphs: Graphs, payload: JObj ) =>
@@ -17,7 +18,7 @@ class RemoveEdgeMessage
       })
       graphs.graph_by_id( graph, promise )
     else
-      connection.send_text( Message.err( "graph", "Invalid payload" ).string() )
+      ErrorMessage( connection, None, "Invalid 'removeedge' payload: " + payload.string(), true )
     end
     
   fun reply(connection:WebSocketSender, graph:String, from_block:String, from_output:String, to_block:String, to_input:String ) =>

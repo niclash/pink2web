@@ -1,6 +1,7 @@
 
 use "../blocktypes"
 use "./component"
+use "./network"
 use "jay"
 use "../web"
 
@@ -15,5 +16,5 @@ class val ComponentProtocol
     |   "list" => ListMessage(connection, _blocktypes)
     |   "getsource" => GetSourceMessage(connection, _blocktypes, payload )
     else
-      connection.send_text( Message.err( "component", "Invalid command: " + command ).string() )
+      ErrorMessage( connection, None, "Invalid command: " + command, true )
     end

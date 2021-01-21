@@ -1,4 +1,5 @@
 const graph_protocol = {
+    initial_counter: 0,
     currentGraph: null,
     request: function (connection, command, payload) {
         connection.send({
@@ -8,7 +9,7 @@ const graph_protocol = {
         });
     },
     request_clear: function (connection, graphName, humanName, library, main, icon, description) {
-        console.log("Request clear:"+ graphName);
+        console.log("Request clear:" + graphName);
         connection.send({
             protocol: "graph",
             command: "clear",
@@ -23,7 +24,7 @@ const graph_protocol = {
         });
     },
     request_addnode: function (connection, id, component, x, y) {
-        console.log( "Request addnode:" + id + ", " + component);
+        console.log("Request addnode:" + id + ", " + component);
         connection.send({
             protocol: "graph",
             command: "addnode",
@@ -39,7 +40,7 @@ const graph_protocol = {
         });
     },
     request_removenode: function (connection, id) {
-        console.log( "Request removenode:" + id );
+        console.log("Request removenode:" + id);
         connection.send({
             protocol: "graph",
             command: "removenode",
@@ -50,7 +51,7 @@ const graph_protocol = {
         });
     },
     request_renamenode: function (connection, from, to) {
-        console.log( "Request renamenode " + from + " to " + to);
+        console.log("Request renamenode " + from + " to " + to);
         connection.send({
             protocol: "graph",
             command: "renamenode",
@@ -62,7 +63,7 @@ const graph_protocol = {
         });
     },
     request_changenode: function (connection, id, metadata) {
-        console.log( "Request changenode:" + id + ", " + component);
+        console.log("Request changenode:" + id + ", " + component);
         connection.send({
             protocol: "graph",
             command: "changenode",
@@ -74,8 +75,8 @@ const graph_protocol = {
         });
     },
     request_addedge: function (connection, fromNode, toNode, fromPort, toPort, fromIndex, toIndex, metadata = null) {
-        console.log( "Request addedge:" + fromNode + "." + fromPort + " ---> " + toNode + "." + toPort );
-        let link = this.buildLink(fromNode, toNode, fromPort, toPort, fromIndex, toIndex);
+        console.log("Request addedge:" + fromNode + "." + fromPort + " ---> " + toNode + "." + toPort);
+        let link = support.buildLink(fromNode, toNode, fromPort, toPort, fromIndex, toIndex);
         let payload = {
             protocol: "graph",
             command: "addedge",
@@ -91,8 +92,8 @@ const graph_protocol = {
         connection.send(payload);
     },
     request_removeedge: function (connection, fromNode, toNode, fromPort, toPort, fromIndex = null, toIndex = null) {
-        console.log( "Request removeedge:" + fromNode + "." + fromPort + " ---> " + toNode + "." + toPort );
-        let link = this.buildLink(fromNode, toNode, fromPort, toPort, fromIndex, toIndex);
+        console.log("Request removeedge:" + fromNode + "." + fromPort + " ---> " + toNode + "." + toPort);
+        let link = support.buildLink(fromNode, toNode, fromPort, toPort, fromIndex, toIndex);
         connection.send({
             protocol: "graph",
             command: "removeedge",
@@ -104,7 +105,7 @@ const graph_protocol = {
         });
     },
     request_changeedge: function (connection, fromNode, toNode, fromPort, toPort, fromIndex, toIndex, metadata = null) {
-        let link = this.buildLink(fromNode, toNode, fromPort, toPort, fromIndex, toIndex);
+        let link = support.buildLink(fromNode, toNode, fromPort, toPort, fromIndex, toIndex);
         connection.send({
             protocol: "graph",
             command: "changeedge",
@@ -117,13 +118,13 @@ const graph_protocol = {
         });
     },
     request_addinitial: function (connection, data, toNode, toPort, toIndex, metadata = null) {
-        console.log( "Request addinitial:" + data + " ---> " + toNode + "." + toPort );
-        let tgt = this.buildEndpoint(toNode, toPort, toIndex);
+        console.log("Request addinitial:" + data + " ---> " + toNode + "." + toPort);
+        let tgt = support.buildEndpoint(toNode, toPort, toIndex);
         connection.send({
             protocol: "graph",
             command: "addinitial",
             payload: {
-                src: data,
+                src: {data: data},
                 tgt: tgt,
                 graph: this.currentGraph,
                 metadata: metadata
@@ -131,8 +132,8 @@ const graph_protocol = {
         });
     },
     request_removeinitial: function (connection, data, toNode, toPort, toIndex) {
-        console.log( "Request removeinitial:" + data + " ---> " + toNode + "." + toPort );
-        let tgt = this.buildEndpoint(toNode, toPort, toIndex);
+        console.log("Request removeinitial:" + data + " ---> " + toNode + "." + toPort);
+        let tgt = support.buildEndpoint(toNode, toPort, toIndex);
         connection.send({
             protocol: "graph",
             command: "removeinitial",
@@ -144,7 +145,7 @@ const graph_protocol = {
         });
     },
     request_addgroup: function (connection, name, nodes) {
-        console.log( "Request addgroup:" + name + " ---> " + nodes );
+        console.log("Request addgroup:" + name + " ---> " + nodes);
         connection.send({
             protocol: "graph",
             command: "addgroup",
@@ -215,7 +216,7 @@ const graph_protocol = {
     removenode: function (connection, payload) {
         console.log("removenode", JSON.stringify(payload));
         if (this.validGraph(payload.graph)) {
-            let node = this.findNode(payload.id);
+            let node = support.findNode(payload.id);
             if (node !== null) {
                 viewModel.removeNodeData(node);
             }
@@ -225,9 +226,8 @@ const graph_protocol = {
     renamenode: function (connection, payload) {
         console.log("renamenode", JSON.stringify(payload));
         if (this.validGraph(payload.graph)) {
-            let node = this.findNode(payload.from);
+            let node = support.findNode(payload.from);
             if (node !== null) {
-                console.log( "NICLAS!!!!", node);
                 viewModel.setKeyForNodeData(node, payload.to);
             }
         }
@@ -236,7 +236,7 @@ const graph_protocol = {
     changenode: function (connection, payload) {
         console.log("changenode", JSON.stringify(payload));
         if (this.validGraph(payload.graph)) {
-            let node = this.findNode(payload.from);
+            let node = support.findNode(payload.from);
             if (node !== null) {
                 node.metadata = payload.metadata;
             }
@@ -249,7 +249,7 @@ const graph_protocol = {
     },
     removeedge: function (connection, payload) {
         if (this.validGraph(payload.graph)) {
-            let link = this.findLink(payload);
+            let link = support.findLink(payload);
             if (link !== null) {
                 viewModel.removeLinkData(link);
             }
@@ -257,20 +257,27 @@ const graph_protocol = {
     },
     changeedge: function (connection, payload) {
         if (this.validGraph(payload.graph)) {
-            if (this.validGraph(payload.graph)) {
-                let link = this.findLink(payload);
-                if (link !== null) {
-                    link.metadata = payload.metadata;
-                }
+            let link = support.findLink(payload);
+            if (link !== null) {
+                link.metadata = payload.metadata;
             }
         }
     },
     addinitial: function (connection, payload) {
+        console.log("addinitial" + JSON.stringify(payload));
+
         if (this.validGraph(payload.graph)) {
+            let id = "initial" + this.initial_counter++;
+            viewModel.addNodeData({component:"_built_in/initial", id:id, data:payload.src.data});
+            payload.src.node = id;
+            payload.src.port = "out";
+            viewModel.addLinkData(payload);
         }
     },
     removeinitial: function (connection, payload) {
         if (this.validGraph(payload.graph)) {
+            let input = support.findInput(payload.tgt);  // TODO... Not done
+            input.initial = undefined;
         }
     },
     addinport: function (connection, payload) {
@@ -300,23 +307,22 @@ const graph_protocol = {
     addgroup: function (connection, payload) {
         if (this.validGraph(payload.graph)) {
             let groupName = payload.name;
-            viewModel.addNodeData({id: groupName, isGroup: true, component:"StandardGroup"});
-            payload.nodes.forEach( function(n) {
+            viewModel.addNodeData({id: groupName, isGroup: true, component: "StandardGroup"});
+            payload.nodes.forEach(function (n) {
                 let node = viewModel.findNodeDataForKey(n);
-                viewModel.setGroupKeyForNodeData( node, groupName );
+                viewModel.setGroupKeyForNodeData(node, groupName);
             });
         }
     },
     removegroup: function (connection, payload) {
         if (this.validGraph(payload.graph)) {
             let groupName = payload.name;
-            viewModel.nodeDataArray.forEach( function(n) {
+            viewModel.nodeDataArray.forEach(function (n) {
                 let key = viewModel.getKeyForNodeData(n);
                 let node = viewModel.findNodeDataForKey(key);
-                let group = viewModel.getGroupKeyForNodeData( node );
-                if( group === groupName )
-                {
-                    viewModel.setGroupKeyForNodeData( node, undefined );
+                let group = viewModel.getGroupKeyForNodeData(node);
+                if (group === groupName) {
+                    viewModel.setGroupKeyForNodeData(node, undefined);
                 }
             });
         }
@@ -324,13 +330,12 @@ const graph_protocol = {
     renamegroup: function (connection, payload) {
         if (this.validGraph(payload.graph)) {
             let groupName = payload.from;
-            viewModel.nodeDataArray.forEach( function(n) {
+            viewModel.nodeDataArray.forEach(function (n) {
                 let key = viewModel.getKeyForNodeData(n);
                 let node = viewModel.findNodeDataForKey(key);
-                let group = viewModel.getGroupKeyForNodeData( node );
-                if( group === groupName )
-                {
-                    viewModel.setGroupKeyForNodeData( node, payload.to );
+                let group = viewModel.getGroupKeyForNodeData(node);
+                if (group === groupName) {
+                    viewModel.setGroupKeyForNodeData(node, payload.to);
                 }
             });
         }
@@ -338,53 +343,6 @@ const graph_protocol = {
     changegroup: function (connection, payload) {
         if (this.validGraph(payload.graph)) {
         }
-    },
-    findNode: function (name) {
-        return viewModel.findNodeDataForKey(name);
-    },
-    findLink: function (linkToFind) {
-        for (let idx in viewModel.linkDataArray) {
-            if (viewModel.linkDataArray.hasOwnProperty(idx)) {
-                let link = viewModel.linkDataArray[idx];
-                if (this.linkEquals(link, linkToFind)) {
-                    return link;
-                }
-            }
-        }
-        return null;
-    },
-    linkEquals: function (link1, link2) {
-        return this.endpointEquals(link1.src, link2.src) && this.endpointEquals(link1.tgt, link2.tgt);
-    },
-    endpointEquals: function (endp1, endp2) {
-        if (endp1.node !== endp2.node)
-            return false;
-        if (endp1.port !== endp2.port)
-            return false;
-        if (endp1.index === null && endp2.index === null) {
-            return true;
-        }
-        if (endp1.index === null || endp2.index === null) {
-            return false;
-        }
-        return endp1.index === endp2.index;
-    },
-    buildEndpoint: function (node, port, index) {
-        let src;
-        if (index === null)
-            src = {
-                node: node, port: port
-            };
-        else
-            src = {
-                node: node, port: port, index: index
-            };
-        return src;
-    },
-    buildLink: function (fromNode, toNode, fromPort, toPort, fromIndex, toIndex) {
-        let src = this.buildEndpoint(fromNode, fromPort, fromIndex);
-        let tgt = this.buildEndpoint(toNode, toPort, toIndex);
-        return {src: src, tgt: tgt};
     },
     validGraph: function (graph) {
         return graph === this.currentGraph;

@@ -1,4 +1,5 @@
 
+use "collections"
 use "jay"
 use "time"
 use "../blocktypes"
@@ -18,9 +19,11 @@ class val Fbp
   let _component_protocol:ComponentProtocol
   let _trace_protocol:TraceProtocol
   let _context:SystemContext
-  
+  let _link_subscribers:SubscribersProxy
+
   new val create( uuid:String, main_graph:String, graphs:Graphs, blocktypes:BlockTypes, context:SystemContext) =>
     _graphs = graphs
+    _link_subscribers = SubscribersProxy(graphs)
     _context = context
     let label: String = "Pink2Web - flowbased programming engine written in Pony Language"
     let version: String = "0.1.0"
@@ -47,24 +50,23 @@ class val Fbp
     _component_protocol = ComponentProtocol.create(blocktypes)
     _trace_protocol = TraceProtocol
 
-  fun execute( conn: WebSocketSender, text: String ) =>
+  fun val execute( conn: WebSocketSender, text: String ) =>
     try
       let jdoc = JParse.from_string( text )? as JObj
       let protocol = jdoc("protocol") as String
       let command = jdoc("command") as String
       let payload = jdoc("payload") as JObj
       match protocol
-      | "runtime" => _runtime_protocol.execute( conn, command, payload ) 
-      | "network" => _network_protocol.execute( conn, command, payload ) 
-      | "graph" => _graph_protocol.execute( conn, command, payload ) 
-      | "component" => _component_protocol.execute( conn, command, payload ) 
-      | "trace" => _trace_protocol.execute( conn, command, payload ) 
+      | "runtime" => _runtime_protocol.execute( conn, command, payload )
+      | "network" => _network_protocol.execute( conn, this, command, payload )
+      | "graph" => _graph_protocol.execute( conn, command, payload )
+      | "component" => _component_protocol.execute( conn, command, payload )
+      | "trace" => _trace_protocol.execute( conn, command, payload )
       else
-        conn.send_text( Message.err( protocol, "Unknown protocol" ).string() )
+        ErrorMessage( conn, None, "Unknown protocol: " +  protocol, true )
       end
     else
-      Print("parse error\n")
-      conn.send_text( Message.err( "unknown", "Badly formatted request" ).string() )
+      ErrorMessage( conn, None, "Badly formatted request: " + text, true )
     end
 
   fun subscribe(websocket: WebSocketSender val) =>
@@ -72,10 +74,14 @@ class val Fbp
     let subscriber = Subscription(websocket)
     _graphs.subscribe( subscriber )
 
-  fun unsubscribe(websocket: WebSocketSender val) =>
+  fun subscribe_links( connection:WebSocketSender, graph:String, subscriptions:Array[LinkSubscription] val) =>
+    _link_subscribers.subscribe_links( connection, graph, subscriptions )
+
+  fun closing(websocket: WebSocketSender val) =>
     let subscriber = Subscription(websocket)
     _graphs.unsubscribe( subscriber )
     _context.remove_remote( websocket )
+    _link_subscribers.close(websocket)
 
 class val Subscription is GraphNotify
   let _connection: WebSocketSender val
@@ -84,7 +90,7 @@ class val Subscription is GraphNotify
     _connection = conn
     
   fun err( type':String, message:String ) =>
-    _connection.send_text( Message.err(type', message).string() )
+    ErrorMessage(_connection, None, type' + ": " + message, true )
     
   fun added_block( graph:String, block:String, component:String, x:I64, y:I64 ) =>
     AddNodeMessage.reply(_connection, graph, block, component, x, y )
@@ -112,7 +118,7 @@ class val Subscription is GraphNotify
 
   fun status( graph: String, uptime:I64, started':Bool, running:Bool, debug:Bool ) =>
     StatusMessage.reply( _connection, graph, uptime, started', running, debug )
-    
+
   fun box eq(that: GraphNotify): Bool val =>
     if this is that then 
       true
@@ -124,3 +130,28 @@ class val Subscription is GraphNotify
         false
       end
     end
+
+actor SubscribersProxy
+  let _link_subscriptions:Map[WebSocketSender, Array[LinkSubscription] val] iso = recover Map[WebSocketSender, Array[LinkSubscription] val] end
+  let _graphs:Graphs
+
+  new create( graphs':Graphs ) =>
+    _graphs = graphs'
+
+  be subscribe_links( connection:WebSocketSender, graph:String, subscriptions:Array[LinkSubscription] val) =>
+    let existing:Array[LinkSubscription] val = try _link_subscriptions(connection)? else recover val Array[LinkSubscription] end end
+    _graphs.unsubscribe_links(graph, existing)
+    _link_subscriptions( connection ) = subscriptions
+    _graphs.subscribe_links(graph, subscriptions)
+
+  be close( connection:WebSocketSender ) =>
+    try
+      let subscriptions = _link_subscriptions(connection)?
+      if subscriptions.size() > 0 then
+        let subscr = subscriptions(0)?
+        _graphs.unsubscribe_links(subscr.graph, subscriptions)
+      end
+    end
+
+interface val ReadyNotification
+  fun val apply()

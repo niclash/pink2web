@@ -112,9 +112,22 @@ actor Loader
     for value in connections.data.values() do
       try
         let conn:JObj = value as JObj
-        let src:(String,String,String) = _parse_endpoint(conn, "src" )
-        let tgt:(String,String,String) = _parse_endpoint(conn, "tgt" )
-        graph.connect( src._1, src._2, tgt._1, tgt._2 )
+        (let src_process:(String|NotSet),let src_port:(String|NotSet),let src_data:(J|NotSet)) = _parse_endpoint(conn, "src" )
+        (let tgt_process:(String|NotSet),let tgt_port:(String|NotSet),let tgt_dummy:(J|NotSet)) = _parse_endpoint(conn, "tgt" )
+        match src_data
+        | NotSet =>
+          graph.connect( src_process as String, src_port as String, tgt_process as String, tgt_port as String )
+        | let d:String =>
+          graph.set_initial( tgt_process as String, tgt_port as String, d )
+        | let d:Bool =>
+          graph.set_initial( tgt_process as String, tgt_port as String, d )
+        | let d:I64 =>
+          graph.set_initial( tgt_process as String, tgt_port as String, d )
+        | let d:F64 =>
+          graph.set_initial( tgt_process as String, tgt_port as String, d )
+        else
+          _context(Error) and _context.log( Error, "Bad 'data' type. Objects and Arrays are not supported." )
+        end
       else
         try
           let c:Stringable = value as Stringable
@@ -123,12 +136,12 @@ actor Loader
       end
     end
     
-  fun _parse_endpoint( conn: JObj box, endp: String ) : ( String, String, String ) =>
+  fun _parse_endpoint( conn: JObj box, endp: String ) : ( (String|NotSet), (String|NotSet), (J|NotSet) ) =>
     try
       let point = conn(endp) as JObj
-      let process = point("process") as String
-      let port = point("port") as String
-      let data = point("data") as String
+      let process = point("process") as (String|NotSet)
+      let port = point("port") as (String|NotSet)
+      let data = point("data")
       (process,port,data)
     else
       ("","","")

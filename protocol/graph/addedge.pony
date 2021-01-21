@@ -4,6 +4,7 @@ use ".."
 use "../../graphs"
 use "../../system"
 use "../../web"
+use "../network"
 
 /* 
 Protocol Spec
@@ -39,10 +40,6 @@ primitive AddEdgeMessage
       (let dest_block, let dest_input, let dest_index) = Util._parse( payload("tgt") as JObj )?
       let graph = try payload("graph") as String else Print("No 'graph' property.") ; error end
 
-//       let metadata = payload("metadata") as JObj
-//       let route = (metadata("route") as Number).u64()
-//       let schema = metadata("schema") as String
-//       let secure = metadata("secure") as Bool
       let promise = Promise[ Graph ]
       promise.next[None]( { (graph: Graph) =>
         // TODO: Add metadata support
@@ -50,7 +47,7 @@ primitive AddEdgeMessage
       })
       graphs.graph_by_id( graph, promise )
     else
-      connection.send_text( Message.err( "graph", "Invalid payload..." ).string() )
+      ErrorMessage( connection, None, "Invalid 'addedge' payload: " + payload.string(), true )
     end
 
   fun reply(connection:WebSocketSender, graph:String, from_block:String, from_output:String, to_block:String, to_input:String ) =>

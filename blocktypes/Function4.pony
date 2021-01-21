@@ -54,8 +54,8 @@ actor Function4Block is Block
   be connect( output: String, to_block: Block, to_input: String) =>
     if output == "out"  then
       _output.connect(to_block, to_input)
+      refresh()
     end
-    refresh()
 
   be disconnect_block( block: Block ) =>
     _output.disconnect_block( block )
@@ -84,6 +84,16 @@ actor Function4Block is Block
     end
     refresh()
 
+  be set_initial(input: String, initial_value:Any val) =>
+    _context(Fine) and _context.log(Fine, "Function4[ " + _name + "." + input + " = (initial) = " + try (initial_value as Stringable).string() else "<not stringable>" end + " ]")
+    match input
+    | "in1" => _input1.set_initial( initial_value )
+    | "in2" => _input2.set_initial( initial_value )
+    | "in3" => _input3.set_initial( initial_value )
+    | "in4" => _input4.set_initial( initial_value )
+    end
+    refresh()
+
   be refresh() =>
     if _started then
       let value = _function(_input1.value(), _input2.value(), _input3.value(), _input4.value())
@@ -99,6 +109,23 @@ actor Function4Block is Block
   be describe( promise:Promise[JObj val] tag ) =>
     BlockDescription(promise, _name, _descriptor.name(), _started, [_input1; _input2; _input3; _input4], [_output] )
 
+  be subscribe_link( subscription:LinkSubscription ) =>
+    match subscription.dest_port
+    | "in1" => _input1.subscribe(subscription)
+    | "in2" => _input2.subscribe(subscription)
+    | "in3" => _input3.subscribe(subscription)
+    | "in4" => _input4.subscribe(subscription)
+    end
+    refresh()
+
+  be unsubscribe_link( subscription:LinkSubscription ) =>
+    match subscription.dest_port
+    | "in1" => _input1.unsubscribe(subscription)
+    | "in2" => _input2.unsubscribe(subscription)
+    | "in3" => _input3.unsubscribe(subscription)
+    | "in4" => _input4.unsubscribe(subscription)
+    end
+    refresh()
 
 class val Function4BlockDescriptor is BlockTypeDescriptor
   let _in1:InputDescriptor

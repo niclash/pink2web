@@ -98,7 +98,21 @@ actor Graphs
         end
       end
     end
-  
+
+  be subscribe_links( graph_id:String, subscriptions:Array[LinkSubscription] val) =>
+    try
+      let graph = _graphs_by_id( graph_id )?
+      graph.subscribe_links( subscriptions )
+    else
+      _context(Error) and _context.log( Error,"Can't find graph: " + graph_id )
+    end
+
+  be unsubscribe_links( graph_id:String, subscriptions:Array[LinkSubscription] val) =>
+    try
+      let graph = _graphs_by_id( graph_id )?
+      graph.unsubscribe_links( subscriptions )
+    end
+
   be _error( type':String, message: String ) =>
     _context(Info) and _context.log( Info,"error: " + type' + " : " + message )
     for s in _subscribers.values() do 
@@ -140,7 +154,7 @@ actor Graphs
     for s in _subscribers.values() do 
       s.removed_connection(graph, from_block, from_output, to_block, to_input) 
     end
-    
+
   be _started(graph: String, time_started:PosixDate val, started':Bool, running:Bool, debug:Bool) =>
     _context(Info) and _context.log(Info, "started: " + graph + " : " + started'.string() + " : " + running.string() + " : " + debug.string() )
     for s in _subscribers.values() do 

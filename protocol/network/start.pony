@@ -15,5 +15,5 @@ class StartMessage
       })
       graphs.graph_by_id( graph, promise )
     else
-      connection.send_text( Message.err( "graph", "Invalid payload" ).string() )
+      ErrorMessage( connection, None, "Invalid payload", true )
     end

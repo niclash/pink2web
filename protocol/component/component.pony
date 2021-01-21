@@ -4,10 +4,11 @@ use "jay"
 use "promises"
 use "../../blocktypes"
 use "../../web"
+use ".."
 
 class ComponentMessage
     
-  fun apply( connection: WebSocketSender, blocktypes: BlockTypes ) =>
+  fun apply( connection: WebSocketSender, blocktypes: BlockTypes, ready:(ReadyNotification|None) = None ) =>
     let promise = Promise[Map[String, BlockTypeDescriptor val] val]
     promise.next[None]({ (components) =>
       for descriptor in components.values() do
@@ -18,7 +19,10 @@ class ComponentMessage
           + ( "payload", payload )
         connection.send_text( json.string() )
       end
-      connection.send_text( ComponentsReadyMessage(components.size()) )
+      ComponentsReadyMessage.reply(connection, components.size())
+      match ready
+      | let r:ReadyNotification => r()
+      end
     })
     blocktypes.list_types(promise)
 

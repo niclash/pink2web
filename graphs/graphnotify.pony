@@ -1,7 +1,7 @@
 
 use "time"
 
-interface val GraphNotify is Equatable[GraphNotify]
+trait val GraphNotify is Equatable[GraphNotify]
 
   fun err( type':String, message:String )
   

@@ -3,6 +3,7 @@ use "promises"
 use "../../web"
 use ".."
 use "../../graphs"
+use "../network"
 
 /*
 Protocol
@@ -32,7 +33,7 @@ primitive AddNodeMessage
       })
       graphs.graph_by_id( graph, promise )
     else
-      connection.send_text( Message.err( "graph", "Invalid payload" ).string() )
+      ErrorMessage( connection, None, "Invalid 'addnode' payload: " + payload.string(), true )
     end
 
   fun reply( connection: WebSocketSender, graph:String, block:String, component:String, x:I64, y:I64 ) =>
@@ -47,14 +48,11 @@ primitive AddNodeMessage
   fun _get_required( payload:JObj, arg:String, connection:WebSocketSender ): String ? =>
     try 
         payload(arg) as String 
-    else 
-      _send( connection, "No id found: " + payload.string() ) 
+    else
+      ErrorMessage( connection, None, "Invalid 'addnode' payload: " + payload.string(), true )
       error
     end
     
-  fun _send( connection:WebSocketSender, message: String ) =>
-    connection.send_text( Message.err( "graph", message ).string() )
-      
   fun _get_meta( meta': (JObj|None) ): (I64, I64) =>
     match meta'
     | let meta:None => (0,0)

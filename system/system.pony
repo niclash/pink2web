@@ -11,14 +11,18 @@ class val SystemContext
   let _stdout: OutStream
   let _stderr: OutStream
 
-  new val create(auth':AmbientAuth, stdout':OutStream, stderr':OutStream, level:LogLevel) =>
+  new val create(auth':AmbientAuth, stdout':OutStream, stderr':OutStream, level:LogLevel, remote_log:Bool = false) =>
     _auth = auth'
-    _remote_out = RemoteOutStream( stdout', false )
-    _remote_err = RemoteOutStream( stderr', true )
-    _logger = _Logger( _remote_out, _remote_err, level )
     _timers = Timers
     _stdout = stdout'
     _stderr = stderr'
+    _remote_out = RemoteOutStream( stdout', false )
+    _remote_err = RemoteOutStream( stderr', true )
+    if remote_log then
+      _logger = _Logger( _remote_out, _remote_err, level )
+    else
+      _logger = _Logger( _stdout, _stderr, level )
+    end
 
   fun stdout(): OutStream => _stdout
   

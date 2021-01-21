@@ -4,6 +4,7 @@ use "../../web"
 use ".."
 use "../../graphs"
 use "../../system"
+use "../network"
 
 
 primitive RemoveInitialMessage
@@ -22,6 +23,6 @@ primitive RemoveInitialMessage
       })
       graphs.graph_by_id( graph, promise )
     else
-      connection.send_text( Message.err( "graph", "Invalid payload." ).string() )
+      ErrorMessage( connection, None, "Invalid 'removeinitial' payload: " + payload.string(), true )
     end
 

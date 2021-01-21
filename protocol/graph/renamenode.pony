@@ -3,6 +3,7 @@ use "promises"
 use "../../web"
 use ".."
 use "../../graphs"
+use "../network"
 
 primitive RenameNodeMessage
 
@@ -17,7 +18,7 @@ primitive RenameNodeMessage
       })
       graphs.graph_by_id( graph, promise )
     else
-      connection.send_text( Message.err( "graph", "Invalid payload" ).string() )
+      ErrorMessage( connection, None, "Invalid 'renamenode' payload: " + payload.string(), true )
     end
 
   fun reply(connection: WebSocketSender, graph:String, from:String, to:String ) =>

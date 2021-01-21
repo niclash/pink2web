@@ -86,7 +86,7 @@ actor Graph
   be set_initial( block':String, input:String, initial_value:Any val) =>
     try
       let block = _blocks( block' )?
-      block.update( input, initial_value )
+      block.set_initial( input, initial_value )
     else
       _graphs._error( "graph", "Unknown Node: " + block' )
     end
@@ -208,6 +208,24 @@ actor Graph
       block' = block' + ("blocks", result)
       promise(block')
     })
+
+  be subscribe_links( subscriptions:Array[LinkSubscription] val) =>
+    for subscr in subscriptions.values() do
+      try
+        let block = _blocks(subscr.dest_block_name)?
+        block.subscribe_link(subscr)
+      else
+        _context(Error) and _context.log(Error, "Can't find block " + subscr.src_block_name )
+      end
+    end
+
+  be unsubscribe_links( subscriptions:Array[LinkSubscription] val) =>
+    for subscr in subscriptions.values() do
+      try
+        let block = _blocks(subscr.dest_block_name)?
+        block.unsubscribe_link(subscr)
+      end
+    end
 
 class val GraphDescriptor
   let id:String

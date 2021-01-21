@@ -3,6 +3,7 @@ use "jay"
 use "../web"
 use "./graph"
 use "../graphs"
+use "./network"
 
 class val GraphProtocol
   let _graphs: Graphs tag
@@ -33,5 +34,5 @@ class val GraphProtocol
     |   "renamegroup" => None
     |   "changegroup" => None
     else
-      connection.send_text( Message.err( "graph", "Invalid command: " + command).string() )
+      ErrorMessage( connection, None, "Invalid 'graph' command: " + command, true )
     end

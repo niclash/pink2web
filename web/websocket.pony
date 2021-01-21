@@ -5,6 +5,7 @@ use "collections"
 use "../graphs"
 use "../blocktypes"
 use "../protocol"
+use "../protocol/network"
 use "../system"
 
 class val ListenNotify is WebSocketListenNotify
@@ -45,17 +46,18 @@ class _ConnectionNotify is WebSocketConnectionNotify
 
   fun ref binary_received(conn: WebSocketConnection ref, data: Array[U8] val) =>
     _context(Info) and _context.log(Info, "binary_received" )
-    conn.send_text( Message.err( "unknown",  "Binary formats not supported").string() )
+    let connection = WebSocketSender(conn, _context)
+    ErrorMessage( connection, None, "Binary formats are not supported.", true )
 
   fun ref closed(conn: WebSocketConnection ref) =>
     _context(Info) and _context.log(Info, "Closed websocket" )
-    _fbp.unsubscribe( WebSocketSender(conn, _context) )
+    _fbp.closing( WebSocketSender(conn, _context) )
     _connection = None
   
-class val WebSocketSender is Equatable[WebSocketSender]
+class val WebSocketSender is (Equatable[WebSocketSender] & Hashable)
   let _connection:WebSocketConnection
   let _context:SystemContext
-  
+
   new val create(connection:WebSocketConnection, context:SystemContext) =>
     _connection = connection
     _context = context
@@ -74,3 +76,8 @@ class val WebSocketSender is Equatable[WebSocketSender]
 
   fun box ne(that: box->WebSocketSender): Bool val =>
     not (_connection is that._connection)
+
+  fun hash(): USize val =>
+    // TODO: This is horrible, but since we won't have many connections at the same time, and the hashmap usage isn't
+    // in the critical path, I think it is good enough for now.
+    USize(1)

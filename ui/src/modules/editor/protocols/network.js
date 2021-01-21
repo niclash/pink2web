@@ -51,10 +51,10 @@ var network_protocol = {
             }
         });
     },
-    request_edges: function (connection, enable, links) {
+    request_edges: function (connection, links) {
         connection.send({
             protocol: "network",
-            command: "debug",
+            command: "edges",
             payload: {
                 edges: links,
                 graph: graph_protocol.currentGraph,
@@ -113,6 +113,12 @@ var network_protocol = {
     begingroup: function (connection, payload) {
     },
     data: function (connection, payload) {
+        graph.model.commit(function(m) {
+            let link = support.findLink(payload);
+            m.set(link, "value", payload.data);
+            // link.value = payload.data;
+            // link.value = "niclas";
+        }, "update link label");
     },
     endgroup: function (connection, payload) {
     },

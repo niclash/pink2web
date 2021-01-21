@@ -3,6 +3,7 @@ use "jay"
 use "../../web"
 use "../../graphs"
 use ".."
+use "../network"
 
 primitive ClearMessage
 
@@ -15,10 +16,9 @@ primitive ClearMessage
       let library = try payload( "library" ) as String else "" end
       let icon = try payload( "icon" ) as String else "" end
       graphs.create_graph( id, name, description, icon, main )
-      let p = payload("name") = name
-      connection.send_text( Message( "graph", "clear", p).string() )
+      connection.send_text( Message( "graph", "clear", JObj + ("id", id)).string() )
     else
-      connection.send_text( Message.err( "graph", "Invalid payload structure." ).string() )
+      ErrorMessage( connection, None, "Invalid 'clear' payload: " + payload.string(), true )
     end
 
   fun _get_name( payload:JObj ): String =>
