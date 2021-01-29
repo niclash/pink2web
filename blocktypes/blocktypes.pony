@@ -3,6 +3,7 @@ use "debug"
 use "promises"
 use "jay"
 // use "./advanced"
+use "./hardware"
 // use "./math"
 use "./process"
 use "./timing"
@@ -164,6 +165,17 @@ primitive _ProcessBlockTypes
                             ["number"; "number"; "number"; "number" ],
                             ["in"; "k"; "m"],
                             {(inp:Any val,k:Any val,m:Any val) => (ToF64(inp) * ToF64(k)) + ToF64(m)})?
+                            ,types)
+    _Helper._add_component( CyclicBlockFactory("io/GpioIn", "Reads GPIO pin on the hardware",
+                                               GpioInputAlgorithm, 100,
+                                               [ InputDescriptor( "pin", "number", "GPIO pin to read" ) ],
+                                               [ OutputDescriptor( "out", "bool", "true when GPIO pin is HIGH, false otherwise" ) ] )
+                            ,types)
+
+    _Helper._add_component( GenericBlockFactory("io/GpioOut", "Sets GPIO pin on the hardware",
+                                               GpioOutputAlgorithm,
+                                               [ InputDescriptor( "pin", "number", "GPIO pin to read" ); InputDescriptor( "in", "bool", "value to write to GPIO pin. true -> HIGH, false -> LOW" ) ],
+                                               [] )
                             ,types)
 
 primitive _TimingBlockTypes

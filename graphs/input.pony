@@ -88,7 +88,7 @@ class val InputDescriptor
   let addressable: Bool
   let target:String // for NestedBlocks only
 
-  new val create( name':String, typ':String, description':String, addressable': Bool, target':String="" ) =>
+  new val create( name':String, typ':String, description':String, addressable': Bool = false, target':String="" ) =>
     name = name'
     description = description'
     typ = typ'

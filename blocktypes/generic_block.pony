@@ -2,12 +2,11 @@ use "collections"
 use "jay"
 use "promises"
 use "pony-metric"
-use ".."
-use "../../graphs"
-use "../../system"
+use "../graphs"
+use "../system"
 
 interface val Algorithm
-  fun val apply( inputs:Array[Input], outputs:Array[Output] )
+  fun val apply( block:GenericBlock, inputs:Map[String,Any val] val )
 
 actor GenericBlock is Block
   var _name: String
@@ -121,7 +120,11 @@ actor GenericBlock is Block
 
   be refresh() =>
     if _started then
-      _algorithm(_inputs, _outputs)
+      let inputs' = recover iso Map[String,Any val] end
+      for inp in _inputs.values() do
+        inputs'( inp.name() ) = inp.value()
+      end
+      _algorithm(this, consume inputs')
     end
     
   be name( promise: Promise[String] tag ) =>
@@ -207,7 +210,7 @@ class val GenericBlockFactory is BlockFactory
   let _descriptor: BlockTypeDescriptor val
   let _algorithm:Algorithm
 
-  new create(name':String, description':String, algo:Algorithm, inputs':Array[InputDescriptor] val, outputs':Array[OutputDescriptor] val) =>
+  new val create(name':String, description':String, algo:Algorithm, inputs':Array[InputDescriptor] val, outputs':Array[OutputDescriptor] val) =>
     _descriptor = GenericBlockTypeDescriptor(name', description', inputs', outputs')
     _algorithm = algo
 

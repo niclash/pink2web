@@ -1,5 +1,6 @@
 use "./app"
 use "./blocktypes"
+use "./drivers"
 use "./graphs"
 use "./protocol"
 use "./system"
@@ -9,6 +10,7 @@ use "collections"
 use "files"
 use "jay"
 use "net"
+use pi = "pony-pi"
 use "promises"
 use "websocket"
 
@@ -17,6 +19,7 @@ actor Main
   var _websocketListener: (WebSocketListener|None) = None
   
   new create( env: Env ) =>
+    pi.RPi.wiringPiSetup()
     try
       handle_cli(env)?
     else
@@ -75,6 +78,12 @@ actor Main
                     _rest = RestServer(host, port,  path, startpage, context )
                   end
                 })
+                let drivers = Drivers(context, blocktypes)
+                let extensions = c.option("startpage").string_seq()
+                for ext in extensions.values() do
+                  drivers.load(ext)
+                end
+                drivers.start()
                 run_process(filename,graphs,blocktypes,context, promise)
 
             | "pink2web/describe/type" => describe_type(c.arg("typename" ).string(),blocktypes,context)
@@ -111,6 +120,7 @@ actor Main
       OptionSpec.string("startpage", "Start page on the web server" where default' = "")
       OptionSpec.string("host", "Host interface to connect to" where default' = "0.0.0.0")
       OptionSpec.i64("port", "Port number to listen on" where default' = 3568)
+      OptionSpec.string_seq("load-driver", "Driver to be loaded.(may be used many times)")
     ],[
       CommandSpec.leaf( "process", "Run the process.", [
       ], [

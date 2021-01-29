@@ -7,6 +7,9 @@
       "locator": "github.com/niclash/pony-websocket.git"
     },
     {
+      "locator": "github.com/niclash/pony-pi.git"
+    },
+    {
       "locator": "github.com/niclash/jennet.git"
     },
     {

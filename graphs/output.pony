@@ -128,7 +128,7 @@ class val OutputDescriptor
   let addressable: Bool
   let source:String  // for NestedBlocks only
 
-  new val create( name':String, typ':String, description':String, addressable': Bool, source':String="" ) =>
+  new val create( name':String, typ':String, description':String, addressable': Bool = false, source':String="" ) =>
     name = name'
     description = description'
     taip = typ'
