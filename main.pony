@@ -78,10 +78,15 @@ actor Main
                     _rest = RestServer(host, port,  path, startpage, context )
                   end
                 })
+                context(Info) and context.log(Info, "Drivers present " )
                 let drivers = Drivers(context, blocktypes)
-                let extensions = c.option("startpage").string_seq()
-                for ext in extensions.values() do
-                  drivers.load(ext)
+                drivers.list()
+                let driversToLoad = c.option("load-driver").string_seq()
+                for driver in driversToLoad.values() do
+                  context(Info) and context.log(Info, "Loading " + driver )
+                  drivers.load(driver)
+                else
+                  context(Info) and context.log(Info, "Loading no drivers." )
                 end
                 drivers.start()
                 run_process(filename,graphs,blocktypes,context, promise)

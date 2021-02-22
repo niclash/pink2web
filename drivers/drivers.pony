@@ -25,6 +25,10 @@ actor Drivers
       driver.stop()
     end
 
+  be list() =>
+    _context(Info) and _context.log(Info, "link2web" )
+
+
 interface tag Driver
   new tag create(context':SystemContext, blocktypes':BlockTypes)
   be start()

@@ -26,7 +26,7 @@ actor RestServer
       jennet.serve_dir(auth, "/pinkflow/*filepath", basedir + "/modules/pinkflow")?
       jennet.serve_file(auth, "/pink2web", basedir + "/pink2web.html")?
       jennet.serve_file(auth, "/contacts", basedir + "/contacts.html")?
-      (consume jennet).serve(ServerConfig(where port' = port'.string()))
+      (consume jennet).serve(ServerConfig(host', port'.string()))
     else
       context(Error) and context.log(Error, "invalid routes.")
     end
