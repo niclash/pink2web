@@ -100,7 +100,15 @@ actor IntervalTimerBlock is Block
     _output.disconnect_all(disconnects)
 
   be rename( new_name: String ) =>
+    _output.rename_of_block( this, _name, new_name )
     _name = new_name
+
+  be rename_of( block: Block, old_name: String, new_name: String ) =>
+    _interval.rename_of_block( block, old_name, new_name )
+    _initial.rename_of_block( block, old_name, new_name )
+    _rearm'.rename_of_block( block, old_name, new_name )
+    _oneshot.rename_of_block( block, old_name, new_name )
+    _output.rename_of_block( block, old_name, new_name )
 
   be update(input: String, new_value:Any val) =>
     match new_value

@@ -1,4 +1,5 @@
 use "collections"
+use "debug"
 use "jay"
 use "../system"
 
@@ -9,6 +10,7 @@ trait Input is Stringable
   fun name() : String
   fun description() : String
   fun descriptor() : InputDescriptor
+  fun ref rename_of_block( block: Block, old_name: String, new_name: String )
   fun ref set_description( new_description:String )
   fun describe(): JObj val
   fun ref subscribe( subscription:LinkSubscription )
@@ -21,7 +23,7 @@ class InputImpl is Input
   var _description: String
   let _descriptor:InputDescriptor
   let _converter:TypeConverter box
-  var _subscriptions: Array[LinkSubscription] = Array[LinkSubscription]
+  var _subscriptions: List[LinkSubscription] = List[LinkSubscription]
 
   new create(container_name: String, descriptor':InputDescriptor, initialValue: Any val, description': String  = "", converter:TypeConverter = DefaultConverter ) =>
     _name = descriptor'.name
@@ -72,13 +74,33 @@ class InputImpl is Input
       + ("descriptor", _descriptor.describe() )
     j
 
+  fun ref rename_of_block( block: Block, old_name: String, new_name: String ) =>
+    for node in _subscriptions.nodes() do
+      try
+        let sub = node()?
+        Debug.out("subscription: " + sub.string())
+        if sub.src_block_name == old_name then
+          let new_subscription = LinkSubscription( sub.graph, new_name, sub.src_port, sub.dest_block_name, sub.dest_port, sub.callback )
+          node.update( new_subscription )?
+        end
+        if sub.dest_block_name == old_name then
+          let new_subscription = LinkSubscription( sub.graph, sub.src_block_name, sub.src_port, new_name, sub.dest_port, sub.callback )
+          node.update( new_subscription )?
+        end
+      end
+    end
+
   fun ref subscribe( subscription:LinkSubscription ) =>
     _subscriptions.push(subscription)
     subscription(_value)
 
   fun ref unsubscribe( subscription:LinkSubscription ) =>
     try
-      _subscriptions.delete( _subscriptions.find( subscription )? )?
+      for node in _subscriptions.nodes() do
+        if node()? is subscription then
+          node.remove()
+        end
+      end
     end
 
 class val InputDescriptor

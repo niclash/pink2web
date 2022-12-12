@@ -26,7 +26,9 @@ trait tag Block
   be update(input: String, new_value: Any val)
 
   be rename( new_name: String )
-  
+
+  be rename_of( block: Block, old_name: String, new_name: String )
+
   be change( x:I64, y:I64 )
   
   be destroy(disconnects: LinkRemoveNotify)

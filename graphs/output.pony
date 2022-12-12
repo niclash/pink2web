@@ -11,6 +11,7 @@ trait Output is Stringable
   fun ref disconnect_block( dest: Block tag, disconnects: LinkRemoveNotify )
   fun ref disconnect_edge( dest: Block tag, input: String, disconnects: LinkRemoveNotify )
   fun ref disconnect_all(disconnects: LinkRemoveNotify)
+  fun ref rename_of_block( block: Block, old_name: String, new_name: String )
   fun name(): String val
   fun description() : String 
   fun descriptor() : OutputDescriptor
@@ -48,6 +49,20 @@ class OutputImpl is Output
   fun ref connect(dest_block: Block tag, input: String) =>
     var link:Link val = recover Link(dest_block, input) end
     _dest.push(link)
+
+  fun ref rename_of_block( block: Block, old_name: String, new_name: String ) =>
+    try
+      let len = old_name.size()
+      let head = _name.substring(0,len.isize())
+      Debug.out("head: " + head.clone() + ", len: " + len.string())
+      Debug.out("head == old_name" + (head == old_name).string() )
+      Debug.out("_name(len)? " + _name(len)?.string() )
+      if((head == old_name) and (_name(len)? == U8(46))) then
+        let tail = _name.substring(len.isize())
+        Debug.out("tail: " + tail.clone() + ", len: " + len.string())
+        _name = new_name + consume tail
+      end
+    end
 
   fun ref disconnect_block( dest: Block, disconnects: LinkRemoveNotify ) =>
     for node in _dest.nodes() do

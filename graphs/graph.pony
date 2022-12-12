@@ -148,8 +148,13 @@ actor Graph
       end
       try
         (let block', let type') = _block_types.remove(block)?
+        for b in _blocks.values() do
+          b.rename_of(block, from', to')
+        end
         block.rename(to')
-        register_block(block, to', type')
+        _blocks( to' ) = block
+        _block_types(block) = type'
+        _context(Fine) and _context.log(Fine, "Available Blocks: " + _available_blocks() )
         _graphs._renamed_block(_descriptor.id, from', to')
       end
     end
@@ -211,10 +216,9 @@ actor Graph
     
   be describe( promise: Promise[JObj] tag ) =>
     _context(Fine) and _context.log(Fine, "Graph.describe()")
-    Collector[Block,JObj]( _blocks.values(), { (b,p) => b.describe(p) }, { (a) =>
-      let asize = a.size()
+    Collector[Block,JObj]( _blocks.values(), { (blk,prom) => blk.describe(prom) }, { (arr_of_jobjs_of_blocks) =>
       var result = JArr
-      for s in a.values() do
+      for s in arr_of_jobjs_of_blocks.values() do
         result = result + s
       end
       var block' = _descriptor.to_json()

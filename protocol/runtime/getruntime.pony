@@ -79,7 +79,7 @@ class _Pass2Notify is TimerNotify
     _context = context
 
   fun apply(timer: Timer, count: U64): Bool =>
-    Print("Forwarding Edges.")
+    Print("Forwarding Edges")
     try
       let id = try _graph("id") as String else _context.log(Error, "'id' is not a String"); error end
       let blocks = try _graph("blocks") as JArr else _context.log(Error, "'blocks' is not a JArr'"); error end

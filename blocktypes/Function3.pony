@@ -70,7 +70,14 @@ actor Function3Block is Block
     _output.disconnect_all(disconnects)
 
   be rename( new_name: String ) =>
+    _output.rename_of_block( this, _name, new_name )
     _name = new_name
+
+  be rename_of( block: Block, old_name: String, new_name: String ) =>
+    _input1.rename_of_block( block, old_name, new_name )
+    _input2.rename_of_block( block, old_name, new_name )
+    _input3.rename_of_block( block, old_name, new_name )
+    _output.rename_of_block( block, old_name, new_name )
 
   be update(input: String, new_value:Any val) =>
     _context(Fine) and _context.log(Fine, "Function3[ " + _name + "." + input + " = " + try (new_value as Stringable).string() else "<not stringable>" end + " ]")

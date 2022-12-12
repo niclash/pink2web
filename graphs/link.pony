@@ -42,7 +42,7 @@ class val LinkSubscription is Stringable
   let src_port:String
   let dest_block_name:String
   let dest_port:String
-  let _callback:LinkNotify
+  let callback:LinkNotify
   let graph:String
 
   new val create( graph':String,
@@ -54,10 +54,10 @@ class val LinkSubscription is Stringable
     dest_block_name = dest_block_name'
     dest_port = dest_port'
     graph = graph'
-    _callback = callback'
+    callback = callback'
 
   fun val apply( new_value:Any val) =>
-    _callback( graph, this, new_value )
+    callback( graph, this, new_value )
 
   fun box string(): String iso^ =>
     ("[" + src_block_name + "." + src_port + "==>" + dest_block_name + "." + dest_port + "]").clone()

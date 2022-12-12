@@ -230,6 +230,12 @@ const graph_protocol = {
             if (node !== null) {
                 viewModel.setKeyForNodeData(node, payload.to);
             }
+            viewModel.linkDataArray.forEach( link => {
+                if( payloadlink.src.block.equals(link.from) )
+                    payloadlink.src.block = link.to;
+                if( payloadlink.tgt.block.equals(link.from) )
+                    payloadlink.tgt.block = link.to;
+            });
         }
     },
 

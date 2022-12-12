@@ -68,6 +68,9 @@ actor DummyBlock is Block
   be rename( new_name: String ) => 
     _name = new_name
   
+  be rename_of( block: Block, old_name: String, new_name: String ) =>
+    None
+
   be update(input: String, new_value: Any val) =>
     None
 

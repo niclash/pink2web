@@ -92,7 +92,15 @@ actor CyclicBlock is Block
     end
 
   be rename( new_name: String ) =>
+    for outp in _outputs.values() do
+      outp.rename_of_block( this, _name, new_name )
+    end
     _name = new_name
+
+  be rename_of( block: Block, old_name: String, new_name: String ) =>
+    for inp in _inputs.values() do
+      inp.rename_of_block( block, old_name, new_name )
+    end
 
   fun _find_input( input_name:String ): this->Input  ? =>
     for inp in _inputs.values() do

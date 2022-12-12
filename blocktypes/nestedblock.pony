@@ -100,6 +100,10 @@ actor NestedBlock is Block
   be rename( new_name: String ) =>
     _name = new_name
 
+  be rename_of( block: Block, old_name: String, new_name: String ) =>
+    // TODO!! Rename of Nested Blocks.
+    None
+
   be update(inputname: String, new_value:Any val) =>
     try
       (let block, let input) = _inputs(inputname)?
