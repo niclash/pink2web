@@ -11,6 +11,11 @@ Copyright 2017 The Wallaroo Authors.
  permissions and limitations under the License.
 */
 
+use @fprintf[I32](stream: Pointer[U8] tag, fmt: Pointer[U8] tag, ...)
+use @pony_os_stdout[Pointer[U8]]()
+use @pony_os_stderr[Pointer[U8]]()
+use @exit[None](code:U8)
+
 primitive Fail
   """
   'This should never happen' error encountered. Bail out of our running

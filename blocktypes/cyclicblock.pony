@@ -1,6 +1,6 @@
 use "collections"
 use "jay"
-use "pony-metric"
+use "metric"
 use "promises"
 use "time"
 use "../graphs"
@@ -73,25 +73,22 @@ actor CyclicBlock is Block
       outp.connect(to_block, to_input)
     end
 
-  be disconnect_block( block: Block ) =>
+  be disconnect_block( block: Block, disconnects: LinkRemoveNotify ) =>
     for output in _outputs.values() do
-      try
-        let outp = _find_output(output.name())?
-        outp.disconnect_block(block)
-      end
+      output.disconnect_block(block, disconnects)
     end
 
-  be disconnect_edge( output:String, dest_block: Block, dest_input: String ) =>
+  be disconnect_edge( output:String, dest_block: Block, dest_input: String, disconnects: LinkRemoveNotify ) =>
     try
       let outp = _find_output(output)?
-      outp.disconnect_edge( dest_block, dest_input )
+      outp.disconnect_edge( dest_block, dest_input, disconnects )
     end
 
-  be destroy() =>
+  be destroy(disconnects: LinkRemoveNotify) =>
     _context(Fine) and _context.log(Fine, "destroy()")
     _started = false
     for outp in _outputs.values() do
-      outp.disconnect_all()
+      outp.disconnect_all(disconnects)
     end
 
   be rename( new_name: String ) =>

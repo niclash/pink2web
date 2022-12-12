@@ -1,26 +1,31 @@
 use "files"
 use "process"
+use "backpressure"
 
 use "../system"
 
 class tag SendMail
-  fun apply(auth: AmbientAuth, name:String, email:String, subject:String, body:String) =>
+  fun apply(ctx:SystemContext, name:String, email:String, subject:String, body:String) =>
     let client = ProcessClient
     let notifier: ProcessNotify iso = consume client
-    try
-      let path = FilePath(auth, "/usr/bin/mail")?
-      let args: Array[String] val = [
-        "/home"
-        "--subject=" + subject; name + "<" + email + ">"
-        "--content-type=application/yaml"
-      ]
-      let vars: Array[String] val = ["HOME=/"; "PATH=/bin"]
-      let pm: ProcessMonitor = ProcessMonitor(auth, auth, consume notifier, path, args, vars)
-      pm.print(body)
-      pm.done_writing() // closing stdin allows cat to terminate
-    else
-      Print("Could not create FilePath!")
-    end
+    let auth = ctx.auth()
+    let path = FilePath(FileAuth(auth), "/usr/bin/mail")
+    let args: Array[String] val = [
+      "/home"
+      "--subject=" + subject; name + "<" + email + ">"
+      "--content-type=application/yaml"
+    ]
+    let vars: Array[String] val = ["HOME=/"; "PATH=/bin"]
+    let pm: ProcessMonitor = ProcessMonitor(
+          StartProcessAuth(auth),
+          ApplyReleaseBackpressureAuth(auth),
+          consume notifier,
+          path,
+          args,
+          vars
+    )
+    pm.print(body)
+    pm.done_writing() // closing stdin allows cat to terminate
 
 class ProcessClient is ProcessNotify
   fun ref stdout(process: ProcessMonitor ref, data: Array[U8] iso) =>

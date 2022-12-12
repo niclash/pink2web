@@ -1,5 +1,6 @@
 use "collections"
-use "pony-pi"
+use "files"
+use "raspi"
 use "time"
 use "../../blocktypes"
 use "../../system"
@@ -15,7 +16,7 @@ actor Link2Web is Driver
   new create(context':SystemContext, blocktypes':BlockTypes) =>
     _context = context'
     _blocktypes = blocktypes'
-    _bus = I2C.bus(0, context'.auth() )
+    _bus = I2C.bus(0, FileAuth(context'.auth()) )
     _multiplexer = Link2WebMultiplexer(_bus, context')
 
   be start() =>

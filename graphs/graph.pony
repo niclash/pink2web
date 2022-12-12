@@ -54,8 +54,8 @@ actor Graph
   be destroy() =>
     if _running then _stop() end
     _context(Info) and _context.log(Info, "Destroying graph: " + _descriptor.name )
-    for block in _blocks.values() do
-      block.destroy()
+    for block_name in _blocks.keys() do
+      remove_block(block_name)
     end
     _blocks.clear()
     
@@ -100,20 +100,44 @@ actor Graph
       _graphs._error( "graph", "Unknown Node" )
     end
   
+  be disconnect( src_block: String, src_output: String, dest_block: String, dest_input: String ) =>
+    try
+      let src:Block tag = _blocks(src_block)?
+      let dest:Block tag = _blocks(dest_block)?
+      let disconnects:LinkRemoveNotify = { (link) =>
+        _graphs._removed_connection(_descriptor.id, link.src_block, link.src_port, link.dest_block, link.dest_port)
+        _context(Info) and _context.log(Info, "disconnected:" + link.src_block + "." + link.src_port + " ==> " + link.dest_block + "." + link.dest_port )
+      }
+      src.disconnect_edge(src_output, dest, dest_input, disconnects)
+    else
+      _context(Error) and _context.log(Error, "Unable to disconnect " + src_block + "." + src_output + " from " + dest_block + "." + dest_input)
+    end
+
   be remove_block( name': String ) =>
     try
       let block = _blocks( name' )?
+      let disconnects:LinkRemoveNotify = { (link) =>
+        _context(Info) and _context.log(Info, "disconnected:" + link.src_block + "." + link.src_port + " ==> " + link.dest_block + "." + link.dest_port )
+        _graphs._removed_connection(_descriptor.id, link.src_block, link.src_port, link.dest_block, link.dest_port)
+      }
       for b in _blocks.values() do
-        b.disconnect_block( block )
+        b.disconnect_block( block, disconnects )
+      else
+        Debug.out( "No other blocks?" )
       end
-      block.destroy()
+      block.destroy(disconnects)
       try
         _blocks.remove( name' )?
+      else
+        Debug.out( "Block missing?" )
       end
       try
         _block_types.remove( block )?
+      else
+        Debug.out( "Block type missing?" )
       end
       _graphs._removed_block(_descriptor.id, name')
+
     end
     
   be rename_block( from': String, to': String ) =>
@@ -159,17 +183,6 @@ actor Graph
     end
     blocks' + "]"
   
-  be disconnect( src_block: String, src_output: String, dest_block: String, dest_input: String ) =>
-    try
-        let src:Block tag = _blocks(src_block)?
-        let dest:Block tag = _blocks(dest_block)?
-        src.disconnect_edge(src_output, dest, dest_input)
-        _context(Info) and _context.log(Info, "disconnected:" + src_block + "." + src_output + " ==> " + dest_block + "." + dest_input )
-        _graphs._removed_connection(_descriptor.id, src_block, src_output, dest_block, dest_input)
-    else
-      _context(Error) and _context.log(Error, "Unable to connect " + src_block + "." + src_output + " to " + dest_block )
-    end
-
   be set_value_from_string( point: String, value:String ) =>
     try
       (let blockname, let input) = BlockName(point)?

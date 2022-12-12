@@ -1,9 +1,10 @@
+
 use "collections"
 use "debug"
-use "promises"
+use "files"
 use "jay"
+use "promises"
 // use "./advanced"
-use "./hardware"
 // use "./math"
 use "./process"
 use "./timing"
@@ -16,9 +17,10 @@ primitive _Helper
     types'(factory.block_type_descriptor().name()) = factory
 
 actor BlockTypes
-  let _intrinsic_types: Map[String,BlockFactory] val
-  var _user_types:Map[String,BlockFactory val] = Map[String,BlockFactory val]
-  let _context:SystemContext
+  let _intrinsic_types: Map[String, BlockFactory] val
+  let _driver_types: Map[String, BlockFactory val] = Map[String,BlockFactory val]
+  var _user_types: Map[String,BlockFactory val] = Map[String,BlockFactory val]
+  let _context: SystemContext
   let _dummy: BlockFactory val
   
   new create(context: SystemContext) =>
@@ -37,6 +39,10 @@ actor BlockTypes
       types
     end
 
+  be add_driver_blocktype( factory:BlockFactory ) =>
+    let blocktypename = factory.block_type_descriptor().name()
+    _driver_types(blocktypename) = factory
+
   be add_user_blocktype( factory:BlockFactory ) =>
     let blocktypename = factory.block_type_descriptor().name()
     _user_types(blocktypename) = factory
@@ -45,7 +51,11 @@ actor BlockTypes
     NestedBlockTypeBuilder.from_json( definition', this )
 
   fun _get(typename: String): BlockFactory =>
-    _intrinsic_types.get_or_else( typename, _user_types.get_or_else( typename, _dummy ))
+    _intrinsic_types.get_or_else( typename,
+        _driver_types.get_or_else( typename,
+            _user_types.get_or_else( typename, _dummy )
+        )
+    )
 
   be get(typename: String, promise:Promise[BlockFactory]) =>
     promise(_get(typename))
@@ -53,6 +63,9 @@ actor BlockTypes
   be list_types(promise:Promise[Map[String, BlockTypeDescriptor val] val]) =>
     let result = recover iso Map[String, BlockTypeDescriptor val] end
     for (typename, factory) in _intrinsic_types.pairs() do
+      result(typename) = factory.block_type_descriptor()
+    end
+    for (typename, factory) in _driver_types.pairs() do
       result(typename) = factory.block_type_descriptor()
     end
     for (typename, factory) in _user_types.pairs() do
@@ -65,18 +78,16 @@ actor BlockTypes
     promise(factory.describe())
 
   be save_to_file(context:SystemContext) =>
-    try
-      var types = JArr
-      for bf in _user_types.values() do
-        types = types.push(bf.describe())
-      end
-      let json = types.string()
-      Files.write_text_to_pathname("custom-types.json", json, context.auth())?
+    var types = JArr
+    for bf in _user_types.values() do
+      types = types.push(bf.describe())
     end
+    let json = types.string()
+    Files.write_text_to_pathname("custom-types.json", json, FileAuth(context.auth()))
 
   be load_from_file(context:SystemContext) =>
     try
-      let text = Files.read_text_from_pathname("custom-types.json", context.auth())?
+      let text = Files.read_text_from_pathname("custom-types.json", FileAuth(context.auth()))?
       let json = JParse.from_string(text)?
       match json
       | let jarr:JArr =>
@@ -165,17 +176,6 @@ primitive _ProcessBlockTypes
                             ["number"; "number"; "number"; "number" ],
                             ["in"; "k"; "m"],
                             {(inp:Any val,k:Any val,m:Any val) => (ToF64(inp) * ToF64(k)) + ToF64(m)})?
-                            ,types)
-    _Helper._add_component( CyclicBlockFactory("io/GpioIn", "Reads GPIO pin on the hardware",
-                                               GpioInputAlgorithm, 100,
-                                               [ InputDescriptor( "pin", "number", "GPIO pin to read" ) ],
-                                               [ OutputDescriptor( "out", "bool", "true when GPIO pin is HIGH, false otherwise" ) ] )
-                            ,types)
-
-    _Helper._add_component( GenericBlockFactory("io/GpioOut", "Sets GPIO pin on the hardware",
-                                               GpioOutputAlgorithm,
-                                               [ InputDescriptor( "pin", "number", "GPIO pin to read" ); InputDescriptor( "in", "bool", "value to write to GPIO pin. true -> HIGH, false -> LOW" ) ],
-                                               [] )
                             ,types)
 
 primitive _TimingBlockTypes

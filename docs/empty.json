@@ -2,6 +2,6 @@
     "id": "main", 
     "name": "pink2web main process", 
     "connections": [],
-    "processes": {
+    "blocks": {
     }
 }

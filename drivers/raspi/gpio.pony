@@ -1,6 +1,6 @@
 use "collections"
-use "pony-pi"
-use ".."
+use "raspi"
+use "../../blocktypes"
 
 class val GpioInputAlgorithm is CyclicAlgorithm
   fun val apply( block:CyclicBlock, inputs:Map[String,Any val] val, now:U64, last:U64 ) =>

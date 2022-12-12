@@ -35,7 +35,7 @@
             "tgt": { "process": "block8","port": "in2","data": "" }
         }
     ],
-    "processes": {
+    "blocks": {
         "block1": {
             "component": "math/Add4",
             "metadata": {

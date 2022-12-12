@@ -25,7 +25,7 @@ function RealtimeDragSelectingTool() {
     this._originalSelection = null;
     this._temporarySelection = null;
 }
-
+console.log("HABBA!!!");
 go.Diagram.inherit(RealtimeDragSelectingTool, go.DragSelectingTool);
 
 /**

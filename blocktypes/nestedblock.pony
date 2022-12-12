@@ -76,25 +76,25 @@ actor NestedBlock is Block
       refresh()
     end
 
-  be disconnect_block( block: Block ) =>
+  be disconnect_block( block: Block, disconnects: LinkRemoveNotify ) =>
     for (b, output) in _outputs.values() do
-      b.disconnect_block(block)
+      b.disconnect_block(block, disconnects)
     end
     refresh()
 
-  be disconnect_edge( outputname:String, dest_block: Block, dest_input: String ) =>
+  be disconnect_edge( outputname:String, dest_block: Block, dest_input: String, disconnects: LinkRemoveNotify ) =>
     try
       (let block, let output) = _outputs(outputname)?
-      block.disconnect_edge(output, dest_block, dest_input )
+      block.disconnect_edge(output, dest_block, dest_input, disconnects )
       refresh()
     end
 
-  be destroy() =>
+  be destroy(disconnects: LinkRemoveNotify) =>
     refresh()
     _context(Fine) and _context.log(Fine, "destroy()")
     _started = false
     for (b, output) in _outputs.values() do
-      b.destroy()
+      b.destroy(disconnects)
     end
 
   be rename( new_name: String ) =>

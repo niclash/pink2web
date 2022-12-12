@@ -10,7 +10,7 @@ use "collections"
 use "files"
 use "jay"
 use "net"
-use pi = "pony-pi"
+use pi = "raspi"
 use "promises"
 use "websocket"
 
@@ -21,6 +21,10 @@ actor Main
   new create( env: Env ) =>
     pi.RPi.wiringPiSetup()
     try
+      env.out.print( "CLI:" )
+      for arg in env.args.values() do
+        env.out.print( "  " + arg )
+      end
       handle_cli(env)?
     else
       env.err.print( "Can not handle command line." )
@@ -30,7 +34,7 @@ actor Main
   fun ref handle_cli(env:Env)? =>
     let args:Array[String] val = env.args
     let vars:Array[String] val = env.vars
-    let auth:AmbientAuth val = env.root as AmbientAuth
+    let auth:AmbientAuth val = env.root
     let cs = CommandSpec.parent("pink2web", "Flow Based Programming engine", [
             OptionSpec.bool("warn", "Warn Logging Level" where default' = false)
             OptionSpec.bool("info", "Info Logging Level" where default' = false)
@@ -51,44 +55,10 @@ actor Main
             match c.fullname()
             | "pink2web/list/types" => list_types(blocktypes, context)
             | "pink2web/run/process" =>
-                context(Fine) and context.log(Fine, "Starting process")
-                let filename = c.arg("filename").string()
-                let host = c.option("host").string()
-                let p = c.option("port")
-                context(Info) and context.log( Info, "--port=" + p.i64().string() )
-                var port = p.i64().u32()
-                // bug in cli, default port isn't working properly
-                if port == 0 then port = 3568 end
-                let graphs = Graphs( blocktypes, context )
-                var path:String = c.option("webdir").string()
-                if path == "" then path = Path.cwd() + "/ui/src" end
-                var startpage:String = c.option("startpage").string()
-                if startpage == "" then startpage = "login" end
-                let promise = Promise[(String, Graph|None)]
-                promise.next[None]({ (pair) =>
-                  (let main_graph:String, let graph:(Graph|None)) = pair
-                  match graph
-                  | let g:Graph =>
-                    let fbp = Fbp("619362b3-1aee-4dca-b109-bef38e0e1ca8", main_graph, graphs, blocktypes, context)
-                    let ws_port:String val = (port+1).string()
-                    _websocketListener = WebSocketListener(auth,ListenNotify(fbp,context),host,ws_port)
-                    context(Info) and context.log(Info, "Web directory:"+path)
-                    context(Info) and context.log(Info, "Start Page:"+startpage)
-                    context(Info) and context.log(Info, "Started to listen: ws://"+host+":"+ws_port)
-                    _rest = RestServer(host, port,  path, startpage, context )
-                  end
-                })
-                context(Info) and context.log(Info, "Drivers present " )
-                let drivers = Drivers(context, blocktypes)
-                drivers.list()
-                let driversToLoad = c.option("load-driver").string_seq()
-                for driver in driversToLoad.values() do
-                  context(Info) and context.log(Info, "Loading " + driver )
-                  drivers.load(driver)
-                else
-                  context(Info) and context.log(Info, "Loading no drivers." )
-                end
-                drivers.start()
+                let config = _create_runtime_configuration( c, context )
+                (let graphs, let promise) = _initialize_runtime( config, blocktypes, context )
+                let filename = c.arg( "filename" ).string()
+                context(Fine) and context.log(Fine, "Starting process " + filename)
                 run_process(filename,graphs,blocktypes,context, promise)
 
             | "pink2web/describe/type" => describe_type(c.arg("typename" ).string(),blocktypes,context)
@@ -171,7 +141,10 @@ actor Main
       end
     })
     loader.load( filename, loadpromise )?
-    
+
+  fun run_application(filename:String, graphs: Graphs, blocktypes:BlockTypes, context:SystemContext, promise:Promise[(String,Graph|None)]) =>
+    None
+
   fun run_process(filename:String, graphs: Graphs, blocktypes:BlockTypes, context:SystemContext, promise:Promise[(String,Graph|None)]) =>
     let loader = Loader(graphs, blocktypes, context)
     let p = Promise[(String, Graph|None)]
@@ -187,3 +160,72 @@ actor Main
       promise((id, graph))
     })
     loader.load( filename, p )
+
+  fun _create_runtime_configuration( c: Command, context: SystemContext ): RuntimeConfiguration =>
+    let host = c.option("host").string()
+    let p = c.option("port")
+    context(Info) and context.log( Info, "--port=" + p.i64().string() )
+    var port = p.i64().u32()
+    // bug in cli, default port isn't working properly
+    if port == 0 then port = 3568 end
+    var path:String = c.option("webdir").string()
+    if path == "" then path = Path.cwd() + "/ui/src" end
+    var startpage:String = c.option("startpage").string()
+    if startpage == "" then startpage = "login" end
+    let driversToLoad = c.option("load-driver").string_seq()
+    RuntimeConfiguration( host, port, path, startpage, driversToLoad )
+
+  fun _initialize_runtime( config: RuntimeConfiguration, blocktypes:BlockTypes, context: SystemContext ): (Graphs,  Promise[(String, Graph|None)]) =>
+
+    let graphs = Graphs( blocktypes, context )
+    let promise = Promise[(String, Graph|None)]
+    promise.next[None]({ (pair) =>
+      (let main_graph:String, let graph:(Graph|None)) = pair
+      match graph
+      | let g:Graph =>
+        let host = config.host
+        let port = config.port
+        let fbp = Fbp("619362b3-1aee-4dca-b109-bef38e0e1ca8", main_graph, graphs, blocktypes, context)
+        let ws_port:String val = (port+1).string()
+
+        let tcplauth: TCPListenAuth = TCPListenAuth(context.auth())
+        _websocketListener = WebSocketListener(tcplauth,ListenNotify(fbp,context),host,ws_port)
+        context(Info) and context.log(Info, "Web directory:"+config.webdir)
+        context(Info) and context.log(Info, "Start Page:"+config.startpage)
+        context(Info) and context.log(Info, "Started to listen: ws://"+host+":"+ws_port)
+        _rest = RestServer(host, port, config.webdir, config.startpage, context )
+      end
+    })
+    let drivers = Drivers(context, blocktypes)
+
+    for driver in config.drivers.values() do
+      context(Info) and context.log(Info, "Loading " + driver )
+      drivers.load(driver)
+    else
+      context(Info) and context.log(Info, "Loading no drivers." )
+    end
+
+    context(Info) and context.log(Info, "Drivers available " )
+    let p2 = Promise[Array[String val] val]
+    p2.next[None]( { (drivers) =>
+      for driver in drivers.values() do
+        context.log( Info, "  " + driver )
+      end
+    })
+    drivers.available(p2)
+    drivers.start()
+    (graphs, promise)
+
+class val RuntimeConfiguration
+  let host: String
+  let port: U32
+  let drivers: ReadSeq[String]
+  let webdir: String
+  let startpage: String
+
+  new val create(host': String, port': U32, webdir': String, startpage': String, drivers': ReadSeq[String val] val ) =>
+    host = host'
+    port = port'
+    drivers = drivers'
+    webdir = webdir'
+    startpage = startpage'

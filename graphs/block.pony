@@ -17,10 +17,10 @@ trait tag Block
 
   be connect( output: String, to_block: Block, to_input: String)
   
-  be disconnect_block( to_block: Block )
+  be disconnect_block( to_block: Block, disconnects: LinkRemoveNotify )
   
-  be disconnect_edge( output:String, dest_block: Block, dest_input: String )
-  
+  be disconnect_edge( output:String, dest_block: Block, dest_input: String, disconnects: LinkRemoveNotify )
+
   be set_initial(input: String, initial_value: Any val)
 
   be update(input: String, new_value: Any val)
@@ -29,7 +29,7 @@ trait tag Block
   
   be change( x:I64, y:I64 )
   
-  be destroy()
+  be destroy(disconnects: LinkRemoveNotify)
   
   be refresh()
 

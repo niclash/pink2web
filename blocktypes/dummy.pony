@@ -52,11 +52,11 @@ actor DummyBlock is Block
   
   be change( x:I64, y:I64 ) => None
 
-  be disconnect_block( block: Block ) =>  None
+  be disconnect_block( block: Block, disconnects: LinkRemoveNotify ) =>  None
 
-  be disconnect_edge( output:String, dest_block: Block, dest_input: String ) => None
+  be disconnect_edge( output:String, dest_block: Block, dest_input: String, disconnects: LinkRemoveNotify ) => None
   
-  be destroy() => None
+  be destroy(disconnects: LinkRemoveNotify) => None
   
   be start() => None  
   

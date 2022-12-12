@@ -8,12 +8,13 @@ use "../system"
 class val _ContactRequest is RequestHandler
   let _logfile: FilePath
   let _ackfile: FilePath
-  let _auth: AmbientAuth
+  let _ctx: SystemContext
 
-  new val create(logfile': String, ackfile': String, auth:AmbientAuth)? =>
-    _logfile = FilePath(auth, logfile', recover val FileCaps+FileRemove+FileCreate+FileLookup+FileWrite+FileSeek+FileRead+FileSync+FileStat end)?
-    _ackfile = FilePath(auth, ackfile', recover val FileCaps+FileRead+FileStat end)?
-    _auth = auth
+  new val create(logfile': String, ackfile': String, ctx:SystemContext) =>
+    _ctx = ctx
+    let fileauth = FileAuth(ctx.auth())
+    _logfile = FilePath(fileauth, logfile', recover val FileCaps+FileRemove+FileCreate+FileLookup+FileWrite+FileSeek+FileRead+FileSync+FileStat end)
+    _ackfile = FilePath(fileauth, ackfile', recover val FileCaps+FileRead+FileStat end)
 
   fun val apply(ctx: Context): Context iso^ =>
     let body:ByteArrays = ctx.body
@@ -49,7 +50,7 @@ class val _ContactRequest is RequestHandler
     end
     try
       let txt = Files.read_text_from_path(_logfile)?
-      SendMail(_auth, "Niclas Hedhman", "niclas@hedhman.org", "Site Feedback", txt )
+      SendMail(_ctx, "Niclas Hedhman", "niclas@hedhman.org", "Site Feedback", txt )
       _logfile.remove()
     else
       Print("Unable to send email")

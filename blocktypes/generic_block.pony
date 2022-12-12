@@ -1,7 +1,9 @@
+
 use "collections"
+use "debug"
 use "jay"
 use "promises"
-use "pony-metric"
+use "metric"
 use "../graphs"
 use "../system"
 
@@ -53,30 +55,28 @@ actor GenericBlock is Block
     try
       let outp = _find_output(output)?
       outp.connect(to_block, to_input)
-      refresh()
-    end
-
-  be disconnect_block( block: Block ) =>
-    for output in _outputs.values() do
-      try
-        let outp = _find_output(output.name())?
-        outp.disconnect_block(block)
-      end
     end
     refresh()
 
-  be disconnect_edge( output:String, dest_block: Block, dest_input: String ) =>
+  be disconnect_block( block: Block, disconnects: LinkRemoveNotify ) =>
+    for output in _outputs.values() do
+      output.disconnect_block( block, disconnects )
+    end
+    refresh()
+
+  be disconnect_edge( output:String, dest_block: Block, dest_input: String, disconnects: LinkRemoveNotify ) =>
     try
       let outp = _find_output(output)?
-      outp.disconnect_edge( dest_block, dest_input )
+      outp.disconnect_edge( dest_block, dest_input, disconnects )
     end
 
-  be destroy() =>
+  be destroy(disconnects: LinkRemoveNotify) =>
     refresh()
+    Debug.out( "GenericBlock.destroy()" )
     _context(Fine) and _context.log(Fine, "destroy()")
     _started = false
     for outp in _outputs.values() do
-      outp.disconnect_all()
+      outp.disconnect_all(disconnects)
     end
     
   be rename( new_name: String ) =>

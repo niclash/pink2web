@@ -1,4 +1,6 @@
+
 use "collections"
+use "debug"
 use "jay"
 use "promises"
 use ".."
@@ -55,21 +57,26 @@ actor Function4Block is Block
     if output == "out"  then
       _output.connect(to_block, to_input)
       refresh()
+    else
+      _context(Warn) and _context.log( Warn, "Unknown output: " + _name + "." + output )
     end
 
-  be disconnect_block( block: Block ) =>
-    _output.disconnect_block( block )
+  be disconnect_block( block: Block, disconnects: LinkRemoveNotify ) =>
+    Debug.out( "disconnect_block: " + _name )
+    _output.disconnect_block( block, disconnects )
 
-  be disconnect_edge( output:String, dest_block: Block, dest_input: String ) =>
+  be disconnect_edge( output:String, dest_block: Block, dest_input: String, disconnects: LinkRemoveNotify ) =>
     match output
-    | "out" => _output.disconnect_edge( dest_block, dest_input )
+    | "out" => _output.disconnect_edge( dest_block, dest_input, disconnects )
+    else
+      _context(Warn) and _context.log( Warn, "Unknown output: " + _name + "." + output )
     end
 
-  be destroy() =>
+  be destroy(disconnects: LinkRemoveNotify) =>
     refresh()
     _context(Fine) and _context.log(Fine, "destroy()")
     _started = false
-    _output.disconnect_all()
+    _output.disconnect_all(disconnects)
 
   be rename( new_name: String ) =>
     _name = new_name
@@ -81,6 +88,8 @@ actor Function4Block is Block
     | "in2" => _input2.set( new_value )
     | "in3" => _input3.set( new_value )
     | "in4" => _input4.set( new_value )
+    else
+      _context(Warn) and _context.log( Warn, "Unknown input: " + _name + "." + input )
     end
     refresh()
 
@@ -91,6 +100,8 @@ actor Function4Block is Block
     | "in2" => _input2.set_initial( initial_value )
     | "in3" => _input3.set_initial( initial_value )
     | "in4" => _input4.set_initial( initial_value )
+    else
+      _context(Warn) and _context.log( Warn, "Unknown input: " + _name + "." + input )
     end
     refresh()
 
@@ -115,6 +126,8 @@ actor Function4Block is Block
     | "in2" => _input2.subscribe(subscription)
     | "in3" => _input3.subscribe(subscription)
     | "in4" => _input4.subscribe(subscription)
+    else
+      _context(Warn) and _context.log( Warn, "Unknown input: " + _name + "." + subscription.dest_port )
     end
     refresh()
 
@@ -124,6 +137,8 @@ actor Function4Block is Block
     | "in2" => _input2.unsubscribe(subscription)
     | "in3" => _input3.unsubscribe(subscription)
     | "in4" => _input4.unsubscribe(subscription)
+    else
+      _context(Warn) and _context.log( Warn, "Unknown input: " + _name + "." + subscription.dest_port )
     end
     refresh()
 

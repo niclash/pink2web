@@ -8,7 +8,7 @@ primitive PortsMessage
   fun apply( graph: Graph, conn: WebSocketSender ) =>
     let promise = Promise[GraphDescriptor]
     promise.next[None]( { (descr: GraphDescriptor) => 
-        let text = "{ \"graph\": \"" + descr.name +"\"," + 
+        let text:String val = "{ \"graph\": \"" + descr.name +"\"," +
           "\"inPorts\": [], " + 
           "\"outPorts\": []" + 
         " }\n"

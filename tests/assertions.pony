@@ -77,10 +77,10 @@ actor Assertion is Block
   be connect( output: String, to_block: Block, to_input: String) =>
     None
     
-  be disconnect_block( block: Block ) =>
+  be disconnect_block( block: Block, disconnects: LinkRemoveNotify ) =>
     None
 
-  be disconnect_edge( output:String, dest_block: Block, dest_input: String ) =>
+  be disconnect_edge( output:String, dest_block: Block, dest_input: String, disconnects: LinkRemoveNotify ) =>
     None
 
   be destroy() =>

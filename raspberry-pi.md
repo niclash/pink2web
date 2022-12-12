@@ -37,5 +37,5 @@ And finally the steps to run for each change in the `pink2web` executable.
 #Compile the application
 export CC="/usr/bin/arm-linux-gnueabihf-gcc -mfloat-abi=hard -mfpu=fp-armv8 -lwiringPi"
 cd ../pink2web
-corral run -- ponyc -Dwiringpi -Dopenssl_1.1.x --cpu=cortex-a53 --triple="arm-unknown-linux-gnueabihf" --link-arch=armv8-a
+corral run -- ponyc -Dwiringpi -Di2c -Dopenssl_1.1.x --cpu=cortex-a53 --triple="arm-unknown-linux-gnueabihf" --link-arch=armv8-a
 ```

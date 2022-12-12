@@ -1,3 +1,4 @@
+use "debug"
 use "collections"
 use "jay"
 use "promises"
@@ -7,9 +8,9 @@ trait Output is Stringable
   fun ref set( newValue: Any val )
   fun value() : Any val
   fun ref connect( dest: Block tag, input: String )
-  fun ref disconnect_block( dest: Block tag )
-  fun ref disconnect_edge( dest: Block tag, input: String )
-  fun ref disconnect_all()
+  fun ref disconnect_block( dest: Block tag, disconnects: LinkRemoveNotify )
+  fun ref disconnect_edge( dest: Block tag, input: String, disconnects: LinkRemoveNotify )
+  fun ref disconnect_all(disconnects: LinkRemoveNotify)
   fun name(): String val
   fun description() : String 
   fun descriptor() : OutputDescriptor
@@ -48,29 +49,74 @@ class OutputImpl is Output
     var link:Link val = recover Link(dest_block, input) end
     _dest.push(link)
 
-  fun ref disconnect_block( dest: Block ) =>
+  fun ref disconnect_block( dest: Block, disconnects: LinkRemoveNotify ) =>
     for node in _dest.nodes() do
       try
-        if dest is node()?.block then
+        let link = node()?
+        if dest is link.block then
+          let parts = _name.split(".")
+          let src_block = parts(0)?
+          let src_port = parts(1)?
+          let p = Promise[String]
+          p.next[None]( { (dest_block) =>
+            Debug.out( _name + ".disconnect_block(" + dest_block + "." + link.input + ")" )
+            let linkref:LinkReference val = LinkReference(src_block,src_port,dest_block,link.input)
+            disconnects(linkref)
+          })
+          dest.name(p)
           node.remove()
         end
+      else
+        Debug.out( "Output.disconnect_block: Invalid name: " + _name )
       end
+    else
+      Debug.out( "Output.disconnect_block: No destinations!" )
     end
-    
-  fun ref disconnect_all() =>
-    _dest.clear()
 
-  fun ref disconnect_edge( dest: Block, input: String ) =>
+  fun ref disconnect_all(disconnects: LinkRemoveNotify) =>
+    Debug.out( _name + ".disconnect_all()" )
+    for node in _dest.nodes() do
+      try
+        let link = node()?
+        let parts = _name.split( "." )
+        let src_block = parts(0)?
+        let src_port = parts(1)?
+        let p = Promise[String]
+        p.next[None]( { (dest_block) =>
+          Debug.out( "Output: src_block=" + src_block + ", src_port=" + src_port )
+          disconnects( LinkReference( src_block, src_port, dest_block, link.input ) )
+        })
+        link.block.name(p)
+        node.remove()
+      else
+        Debug.out( "Invalid name: " + _name )
+      end
+    else
+      Debug.out( "Output.disconnect_all: No destinations!" )
+    end
+
+  fun ref disconnect_edge( dest: Block, input: String, disconnects: LinkRemoveNotify ) =>
+    Debug.out( _name + ".disconnect_edge( dest" + "," + input + ")" )
     for node in _dest.nodes() do
       try
         let n = node()?
         if (dest is n.block) and (input == n.input) then
+          let parts = _name.split(".")
+          let src_block = parts(0)?
+          let src_port = parts(1)?
+          let p = Promise[String]
+          p.next[None]( { (dest_block) =>
+            Debug.out( "Output: src_block=" + src_block + ", src_port=" + src_port )
+            disconnects( LinkReference(src_block,src_port,dest_block,input) )
+          })
+          dest.name(p)
           node.remove()
         end
+      else
+        Debug.out( "Output.disconnect_edge: What is wrong?" )
       end
     end
-  
-    
+
   fun description() : String =>
     if _description == "" then 
       _descriptor.description

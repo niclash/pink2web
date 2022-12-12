@@ -85,19 +85,19 @@ actor IntervalTimerBlock is Block
     end
     refresh()
 
-  be disconnect_block( block: Block ) =>
-    _output.disconnect_block( block )
+  be disconnect_block( block: Block, disconnects: LinkRemoveNotify ) =>
+    _output.disconnect_block( block, disconnects )
 
-  be disconnect_edge( output:String, dest_block: Block, dest_input: String ) =>
+  be disconnect_edge( output:String, dest_block: Block, dest_input: String, disconnects: LinkRemoveNotify ) =>
     match output
-    | "out" => _output.disconnect_edge( dest_block, dest_input )
+    | "out" => _output.disconnect_edge( dest_block, dest_input, disconnects )
     end
 
-  be destroy() =>
+  be destroy(disconnects: LinkRemoveNotify) =>
     refresh()
     _context(Fine) and _context.log(Fine, "destroy()")
     _started = false
-    _output.disconnect_all()
+    _output.disconnect_all(disconnects)
 
   be rename( new_name: String ) =>
     _name = new_name

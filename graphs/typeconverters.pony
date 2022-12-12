@@ -1,4 +1,4 @@
-use "pony-metric"
+use "metric"
 
 interface box TypeConverter
   fun string( v:Any box): String val

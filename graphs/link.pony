@@ -1,6 +1,21 @@
 use "promises"
 use "../system"
 
+class val LinkReference
+  let src_block: String val
+  let src_port: String val
+  let dest_block: String val
+  let dest_port: String val
+
+  new val create( src_block': String val, src_port': String val, dest_block': String val, dest_port': String val ) =>
+    src_block = src_block'
+    src_port = src_port'
+    dest_block = dest_block'
+    dest_port = dest_port'
+
+interface val LinkRemoveNotify
+  fun apply( link: LinkReference val )
+
 class val Link
   let block:Block
   let input:String

@@ -18,16 +18,24 @@ actor Loader
 
   be load( pathname: String, promise:Promise[(String, Graph|None)] ) =>
     try
-      let content: String = Files.read_text_from_pathname(pathname, _context.auth())?
+      _context(Fine) and _context.log( Fine, "Loading " + pathname )
+      let content: String = Files.read_text_from_pathname(pathname, FileAuth(_context.auth()))?
       let root = JParse.from_string( content )? as JObj
       _parse_root(root, promise)
     else
       promise(("", None))
     end
 
-  be save( path: String ) =>
-    None
-  
+
+  be save( pathname: String, graph:Graph ) =>
+    let promise = Promise[JObj]
+    promise.next[None]( { (json: JObj) =>
+      _context(Fine) and _context.log( Fine, "Saving " + pathname )
+      Files.write_text_to_pathname( pathname, json.string(), FileAuth(_context.auth()))
+    } )
+    graph.describe( promise )
+
+
   be _parse_root( root: JObj val, promise:Promise[(String, Graph|None)] ) =>
     var name = try root("name") as String else "" end
     var id = try root("id") as String else "" end
@@ -49,7 +57,7 @@ actor Loader
     _graphs.register_graph( id, name, graph )
     
     try
-      let processes: JObj val = root("processes") as JObj
+      let processes: JObj val = root("blocks") as JObj
       var names_to_waitfor = _parse_processes( graph, processes )
 
       // We must stop and wait for all the blocks to be loaded before we can
@@ -58,7 +66,7 @@ actor Loader
       // but was the only pattern I could figure out.
       _continue_with_pass2( names_to_waitfor, graph, root, id, promise )
     else
-      _context(Error) and _context.log( Error, "A 'processes' object must exist in root object." )
+      _context(Error) and _context.log( Error, "A 'blocks' object must exist in root object." )
     end
 
   be _continue_with_pass2( names_to_waitfor:Array[String] val, graph:Graph tag, root: JObj val, id:String val, promise:Promise[(String, Graph|None)] ) =>

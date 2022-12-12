@@ -1,3 +1,4 @@
+console.log("HELLO!!!");
 var $$$ = go.GraphObject.make;
 var viewModel;
 
@@ -9,7 +10,7 @@ const libVue = new Vue({
 });
 
 
-function init() {
+function initPinkweb() {
     let onOpened = function (conn) {
         console.log("Try message", conn);
         runtime_protocol.request_runtime(conn, "12345");

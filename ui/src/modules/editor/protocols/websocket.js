@@ -1,9 +1,11 @@
+console.log("Websocket!");
+
 var websocket = {
     device_connection: null,
     currentRequests: {},
     hash: function(data) {
-        // hash that is order independent.
-        // failure of this to produce a unique number only affects Undo/Redo operations.
+        /*hash that is order independent.
+        failure of this to produce a unique number only affects Undo/Redo operations.*/
         var sum = 0;
         for( var idx in data ){
             if( data.hasOwnProperty(idx)) {
@@ -60,9 +62,12 @@ var websocket = {
             let protocol = data.protocol;
             let command = data.command;
             let payload = data.payload;
-            let secret = payload.secret;        // TODO: Check authorization in what way?
+            let secret = payload.secret;
 
-            // TODO: Invalid requests causes an exception!
+/*
+            TODO: Check authorization in what way?
+            TODO: Invalid requests causes an exception!
+*/
 
             graph.startTransaction(protocol + " " + command);
             viewModel.skipsUndoManager = true;
