@@ -26,16 +26,6 @@ actor Loader
       promise(("", None))
     end
 
-
-  be save( pathname: String, graph:Graph ) =>
-    let promise = Promise[JObj]
-    promise.next[None]( { (json: JObj) =>
-      _context(Fine) and _context.log( Fine, "Saving " + pathname )
-      Files.write_text_to_pathname( pathname, json.string(), FileAuth(_context.auth()))
-    } )
-    graph.describe( promise )
-
-
   be _parse_root( root: JObj val, promise:Promise[(String, Graph|None)] ) =>
     var name = try root("name") as String else "" end
     var id = try root("id") as String else "" end

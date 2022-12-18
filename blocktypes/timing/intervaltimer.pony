@@ -1,5 +1,6 @@
 use "collections"
 use "jay"
+use "metric"
 use "promises"
 use "time"
 use ".."
@@ -19,6 +20,9 @@ actor IntervalTimerBlock is Block
   var _started:Bool = false
   var _x:I64
   var _y:I64
+  var _time_since_last_eventrate_update:I64 = PosixDate.time()
+  var _eventcounter: I32 = 0
+  var _eventrate: F32 = -1
 
   new create(name': String, descriptor': BlockTypeDescriptor, context:SystemContext, x:I64, y:I64 ) =>
     context(Fine) and context.log(Fine, "create("+name'+")")
@@ -27,15 +31,36 @@ actor IntervalTimerBlock is Block
     _descriptor = descriptor'
     _x = x
     _y = y
-    _interval = InputImpl( _name, _descriptor.input(0), F64(1000) )
-    _initial = InputImpl( _name, _descriptor.input(1), F64(1000) )
-    _rearm' = InputImpl( _name, _descriptor.input(2), false )
-    _oneshot = InputImpl( _name, _descriptor.input(2), false )
-    _output = OutputImpl( _name, _descriptor.output(0), false )
+    _interval = InputImpl( _name, _descriptor.input(0) )
+    _interval.set( F64(1000000) ) // 1 sec ?
+    _initial = InputImpl( _name, _descriptor.input(1) )
+    _initial.set( F64(1000000) ) // 1 sec ?
+    _rearm' = InputImpl( _name, _descriptor.input(2) )
+    _oneshot = InputImpl( _name, _descriptor.input(2) )
+    _output = OutputImpl( _name, _descriptor.output(0) )
 
   be change( x:I64, y:I64 ) =>
     _x = x
     _y = y
+
+  be get_input(input: String, promise:Promise[(String|I64|F64|Metric|Bool)]) =>
+    match input
+    | "interval" => promise(_interval.value())
+    | "rearm" => promise(_rearm'.value())
+    | "oneshot" => promise(_oneshot.value())
+    | "initial" => promise(_initial.value())
+    else
+      _context(Warn) and _context.log( Warn, "Unknown input: " + _name + "." + input )
+      false
+    end
+
+  be get_output(output: String, promise:Promise[(String|I64|F64|Metric|Bool)]) =>
+    if output == "out"  then
+      promise(_output.value())
+    else
+      _context(Error) and _context.log(Error, output + " is not an output name of block type " + _descriptor.name() )
+      false
+    end
 
   be _notify() =>
     if ToBool(_oneshot.value()) then
@@ -110,7 +135,8 @@ actor IntervalTimerBlock is Block
     _oneshot.rename_of_block( block, old_name, new_name )
     _output.rename_of_block( block, old_name, new_name )
 
-  be update(input: String, new_value:Any val) =>
+  be update(input: String, new_value:(String|I64|F64|Metric|Bool)) =>
+    _eventcounter = _eventcounter + 1
     match new_value
     | let v:Stringable => _context(Fine) and _context.log(Fine, "IntervalTimer[ " + _name + "." + input + " = " + v.string() + " ]")
     end
@@ -128,7 +154,13 @@ actor IntervalTimerBlock is Block
       if input == "initial" then _initial.set( ToF64(v) ) end
     end
 
-  be set_initial(input: String, initial_value:Any val) =>
+  be stats_update() =>
+    let now = PosixDate.time()
+    let interval_in_seconds = now - _time_since_last_eventrate_update
+    _eventrate = _eventcounter.f32() / interval_in_seconds.f32()
+    _time_since_last_eventrate_update = now
+
+  be set_initial(input: String, initial_value:(String|I64|F64|Metric|Bool|None)) =>
     match initial_value
     | let v:Stringable => _context(Fine) and _context.log(Fine, "IntervalTimer[ " + _name + "." + input + " = " + v.string() + " ]")
     end

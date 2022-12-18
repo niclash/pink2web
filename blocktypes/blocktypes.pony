@@ -3,6 +3,7 @@ use "collections"
 use "debug"
 use "files"
 use "jay"
+use "metric"
 use "promises"
 // use "./advanced"
 // use "./math"
@@ -83,7 +84,13 @@ actor BlockTypes
       types = types.push(bf.describe())
     end
     let json = types.string()
-    Files.write_text_to_pathname("custom-types.json", json, FileAuth(context.auth()))
+    try
+      let path = _context.filelocations().base_directory.join("custom-types.json")?
+      Files.write_text_to_path(path, json)
+    else
+      let msg = "Unable to save blocktypes: custom-types.json"
+      _context(Error) and _context.log(Error, msg)
+    end
 
   be load_from_file(context:SystemContext) =>
     try
@@ -105,15 +112,15 @@ actor BlockTypes
 class val InitialDescriptor
   let _target_blockname:String val
   let _target_input:String val
-  let _source:Any val
+  let _source:(String|I64|F64|Metric|Bool)
 
-  new val create( source':Any val, target':String )? =>
+  new val create( source':(String|I64|F64|Metric|Bool), target':String )? =>
     _source = source'
     (_target_blockname, _target_input) = BlockName(target')?
 
   fun val target_blockname(): String val => _target_blockname
   fun val target_input(): String val => _target_input
-  fun val source(): Any val => _source
+  fun val source(): (String|I64|F64|Metric|Bool) => _source
 
 trait val BlockTypeDescriptor
 
@@ -175,7 +182,7 @@ primitive _ProcessBlockTypes
     _Helper._add_component( Function3BlockFactory.named("process/Linear", "out = k * in + m",
                             ["number"; "number"; "number"; "number" ],
                             ["in"; "k"; "m"],
-                            {(inp:Any val,k:Any val,m:Any val) => (ToF64(inp) * ToF64(k)) + ToF64(m)})?
+                            {(inp:(String|I64|F64|Metric|Bool),k:(String|I64|F64|Metric|Bool),m:(String|I64|F64|Metric|Bool)) => (ToF64(inp) * ToF64(k)) + ToF64(m)})?
                             ,types)
 
 primitive _TimingBlockTypes
@@ -185,62 +192,62 @@ primitive _TimingBlockTypes
 primitive _MathBlockTypes
   fun apply(types:Map[String,BlockFactory]) =>
     _Helper._add_component( Function4BlockFactory("math/Add4", "out = in1 + in2 + in3 + in4",
-                               {(in1:Any val,in2:Any val,in3:Any val,in4:Any val) => ToF64(in1) + ToF64(in2) + ToF64(in3) + ToF64(in4)})
+                               {(in1:(String|I64|F64|Metric|Bool),in2:(String|I64|F64|Metric|Bool),in3:(String|I64|F64|Metric|Bool),in4:(String|I64|F64|Metric|Bool)) => ToF64(in1) + ToF64(in2) + ToF64(in3) + ToF64(in4)})
                             ,types)
     _Helper._add_component( Function2BlockFactory("math/Add2", "out = in1 + in2",
-                               {(in1:Any val,in2:Any val) => ToF64(in1) + ToF64(in2)})
+                               {(in1:(String|I64|F64|Metric|Bool),in2:(String|I64|F64|Metric|Bool)) => ToF64(in1) + ToF64(in2)})
                             ,types)
     _Helper._add_component( Function2BlockFactory("math/Mult2", "out = in1 * in2",
-                               {(in1:Any val,in2:Any val) => ToF64(in1) * ToF64(in2)})
+                               {(in1:(String|I64|F64|Metric|Bool),in2:(String|I64|F64|Metric|Bool)) => ToF64(in1) * ToF64(in2)})
                             ,types)
     _Helper._add_component( Function2BlockFactory("math/Divide", "out = in1 / in2",
-                               {(in1:Any val,in2:Any val) => ToF64(in1) * ToF64(in2)})
+                               {(in1:(String|I64|F64|Metric|Bool),in2:(String|I64|F64|Metric|Bool)) => ToF64(in1) * ToF64(in2)})
                             ,types)
     _Helper._add_component( Function2BlockFactory("math/Subtract", "out = in1 - in2",
-                               {(in1:Any val,in2:Any val) => ToF64(in1) - ToF64(in2)})
+                               {(in1:(String|I64|F64|Metric|Bool),in2:(String|I64|F64|Metric|Bool)) => ToF64(in1) - ToF64(in2)})
                             ,types)
 
     _Helper._add_component( Function2BlockFactory("math/Modulo", "out = in1 MOD in2",
-                               {(in1:Any val,in2:Any val) => ToF64(in1) %% ToF64(in2)})
+                               {(in1:(String|I64|F64|Metric|Bool),in2:(String|I64|F64|Metric|Bool)) => ToF64(in1) %% ToF64(in2)})
                             ,types)
 
     _Helper._add_component( Function2BlockFactory("math/Remainder", "out = in1 REMAINDER in2",
-                               {(in1:Any val,in2:Any val) => ToF64(in1) % ToF64(in2)})
+                               {(in1:(String|I64|F64|Metric|Bool),in2:(String|I64|F64|Metric|Bool)) => ToF64(in1) % ToF64(in2)})
                             ,types)
 
     _Helper._add_component( Function2BlockFactory("math/And2", "out = in1 AND in2",
-                               {(in1:Any val,in2:Any val) => ToI64(in1) and ToI64(in2)})
+                               {(in1:(String|I64|F64|Metric|Bool),in2:(String|I64|F64|Metric|Bool)) => ToI64(in1) and ToI64(in2)})
                             ,types)
     _Helper._add_component( Function2BlockFactory("math/Or2", "out = in1 OR in2",
-                               {(in1:Any val,in2:Any val) => ToI64(in1) or ToI64(in2)})
+                               {(in1:(String|I64|F64|Metric|Bool),in2:(String|I64|F64|Metric|Bool)) => ToI64(in1) or ToI64(in2)})
                             ,types)
     _Helper._add_component( Function2BlockFactory("math/Xor", "out = in1 XOR in2",
-                               {(in1:Any val,in2:Any val) => ToI64(in1) xor ToI64(in2)})
+                               {(in1:(String|I64|F64|Metric|Bool),in2:(String|I64|F64|Metric|Bool)) => ToI64(in1) xor ToI64(in2)})
                             ,types)
     _Helper._add_component( Function4BlockFactory("math/And4", "out = in1 AND in2 AND in3 AND in4",
-                               {(in1:Any val,in2:Any val,in3:Any val,in4:Any val) => ToI64(in1) and ToI64(in2) and ToI64(in3) and ToI64(in4)})
+                               {(in1:(String|I64|F64|Metric|Bool),in2:(String|I64|F64|Metric|Bool),in3:(String|I64|F64|Metric|Bool),in4:(String|I64|F64|Metric|Bool)) => ToI64(in1) and ToI64(in2) and ToI64(in3) and ToI64(in4)})
                             ,types)
 
     _Helper._add_component( Function4BlockFactory("math/Or4", "out = in1 OR in2 OR in3 OR in4",
-                               {(in1:Any val,in2:Any val,in3:Any val,in4:Any val) => ToI64(in1) or ToI64(in2) or ToI64(in3) or ToI64(in4)})
+                               {(in1:(String|I64|F64|Metric|Bool),in2:(String|I64|F64|Metric|Bool),in3:(String|I64|F64|Metric|Bool),in4:(String|I64|F64|Metric|Bool)) => ToI64(in1) or ToI64(in2) or ToI64(in3) or ToI64(in4)})
                             ,types)
 
     _Helper._add_component( Function2BlockFactory("math/Greater", "out = in1 > in2",
-                               {(in1:Any val,in2:Any val) => ToF64(in1) > ToF64(in2)})
+                               {(in1:(String|I64|F64|Metric|Bool),in2:(String|I64|F64|Metric|Bool)) => ToF64(in1) > ToF64(in2)})
                             ,types)
     _Helper._add_component( Function2BlockFactory("math/Less", "out = in1 < in2",
-                               {(in1:Any val,in2:Any val) => ToF64(in1) < ToF64(in2)})
+                               {(in1:(String|I64|F64|Metric|Bool),in2:(String|I64|F64|Metric|Bool)) => ToF64(in1) < ToF64(in2)})
                             ,types)
     _Helper._add_component( Function2BlockFactory("math/Equal", "out = in1 == in2",
-                               {(in1:Any val,in2:Any val) => ToF64(in1) == ToF64(in2)})
+                               {(in1:(String|I64|F64|Metric|Bool),in2:(String|I64|F64|Metric|Bool)) => ToF64(in1) == ToF64(in2)})
                             ,types)
     _Helper._add_component( Function2BlockFactory("math/NotEqual", "out = in1 != in2",
-                               {(in1:Any val,in2:Any val) => ToF64(in1) != ToF64(in2)})
+                               {(in1:(String|I64|F64|Metric|Bool),in2:(String|I64|F64|Metric|Bool)) => ToF64(in1) != ToF64(in2)})
                             ,types)
     _Helper._add_component( Function2BlockFactory("math/LessEqual", "out = in1 <= in2",
-                               {(in1:Any val,in2:Any val) => ToF64(in1) <= ToF64(in2)})
+                               {(in1:(String|I64|F64|Metric|Bool),in2:(String|I64|F64|Metric|Bool)) => ToF64(in1) <= ToF64(in2)})
                             ,types)
     _Helper._add_component( Function2BlockFactory("math/GreaterEqual", "out = in1 >= in2",
-                               {(in1:Any val,in2:Any val) => ToF64(in1) >= ToF64(in2)})
+                               {(in1:(String|I64|F64|Metric|Bool),in2:(String|I64|F64|Metric|Bool)) => ToF64(in1) >= ToF64(in2)})
                             ,types)
 

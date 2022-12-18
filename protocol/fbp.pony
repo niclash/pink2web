@@ -1,6 +1,7 @@
 
 use "collections"
 use "jay"
+use "metric"
 use "time"
 use "../blocktypes"
 use "../graphs"
@@ -110,6 +111,12 @@ class val Subscription is GraphNotify
   fun removed_connection(graph:String, from_block:String, from_output:String, to_block:String, to_input:String) =>
     RemoveEdgeMessage.reply(_connection, graph, from_block, from_output, to_block, to_input )
     
+  fun added_initial(graph:String, initial_value:(String|I64|F64|Metric|Bool), to_block:String, to_input:String) =>
+    AddInitialMessage.reply(_connection, graph, initial_value, to_block, to_input )
+
+  fun removed_initial(graph:String, initial_value:(String|I64|F64|Metric|Bool), to_block:String, to_input:String) =>
+    RemoveInitialMessage.reply(_connection, graph, initial_value, to_block, to_input )
+
   fun started( graph: String, time_started:PosixDate val, started':Bool, running:Bool, debug:Bool) =>
     StartedMessage.reply( _connection, graph, time_started, started', running, debug )
   

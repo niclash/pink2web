@@ -1,12 +1,13 @@
 use "debug"
 use "collections"
 use "jay"
+use "metric"
 use "promises"
 use "../system"
 
 trait Output is Stringable
-  fun ref set( newValue: Any val )
-  fun value() : Any val
+  fun ref set( newValue: (String|I64|F64|Metric|Bool) )
+  fun value() : (String|I64|F64|Metric|Bool)
   fun ref connect( dest: Block tag, input: String )
   fun ref disconnect_block( dest: Block tag, disconnects: LinkRemoveNotify )
   fun ref disconnect_edge( dest: Block tag, input: String, disconnects: LinkRemoveNotify )
@@ -19,28 +20,28 @@ trait Output is Stringable
   fun describe( promise: Promise[JObj val] tag )
 
 class OutputImpl is Output
-  var _value: Any val
+  var _value: (String|I64|F64|Metric|Bool)
   var _name: String val
   var _description: String
   var _dest: List[Link]
   let _descriptor: OutputDescriptor
   let _converter:TypeConverter box
 
-  new create(container_name: String, descriptor': OutputDescriptor, initialValue: Any val, desc: String = "", converter:TypeConverter = DefaultConverter) =>
+  new create(container_name: String, descriptor': OutputDescriptor, desc: String = "", converter:TypeConverter = DefaultConverter) =>
     _name = container_name + "." + descriptor'.name  // TODO is this the best naming system?
     _description = desc
     _descriptor = descriptor'
-    _value = initialValue
+    _value = DefaultValue(descriptor'.taip)
     _dest = List[Link val]
     _converter = converter
 
   fun name() : String val =>
     _name
 
-  fun value() : Any val=>
+  fun value() : (String|I64|F64|Metric|Bool)=>
     _value
     
-  fun ref set( new_value: Any val ) =>
+  fun ref set( new_value: (String|I64|F64|Metric|Bool) ) =>
     for dest in _dest.values() do
       dest.update( new_value )
     end

@@ -1,6 +1,8 @@
 use "collections"
 use "debug"
+use "files"
 use "jay"
+use "metric"
 use "promises"
 use "time"
 use "../blocktypes"
@@ -16,11 +18,11 @@ actor Graph
   let _descriptor: GraphDescriptor
   
   var _time_started:PosixDate val= recover val PosixDate end
+  var _uptime: I64 = 0  // in seconds
   var _started: Bool = false
   var _running: Bool = false
   var _debug: Bool = false
-  var _uptime: I64 = 0  // in seconds
-  
+
   new create(graphs:Graphs, id': String, name': String, description':String, icon': String, types: BlockTypes, context: SystemContext) =>
     context(Info) and context.log(Info, "Creating graph: " + name' + ", [" + id' + "], description" )
     _graphs = graphs
@@ -43,6 +45,20 @@ actor Graph
   be stop() =>
     _stop()
     
+  be persist() =>
+    try
+      let path:FilePath = _context.filelocations().graph_directory.join(_descriptor.id)?
+      let promise = Promise[JObj]
+      promise.next[None]( { (json: JObj) =>
+        Files.write_text_to_path(path, json.string())
+      } )
+      describe( promise )
+    else
+      let msg: String val = "Unable to save graph: " + _descriptor.name + " (" + _descriptor.id + ")"
+      _context(Error) and _context.log(Error, msg)
+      _graphs.report_error("graph", msg )
+    end
+
   fun ref _stop() =>
     _context(Info) and _context.log(Info, "Stopping graph: " + _descriptor.name )
     _running = false
@@ -80,15 +96,29 @@ actor Graph
     promise.next[None]( { (factory) =>
       let block:Block tag = factory.create_block( name', _context, x, y )
       thiss.register_block(block, name', factory.block_type_descriptor())
+      block.start()
     })
     _types.get(block_type, promise)
 
-  be set_initial( block':String, input:String, initial_value:Any val) =>
+  be set_initial( block':String, input:String, initial:(String|I64|F64|Metric|Bool|None)) =>
     try
       let block = _blocks( block' )?
-      block.set_initial( input, initial_value )
+      let promise = Promise[(String|I64|F64|Metric|Bool)]
+      promise.next[None]( { (old_value:(String|I64|F64|Metric|Bool)) =>
+          match initial
+          | None =>
+            block.set_initial( input, None )
+            _graphs._removed_initial(_descriptor.id, old_value, block', input )
+          | let initial_value:(String|I64|F64|Metric|Bool) =>
+            block.set_initial( input, initial_value )
+            _graphs._removed_initial(_descriptor.id, old_value, block', input )
+            _graphs._added_initial(_descriptor.id, initial_value, block', input )
+          end
+      })
+      Debug.out("NICLAS00")
+      block.get_input( input, promise )
     else
-      _graphs._error( "graph", "Unknown Node: " + block' )
+      _graphs.report_error( "graph", "Unknown Node: " + block' )
     end
   
   be change_block( name':String, x:I64, y:I64 ) =>
@@ -97,7 +127,7 @@ actor Graph
       block.change(x, y)
       _graphs._changed_block(_descriptor.id, name', x, y )
     else
-      _graphs._error( "graph", "Unknown Node" )
+      _graphs.report_error( "graph", "Unknown Node" )
     end
   
   be disconnect( src_block: String, src_output: String, dest_block: String, dest_input: String ) =>
@@ -125,6 +155,7 @@ actor Graph
       else
         Debug.out( "No other blocks?" )
       end
+      block.stop()
       block.destroy(disconnects)
       try
         _blocks.remove( name' )?
@@ -170,6 +201,12 @@ actor Graph
       _context(Error) and _context.log(Error, "Unable to connect " + src_block + "." + src_output + " to " + dest_block + "." + dest_input )
     end
     
+  be get_block( name': String, promise:Promise[Block] ) =>
+    try
+      promise(_get_block(name')?)
+    // else  TODO: if the block doesn't exist, should we do nothing or send ta Dummy block???
+    end
+
   fun _get_block( name': String ):Block ? =>
     try
         _blocks(name')?

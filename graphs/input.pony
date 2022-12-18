@@ -1,12 +1,13 @@
 use "collections"
 use "debug"
 use "jay"
+use "metric"
 use "../system"
 
 trait Input is Stringable
-  fun ref set( new_value: Any val)
-  fun ref set_initial( initial_value: Any val)
-  fun value() : Any val
+  fun ref set( new_value: (String|I64|F64|Metric|Bool))
+  fun ref set_initial( initial_value: (String|I64|F64|Metric|Bool|None))
+  fun value() : (String|I64|F64|Metric|Bool)
   fun name() : String
   fun description() : String
   fun descriptor() : InputDescriptor
@@ -18,36 +19,42 @@ trait Input is Stringable
 
 class InputImpl is Input
   let _name: String
-  var _value: Any val
-  var _initial: Any val
+  var _value: (String|I64|F64|Metric|Bool)
+  var _initial: (String|I64|F64|Metric|Bool|None)
   var _description: String
   let _descriptor:InputDescriptor
   let _converter:TypeConverter box
   var _subscriptions: List[LinkSubscription] = List[LinkSubscription]
 
-  new create(container_name: String, descriptor':InputDescriptor, initialValue: Any val, description': String  = "", converter:TypeConverter = DefaultConverter ) =>
+  new create(container_name: String, descriptor':InputDescriptor, description': String  = "", converter:TypeConverter = DefaultConverter ) =>
     _name = descriptor'.name
     _description = description'
     _descriptor = descriptor'
-    _value = initialValue
+    _value = DefaultValue(descriptor'.typ)
     _converter = converter
     _initial = None
 
-  fun value() : Any val =>
+  fun value() : (String|I64|F64|Metric|Bool) =>
     _value
 
   fun name() : String =>
     _name
 
-  fun ref set( new_value: Any val) =>
+  fun ref set( new_value: (String|I64|F64|Metric|Bool)) =>
     _value = new_value
     for subscr in _subscriptions.values() do
       subscr(new_value)
     end
 
-  fun ref set_initial( initial_value: Any val) =>
-    _value = initial_value
-    _initial = initial_value
+  fun ref set_initial( initial_value: (String|I64|F64|Metric|Bool|None)) =>
+    match initial_value
+    | None =>
+      _value = DefaultValue(_descriptor.typ)
+      _initial = None
+    | let init:(String|I64|F64|Metric|Bool) =>
+      _value = init
+      _initial = init
+    end
 
   fun description() : String =>
     if _description == "" then 

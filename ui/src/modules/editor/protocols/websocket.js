@@ -1,4 +1,3 @@
-console.log("Websocket!");
 
 var websocket = {
     device_connection: null,

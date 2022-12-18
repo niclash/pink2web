@@ -39,7 +39,8 @@ actor Main
             OptionSpec.bool("warn", "Warn Logging Level" where default' = false)
             OptionSpec.bool("info", "Info Logging Level" where default' = false)
             OptionSpec.bool("fine", "Fine Logging Level" where default' = false)
-        ],  [ 
+            OptionSpec.string("basedir", "Base directory" where default' = ".")
+        ],  [
             list_command()?; run_command()?; describe_command()? 
         ] )? .> add_help()?
 
@@ -50,7 +51,8 @@ actor Main
                                  else if c.option("info").bool() then Info
                                  else if c.option("warn").bool() then Warn
                                  else Error end end end
-            let context:SystemContext = SystemContext(auth, env.out, env.err, level)
+            let basedir:String = c.option("basedir").string()
+            let context:SystemContext = SystemContext(auth, env.out, env.err, level, FilePath(FileAuth(auth), basedir))
             let blocktypes:BlockTypes = BlockTypes(context)
             match c.fullname()
             | "pink2web/list/types" => list_types(blocktypes, context)

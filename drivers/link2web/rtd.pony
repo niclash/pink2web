@@ -1,4 +1,5 @@
 use "collections"
+use "metric"
 use "../../system"
 
 actor Link2WebRtd is ExpansionCard
@@ -25,11 +26,11 @@ actor Link2WebRtd is ExpansionCard
     end
 
   be update() =>
-    let value:Any val = _update()
+    let value:(String|I64|F64|Metric|Bool) = _update()
     for listener in _listeners.values() do
       listener.notify(value)
     end
 
-  fun _update(): Any val =>
-    None
+  fun _update(): (String|I64|F64|Metric|Bool) =>
+    F64(0)
 

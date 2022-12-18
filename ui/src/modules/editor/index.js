@@ -1,18 +1,25 @@
-console.log("HELLO!!!");
 var $$$ = go.GraphObject.make;
 var viewModel;
 
 const libVue = new Vue({
-    el: '#blocks',
+    el: '#editor',
     data: {
+        processes: [
+            {id: "main", name: "main", description: "This is the default process.", icon: ""},
+            {
+                id: "radiator_regulator",
+                name: "Radiator Regulator",
+                description: "This is the testing process. With a longer description to see what happens.",
+                icon: ""
+            }
+        ],
         components: {}
     }
 });
 
 
-function initPinkweb() {
+function initPink2Web() {
     let onOpened = function (conn) {
-        console.log("Try message", conn);
         runtime_protocol.request_runtime(conn, "12345");
     };
     websocket.init(onOpened);
@@ -53,8 +60,8 @@ function initPinkweb() {
                 if (evt.subject === null) {
                     return;
                 }
-                graph.model.commit(function(m) {
-                    m.linkDataArray.forEach( l => m.set(l, "value", ""));
+                graph.model.commit(function (m) {
+                    m.linkDataArray.forEach(l => m.set(l, "value", ""));
                 }, "remove link label");
 
                 evt.subject.filter((p) => p instanceof go.Link).each((link) => {
@@ -115,19 +122,58 @@ function initPinkweb() {
     };
     tool.oldAcceptText = tool.acceptText;
     tool.acceptText = function (reason) {
-        let newName = tool.currentTextEditor.valueFunction();
-        graph_protocol.request_renamenode(websocket.device_connection, tool.oldName, newName);
+        let newValue = tool.currentTextEditor.valueFunction();
+        let iter = graph.selection.iterator;
+        while (iter.hasNext()) {
+            let iterValue = iter.value;
+            let data = iterValue.data;
+            if (data !== null && data.component === "_built_in/initial") {
+                let link = support.findLinkFrom({node: data.id, port: 'out'})
+                graph_protocol.request_changeinitial(websocket.device_connection, newValue, link.tgt.node, link.tgt.port);
+            } else {
+                graph_protocol.request_renamenode(websocket.device_connection, tool.oldName, newValue);
+            }
+        }
         tool.doCancel();
     };
     graph.commandHandler.deleteSelection = function () {
         let selection = graph.selection;
+        // Remove all initials first
         selection.each((v) => {
             if (v.key !== undefined) {
-                // Node
-                graph_protocol.request_removenode(websocket.device_connection, v.key);
+                let data = v.data;
+                if( "_built_in/initial" === data.component){
+                    // Initial node
+                    let link = support.findLinkFrom({node: data.id, port: 'out'})
+                    graph_protocol.request_removeinitial(websocket.device_connection, link.src, link.tgt.node, link.tgt.port, 0);
+                }
             } else if (v.fromPortId !== undefined && v.fromNode.key !== undefined && v.toPortId !== undefined && v.toNode.key !== undefined) {
-                // Link
-                graph_protocol.request_removeedge(websocket.device_connection, v.fromNode.key, v.toNode.key, v.fromPortId, v.toPortId);
+                let link = support.findLinkTo({node: v.toNode.key, port: v.toPortId})
+                let fromNode = support.findNode(link.src.node)
+                if( "_built_in/initial" === fromNode.component){
+                    // Link of Initial node
+                    graph_protocol.request_removeinitial(websocket.device_connection, link.src, link.tgt.node, link.tgt.port, 0);
+                }
+            }
+        });
+        selection.each((v) => {
+            if (v.key === undefined && v.fromPortId !== undefined && v.fromNode.key !== undefined && v.toPortId !== undefined && v.toNode.key !== undefined) {
+                let link = support.findLinkTo({node: v.toNode.key, port: v.toPortId})
+                let fromNode = support.findNode(link.src.node)
+                if( "_built_in/initial" !== fromNode.component){
+                    // Link
+                    graph_protocol.request_removeedge(websocket.device_connection, v.fromNode.key, v.toNode.key, v.fromPortId, v.toPortId);
+                }
+            }
+        });
+        // Then remove all the nodes
+        selection.each((v) => {
+            if (v.key !== undefined) {
+                let data = v.data;
+                if( "_built_in/initial" !== data.component){
+                    // Node
+                    graph_protocol.request_removenode(websocket.device_connection, v.key);
+                }
             }
         });
     };
@@ -221,7 +267,7 @@ function initPinkweb() {
         data.tgt.port = newval;
     };
     graph.model = viewModel;
-    makeInitialTemplate("_built_in/initial");
+    makeTemplateForInitials("_built_in/initial");
 }
 
 function removeNode(e, obj) {
@@ -237,6 +283,30 @@ var support = {
             if (viewModel.linkDataArray.hasOwnProperty(idx)) {
                 let link = viewModel.linkDataArray[idx];
                 if (this.linkEquals(link, linkToFind)) {
+                    return link;
+                }
+            }
+        }
+        return null;
+    },
+    findLinkFrom: function (endpoint) {
+        for (let idx in viewModel.linkDataArray) {
+            if (viewModel.linkDataArray.hasOwnProperty(idx)) {
+                let link = viewModel.linkDataArray[idx];
+                console.log("link: ", link);
+                if (this.endpointEquals(link.src, endpoint)) {
+                    return link;
+                }
+            }
+        }
+        return null;
+    },
+    findLinkTo: function (endpoint) {
+        for (let idx in viewModel.linkDataArray) {
+            if (viewModel.linkDataArray.hasOwnProperty(idx)) {
+                let link = viewModel.linkDataArray[idx];
+                console.log("link: ", link);
+                if (this.endpointEquals(link.tgt, endpoint)) {
                     return link;
                 }
             }
@@ -322,17 +392,8 @@ function makePort(name, left) {
     return panel;
 }
 
-function makeInitialTemplate(fullname) {  // 'initial' is the immediate value that can be assigned to an input port.
+function makeTemplateForInitials(templated_name) {  // 'initial' is the immediate value that can be assigned to an input port.
     graph.startTransaction("make initial template");
-    const port = $$$(go.Shape, "Rectangle",
-        {
-            stroke: null,
-            desiredSize: new go.Size(8, 8),
-            portId: "out",
-            toMaxLinks: 1,
-            cursor: "pointer"
-        });
-
     const node = $$$(go.Node, "Spot",
         $$$(go.Panel, "Auto",
             $$$(go.TextBlock,
@@ -347,7 +408,7 @@ function makeInitialTemplate(fullname) {  // 'initial' is the immediate value th
             )
         )
     );
-    graph.nodeTemplateMap.set(fullname, node);
+    graph.nodeTemplateMap.set(templated_name, node);
     graph.commitTransaction("make initial template");
 }
 

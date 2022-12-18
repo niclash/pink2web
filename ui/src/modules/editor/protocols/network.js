@@ -36,6 +36,7 @@ var network_protocol = {
             protocol: "network",
             command: "persist",
             payload: {
+                graph: graph_protocol.currentGraph,
                 secret: runtime_protocol.currentSecret
             }
         });
@@ -62,13 +63,13 @@ var network_protocol = {
             }
         });
     },
-    start: function (connection, payload) {
+    start: function (connection, graphId) {
     },
     stop: function (connection, payload) {
     },
     getstatus: function (connection, payload) {
     },
-    persist: function (connection, payload) {
+    persist: function (connection) {
     },
     debug: function (connection, payload) {
     },
@@ -95,6 +96,7 @@ var network_protocol = {
         g.running = payload.running;
         g.started = payload.started;
         g.debug = payload.debug;
+        g.eventrate = payload.eventrate;
     },
     output: function (connection, payload) {
         console.log("Message: " + payload.message, payload.url, payload.type);

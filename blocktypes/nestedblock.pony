@@ -1,6 +1,8 @@
 use "collections"
 use "jay"
+use "metric"
 use "promises"
+use "time"
 use "../graphs"
 use "../system"
 
@@ -14,6 +16,9 @@ actor NestedBlock is Block
   var _started:Bool = false
   var _x:I64
   var _y:I64
+  var _time_since_last_eventrate_update:I64 = PosixDate.time()
+  var _eventcounter: I32 = 0
+  var _eventrate: F32 = -1
 
   new create(name': String, descriptor': NestedBlockDescriptor val, blocktypes:BlockTypes, context:SystemContext, x:I64, y:I64 ) =>
     try
@@ -56,6 +61,24 @@ actor NestedBlock is Block
   be change( x:I64, y:I64 ) =>
     _x = x
     _y = y
+
+  be get_input(inputname: String, promise:Promise[(String|I64|F64|Metric|Bool)]) =>
+    try
+      (let block, let input) = _inputs(inputname)?
+      block.get_input(input, promise)
+    else
+      _context(Error) and _context.log(Error, inputname + " is not an input name of block type " + _descriptor.name() )
+      false
+    end
+
+  be get_output(outputname: String, promise:Promise[(String|I64|F64|Metric|Bool)]) =>
+    try
+      (let block, let output) = _outputs(outputname)?
+      block.get_output(output, promise)
+    else
+      _context(Error) and _context.log(Error, outputname + " is not an output name of block type " + _descriptor.name() )
+      false
+    end
 
   be start() =>
     _context(Fine) and _context.log(Fine, "start()")
@@ -104,13 +127,20 @@ actor NestedBlock is Block
     // TODO!! Rename of Nested Blocks.
     None
 
-  be update(inputname: String, new_value:Any val) =>
+  be update(inputname: String, new_value:(String|I64|F64|Metric|Bool)) =>
+    _eventcounter = _eventcounter + 1
     try
       (let block, let input) = _inputs(inputname)?
       block.update(input, new_value)
     end
 
-  be set_initial(inputname: String, initial_value:Any val) =>
+  be stats_update() =>
+    let now = PosixDate.time()
+    let interval_in_seconds = now - _time_since_last_eventrate_update
+    _eventrate = _eventcounter.f32() / interval_in_seconds.f32()
+    _time_since_last_eventrate_update = now
+
+  be set_initial(inputname: String, initial_value:(String|I64|F64|Metric|Bool|None)) =>
     try
       (let block, let input) = _inputs(inputname)?
       block.set_initial(input, initial_value)
@@ -130,11 +160,11 @@ actor NestedBlock is Block
   be describe( promise:Promise[JObj val] tag ) =>
     let inps:Array[Input] = Array[Input]
     for inp in _descriptor.inputs().values() do
-      inps.push( InputImpl( _name, inp, None ) )
+      inps.push( InputImpl( _name, inp ) )
     end
     let outps:Array[Output] = Array[Output]
     for outp in _descriptor.outputs().values() do
-      outps.push( OutputImpl( _name, outp, None ) )
+      outps.push( OutputImpl( _name, outp ) )
     end
     BlockDescription(promise, _name, _descriptor.name(), _started, inps, outps )
 
@@ -265,8 +295,11 @@ actor NestedBlockTypeBuilder
       for i in initials'.values() do
         let init = i as JObj
         let src = init("src")
-        let tgt = init("tgt") as String
-        inits.push( InitialDescriptor(src, tgt)? )
+        match src
+        | let m:(String|I64|F64|Metric|Bool) =>
+          let tgt = init("tgt").string()
+          inits.push( InitialDescriptor(m, tgt)? )
+        end
       end
       inits
     end

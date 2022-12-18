@@ -4,11 +4,12 @@ use "debug"
 use "jay"
 use "promises"
 use "metric"
+use "time"
 use "../graphs"
 use "../system"
 
 interface val Algorithm
-  fun val apply( block:GenericBlock, inputs:Map[String,Any val] val )
+  fun val apply( block:GenericBlock, inputs:Map[String,(String|I64|F64|Metric|Bool)] val )
 
 actor GenericBlock is Block
   var _name: String
@@ -20,7 +21,10 @@ actor GenericBlock is Block
   var _started:Bool = false
   var _x:I64
   var _y:I64
-  
+  var _time_since_last_eventrate_update:I64 = PosixDate.time()
+  var _eventcounter: I32 = 0
+  var _eventrate: F32 = -1
+
   new create(name': String, descriptor': BlockTypeDescriptor val, algo:Algorithm, context:SystemContext, x:I64, y:I64 ) =>
     context(Fine) and context.log(Fine, "create("+name'+")")
     _context = context
@@ -31,16 +35,34 @@ actor GenericBlock is Block
     _y = y
 
     for inp in descriptor'.inputs().values() do
-      _inputs.push( InputImpl( name', inp, None ) )
+      _inputs.push( InputImpl( name', inp ) )
     end
     for outp in descriptor'.outputs().values() do
-      _outputs.push( OutputImpl( name', outp, None ) )
+      _outputs.push( OutputImpl( name', outp ) )
     end
 
   be change( x:I64, y:I64 ) =>
     _x = x
     _y = y
     
+  be get_input(input: String, promise:Promise[(String|I64|F64|Metric|Bool)]) =>
+    try
+      let inp = _find_input( input )?
+      promise(inp.value())
+    else
+      _context(Error) and _context.log(Error, input + " is not an input name of block type " + _descriptor.name() )
+      false
+    end
+
+  be get_output(output: String, promise:Promise[(String|I64|F64|Metric|Bool)]) =>
+    try
+      let outp = _find_output( output )?
+      promise(outp.value())
+    else
+      _context(Error) and _context.log(Error, output + " is not an output name of block type " + _descriptor.name() )
+      false
+    end
+
   be start() =>
     _context(Fine) and _context.log(Fine, "start()")
     _started = true
@@ -106,8 +128,9 @@ actor GenericBlock is Block
     end
     error
 
-  be update(input: String, new_value:Any val) =>
-    _context(Fine) and _context.log(Fine, _descriptor.name() + "[ " + _name + "." + input + " = " + try (new_value as Stringable).string() else "" end + " ]")
+  be update(input: String, new_value:(String|I64|F64|Metric|Bool)) =>
+    _context(Fine) and _context.log(Fine, _descriptor.name() + "[ " + _name + "." + input + " = " + new_value.string() + " ]")
+    _eventcounter = _eventcounter + 1
     try
       let inp = _find_input( input )?
       inp.set( new_value )
@@ -116,8 +139,14 @@ actor GenericBlock is Block
     end
     refresh()
 
-  be set_initial(input: String, initial_value: Any val) =>
-    _context(Fine) and _context.log(Fine, _descriptor.name() + "[ " + _name + "." + input + " = (initial) = " + try (initial_value as Stringable).string() else "" end + " ]")
+  be stats_update() =>
+    let now = PosixDate.time()
+    let interval_in_seconds = now - _time_since_last_eventrate_update
+    _eventrate = _eventcounter.f32() / interval_in_seconds.f32()
+    _time_since_last_eventrate_update = now
+
+  be set_initial(input: String, initial_value: (String|I64|F64|Metric|Bool|None)) =>
+    _context(Fine) and _context.log(Fine, _descriptor.name() + "[ " + _name + "." + input + " = (initial) = " + initial_value.string() + " ]")
     try
       let inp = _find_input( input )?
       inp.set_initial( initial_value )
@@ -128,7 +157,7 @@ actor GenericBlock is Block
 
   be refresh() =>
     if _started then
-      let inputs' = recover iso Map[String,Any val] end
+      let inputs' = recover iso Map[String,(String|I64|F64|Metric|Bool)] end
       for inp in _inputs.values() do
         inputs'( inp.name() ) = inp.value()
       end

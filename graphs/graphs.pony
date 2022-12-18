@@ -1,5 +1,6 @@
 
 use "collections"
+use "metric"
 use "promises"
 use "time"
 use "../blocktypes"
@@ -113,7 +114,7 @@ actor Graphs
       graph.unsubscribe_links( subscriptions )
     end
 
-  be _error( type':String, message: String ) =>
+  be report_error( type':String, message: String ) =>
     _context(Info) and _context.log( Info,"error: " + type' + " : " + message )
     for s in _subscribers.values() do 
       s.err( type', message ) 
@@ -155,6 +156,18 @@ actor Graphs
       s.removed_connection(graph, from_block, from_output, to_block, to_input) 
     end
 
+  be _added_initial(graph: String, initial_value:(String|I64|F64|Metric|Bool), to_block:String, to_input:String) =>
+    _context(Info) and _context.log(Info, "added initial: " + graph + " : "  + initial_value.string() + " ==> " + to_block + "." + to_input )
+    for s in _subscribers.values() do
+      s.added_initial(graph, initial_value, to_block, to_input)
+    end
+
+  be _removed_initial(graph: String, old_value:(String|I64|F64|Metric|Bool), to_block:String, to_input:String) =>
+    _context(Info) and _context.log(Info, "removed initial: " + graph + " : "  + old_value.string() + " ==> " + to_block + "." + to_input )
+    for s in _subscribers.values() do
+      s.removed_initial(graph, old_value, to_block, to_input)
+    end
+
   be _started(graph: String, time_started:PosixDate val, started':Bool, running:Bool, debug:Bool) =>
     _context(Info) and _context.log(Info, "started: " + graph + " : " + started'.string() + " : " + running.string() + " : " + debug.string() )
     for s in _subscribers.values() do 
@@ -170,7 +183,7 @@ actor Graphs
   be _status(id:String, uptime:I64, running:Bool, started:Bool, debug:Bool) =>
     _context(Info) and _context.log(Info, "status: " + id + " : " + uptime.string() + " : " + started.string() + " : " + running.string() + " : " + debug.string() )
     for s in _subscribers.values() do 
-      s.status( id, uptime, started, running, debug) 
+      s.status( id, uptime, started, running, debug)
     end
   
 class Notify is TimerNotify

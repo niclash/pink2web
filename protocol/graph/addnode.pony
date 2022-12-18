@@ -27,11 +27,16 @@ primitive AddNodeMessage
       let component = _get_required(payload, "component", connection)?
       let meta = try payload("metadata") as JObj else None end
       ( let x, let y ) = _get_meta( meta )
-      let promise = Promise[ Graph ]
-      promise.next[None]( { (graph: Graph) =>
-        graph.create_block( component, id, x, y )
+      let start_promise = Promise[ Block ]
+      start_promise.next[None]( {(blk: Block) =>
+        blk.start()
       })
-      graphs.graph_by_id( graph, promise )
+      let lookup_promise = Promise[ Graph ]
+      lookup_promise.next[None]( { (graph: Graph) =>
+        graph.create_block( component, id, x, y )
+        graph.get_block(id, start_promise)
+      })
+      graphs.graph_by_id( graph, lookup_promise )
     else
       ErrorMessage( connection, None, "Invalid 'addnode' payload: " + payload.string(), true )
     end

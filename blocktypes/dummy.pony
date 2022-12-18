@@ -1,5 +1,7 @@
 use "jay"
+use "metric"
 use "promises"
+use "time"
 use "../graphs"
 use "../system"
 
@@ -49,7 +51,14 @@ actor DummyBlock is Block
     _name = name'
     _descriptor = descriptor'
     _context = context
-  
+
+  be get_input(input: String, promise:Promise[(String|I64|F64|Metric|Bool)]) =>
+    false
+
+  be get_output(output: String, promise:Promise[(String|I64|F64|Metric|Bool)]) =>
+    false
+
+
   be change( x:I64, y:I64 ) => None
 
   be disconnect_block( block: Block, disconnects: LinkRemoveNotify ) =>  None
@@ -71,10 +80,13 @@ actor DummyBlock is Block
   be rename_of( block: Block, old_name: String, new_name: String ) =>
     None
 
-  be update(input: String, new_value: Any val) =>
+  be update(input: String, new_value: (String|I64|F64|Metric|Bool)) =>
     None
 
-  be set_initial(input: String, new_value: Any val) =>
+  be stats_update() =>
+    None
+
+  be set_initial(input: String, new_value: (String|I64|F64|Metric|Bool|None)) =>
     None
 
   be refresh() =>

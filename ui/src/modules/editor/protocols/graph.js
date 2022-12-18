@@ -8,8 +8,8 @@ const graph_protocol = {
             payload: payload
         });
     },
-    request_clear: function (connection, graphName, humanName, library, main, icon, description) {
-        console.log("Request clear:" + graphName);
+    request_load: function (connection, graphName, humanName, library, main, icon, description) {
+        console.log("Request load:" + graphName);
         connection.send({
             protocol: "graph",
             command: "clear",
@@ -123,6 +123,21 @@ const graph_protocol = {
         connection.send({
             protocol: "graph",
             command: "addinitial",
+            payload: {
+                src: {data: data},
+                tgt: tgt,
+                graph: this.currentGraph,
+                metadata: metadata
+            }
+        });
+    },
+    // changeinitial is not documented in FBP. It is an extension.
+    request_changeinitial: function (connection, data, toNode, toPort, toIndex, metadata = null) {
+        console.log("Request changeinitial:" + data + " ---> " + toNode + "." + toPort);
+        let tgt = support.buildEndpoint(toNode, toPort, toIndex);
+        connection.send({
+            protocol: "graph",
+            command: "changeinitial",
             payload: {
                 src: {data: data},
                 tgt: tgt,
@@ -271,7 +286,6 @@ const graph_protocol = {
     },
     addinitial: function (connection, payload) {
         console.log("addinitial" + JSON.stringify(payload));
-
         if (this.validGraph(payload.graph)) {
             let id = "initial" + this.initial_counter++;
             viewModel.addNodeData({component:"_built_in/initial", id:id, data:payload.src.data});
@@ -282,8 +296,12 @@ const graph_protocol = {
     },
     removeinitial: function (connection, payload) {
         if (this.validGraph(payload.graph)) {
-            let input = support.findInput(payload.tgt);  // TODO... Not done
-            input.initial = undefined;
+            let link = support.findLinkTo(payload.tgt);
+            if( link !== null ) {
+                let node = support.findNode(link.src.node);
+                viewModel.removeNodeData(node);
+                viewModel.removeLinkData(link);
+            }
         }
     },
     addinport: function (connection, payload) {

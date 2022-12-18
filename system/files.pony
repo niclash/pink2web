@@ -22,8 +22,3 @@ primitive Files
     let out = FileStream(recover File(path) end)
     out.print(text)
     out.flush()
-
-  fun write_text_to_pathname( pathname: String, text:String, auth: FileAuth ) =>
-    let caps = recover val FileCaps.>set(FileWrite).>set(FileStat) end
-    let path = FilePath(auth, pathname, caps)
-    write_text_to_path( path, text )

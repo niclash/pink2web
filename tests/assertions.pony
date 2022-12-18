@@ -14,7 +14,7 @@ actor Assertion is Block
   let _completed: Input
   let _context:SystemContext
   let _helper:TestHelper
-  let _expectations:Array[Array[Any val] val] = []
+  let _expectations:Array[Array[(String|I64|F64|Metric|Bool)] val] = []
   
   var _success: Bool = true
   var _counter: USize = 0
@@ -30,8 +30,8 @@ actor Assertion is Block
     _name = name'
     _descriptor = descriptor'
     let zero = "0"
-    _equality = InputImpl( name', _descriptor.input(0), zero )
-    _completed = InputImpl( name', _descriptor.input(2), false )
+    _equality = InputImpl( name', _descriptor.input(0) )
+    _completed = InputImpl( name', _descriptor.input(2) )
 
   be run(inputs:Array[(String,String)] val, graph:Graph) =>
     _context(Fine) and _context.log(Fine, "Starting data feed" )
@@ -53,7 +53,7 @@ actor Assertion is Block
       None // Ignore as this happens (or may happen) during start up.
     end
     
-  fun ref next_expectation(): Any val ? =>
+  fun ref next_expectation(): (String|I64|F64|Metric|Bool) ? =>
     let expectation = _expectations(_counter)?
     if( _sub_counter == -1 ) then 
       _sub_counter = 0
@@ -96,7 +96,7 @@ actor Assertion is Block
   be change( x:I64, y:I64 ) =>
     None
     
-  be update(input: String, new_value: Any val) =>
+  be update(input: String, new_value: (String|I64|F64|Metric|Bool)) =>
     if _graph is None then
       return
     end
@@ -136,7 +136,7 @@ actor Assertion is Block
       end
     end
     
-  fun type_of( value: Any val ): String =>
+  fun type_of( value: (String|I64|F64|Metric|Bool) ): String =>
     match value
     | let s: None => "nil"
     | let s: Bool => "bool"
@@ -161,7 +161,7 @@ actor Assertion is Block
     _context(Fine) and _context.log(Fine, "Reporting " + m.string() )
     promise(m)
 
-  be add_expectation( expected: Array[Any val] val) =>
+  be add_expectation( expected: Array[(String|I64|F64|Metric|Bool)] val) =>
     _expectations.push( expected )
 
 class val AssertionDescriptor is BlockTypeDescriptor

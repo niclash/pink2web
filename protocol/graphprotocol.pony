@@ -22,6 +22,7 @@ class val GraphProtocol
     |   "removeedge" => RemoveEdgeMessage(connection, _graphs, payload )
     |   "changeedge" => ChangeEdgeMessage(connection, _graphs, payload )
     |   "addinitial" => AddInitialMessage(connection, _graphs, payload )
+    |   "changeinitial" => ChangeInitialMessage(connection, _graphs, payload )
     |   "removeinitial" => RemoveInitialMessage(connection, _graphs, payload )
     |   "addinport" => None
     |   "removeinport" => None

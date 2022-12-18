@@ -15,7 +15,7 @@ class val NetworkProtocol
     |   "start" => StartMessage(connection, _graphs, payload )
     |   "stop" => StopMessage(connection, _graphs, payload )
     |   "getstatus" => GetStatusMessage(connection, _graphs, payload )
-    |   "persist" => None
+    |   "persist" => PersistMessage(connection, _graphs, payload )
     |   "debug" => None
     |   "edges" => EdgesMessage(connection, fbp, payload )
     |   "connect" => None

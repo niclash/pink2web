@@ -1,5 +1,6 @@
 use "collections"
 use "files"
+use "metric"
 use "raspi"
 use "time"
 use "../../blocktypes"
@@ -75,7 +76,7 @@ primitive Link2WebExpansionFactory
     end
 
 interface val ExpansionCardListener
-  fun val notify( value:Any val )
+  fun val notify( value:(String|I64|F64|Metric|Bool) )
 
 trait tag ExpansionCard
   be update()

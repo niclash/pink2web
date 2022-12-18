@@ -8,7 +8,7 @@ use "../../system"
 use "../network"
 
 
-primitive RemoveInitialMessage
+primitive ChangeInitialMessage
 
   fun apply( connection: WebSocketSender, graphs: Graphs, payload: JObj ) =>
     try
@@ -18,17 +18,19 @@ primitive RemoveInitialMessage
       let initial_value = src("data")
       let promise = Promise[ Graph ]
       promise.next[None]( { (graph: Graph) =>
-        // TODO: Add metadata support
-        graph.set_initial( block, input, None )
-        connection.send_text( Message("graph", "removeinitial", payload).string() )
+        graph.set_initial( block, input, initial_value.string() )
       })
       graphs.graph_by_id( graph, promise )
     else
-      ErrorMessage( connection, None, "Invalid 'removeinitial' payload: " + payload.string(), true )
+      ErrorMessage( connection, None, "Invalid 'addinitial' payload: " + payload.string(), true )
     end
 
-  fun reply(connection:WebSocketSender, graph:String, value:(String|I64|F64|Metric|Bool), block:String, input:String ) =>
-    let src = JObj + ("data", value)
+  fun reply(connection:WebSocketSender, graph:String, oldvalue:(String|I64|F64|Metric|Bool), newvalue:(String|I64|F64|Metric|Bool), block:String, input:String ) =>
+    let src = JObj + ("data", oldvalue)
     let tgt = JObj + ("node", block) + ("port", input)
     let payload:JObj = JObj + ("graph", graph) + ("src", src ) + ("tgt", tgt)
     connection.send_text( Message("graph", "removeinitial", payload ).string() )
+    let src' = JObj + ("data", newvalue)
+    let tgt' = JObj + ("node", block) + ("port", input)
+    let payload':JObj = JObj + ("graph", graph) + ("src", src' ) + ("tgt", tgt')
+    connection.send_text( Message("graph", "addinitial", payload' ).string() )
