@@ -1,5 +1,9 @@
 # Things to do before 1.0
 
+* Remove GoJS and use an open source project. Candidates;
+  * https://github.com/maxGraph/maxGraph  (maintained fork of  https://github.com/jgraph/mxgraph)
+  * https://github.com/yWorks
+
 * Export/Import Process to allow programs to be copied from one to another place. (GitHub integration?)
 
 * Show Link values in real-time in Web UI.

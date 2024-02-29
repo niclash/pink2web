@@ -9,7 +9,6 @@ class val RuntimeMessage
   let _version: String
   let _all_capabilities: JArr
   let _capabilities: JArr
-  let graph: String
   let _type: String
   let _namespace: String   
   let _repository: String
@@ -18,13 +17,12 @@ class val RuntimeMessage
   new val create( 
       id: String, label: String, version: String, 
       all_capabilities: Array[String val] val, capabilities: Array[String val] val,
-      graph': String, type': String, namespace: String,
+      type': String, namespace: String,
       repository: String, repository_version: String ) =>
       
     _id = id
     _label = label
     _version = version
-    graph = graph'
     _type = type'
     _namespace = namespace
     _repository = repository
@@ -39,8 +37,7 @@ class val RuntimeMessage
       + ("version", _version )
       + ("allCapabilities", _all_capabilities )
       + ("capabilities", _capabilities )
-      + ("graph", graph )    
-      + ("type", _type )    
+      + ("type", _type )
       + ("namespace", _namespace )    
       + ("repository", _repository )    
       + ("repositoryVersion", _repository_version )

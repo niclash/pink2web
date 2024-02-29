@@ -1,4 +1,11 @@
-var known_graphs = [];
+
+function findGraph(id) {
+    if( !libVue.processes.hasOwnProperty(id))
+    {
+        Vue.set(libVue.processes, id, { id: id });
+    }
+    return libVue.processes[id];
+}
 
 var network_protocol = {
     request_start: function (connection) {
@@ -76,7 +83,7 @@ var network_protocol = {
     edges: function (connection, payload) {
     },
     stopped: function (connection, payload) {
-        let g = known_graphs[payload.graph];
+        let g = findGraph(payload.graph);
         g.time = payload.time;
         g.uptime = payload.uptime;
         g.running = payload.running;
@@ -84,19 +91,22 @@ var network_protocol = {
         g.debug = payload.debug;
     },
     started: function (connection, payload) {
-        let g = known_graphs[payload.graph];
+        let g = findGraph(payload.graph);
         g.time = payload.time;
         g.running = payload.running;
         g.started = payload.started;
         g.debug = payload.debug;
     },
     status: function (connection, payload) {
-        let g = known_graphs[payload.graph];
-        g.uptime = payload.uptime;
+        let g = findGraph(payload.graph);
         g.running = payload.running;
+        g.name = payload.name;
+        g.description = payload.description;
         g.started = payload.started;
         g.debug = payload.debug;
         g.eventrate = payload.eventrate;
+        g.uptime = payload.uptime;
+        console.log(g);
     },
     output: function (connection, payload) {
         console.log("Message: " + payload.message, payload.url, payload.type);
@@ -118,8 +128,6 @@ var network_protocol = {
         graph.model.commit(function(m) {
             let link = support.findLink(payload);
             m.set(link, "value", payload.data);
-            // link.value = payload.data;
-            // link.value = "niclas";
         }, "update link label");
     },
     endgroup: function (connection, payload) {

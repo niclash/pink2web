@@ -1,5 +1,6 @@
 
 use "collections"
+use "debug"
 use "jay"
 use "metric"
 use "time"
@@ -22,7 +23,7 @@ class val Fbp
   let _context:SystemContext
   let _link_subscribers:SubscribersProxy
 
-  new val create( uuid:String, main_graph:String, graphs:Graphs, blocktypes:BlockTypes, context:SystemContext) =>
+  new val create( uuid:String, graphs:Graphs, blocktypes:BlockTypes, context:SystemContext) =>
     _graphs = graphs
     _link_subscribers = SubscribersProxy(graphs)
     _context = context
@@ -38,16 +39,15 @@ class val Fbp
         "protocol:graph"
     ]
     let capabilities: Array[String val] val = all_capabilities
-    let graph_name: String = main_graph
     let type': String = "pink2web"
     let namespace: String = "pink2web"
     let repository: String = ""
     let repository_version: String = ""
-    let runtime = RuntimeMessage( uuid, label, version, all_capabilities, capabilities, graph_name, type', namespace, repository, repository_version )
+    let runtime = RuntimeMessage( uuid, label, version, all_capabilities, capabilities, type', namespace, repository, repository_version )
 
     _runtime_protocol = RuntimeProtocol(runtime, graphs, blocktypes, context)
     _network_protocol = NetworkProtocol.create(graphs)
-    _graph_protocol = GraphProtocol.create(graphs)
+    _graph_protocol = GraphProtocol.create(graphs, _context)
     _component_protocol = ComponentProtocol.create(blocktypes)
     _trace_protocol = TraceProtocol
 
@@ -60,7 +60,7 @@ class val Fbp
       match protocol
       | "runtime" => _runtime_protocol.execute( conn, command, payload )
       | "network" => _network_protocol.execute( conn, this, command, payload )
-      | "graph" => _graph_protocol.execute( conn, command, payload )
+      | "graph" => _graph_protocol.execute( conn, this, command, payload )
       | "component" => _component_protocol.execute( conn, command, payload )
       | "trace" => _trace_protocol.execute( conn, command, payload )
       else
@@ -70,10 +70,15 @@ class val Fbp
       ErrorMessage( conn, None, "Badly formatted request: " + text, true )
     end
 
+  fun subscribe_graph(websocket: WebSocketSender val, graphid:String) =>
+    let subscription = Subscription(websocket)
+    _graphs.unsubscribe(subscription)
+    _graphs.subscribe(GraphFilterSubscription(graphid,subscription))
+
   fun subscribe(websocket: WebSocketSender val) =>
     _context.add_remote( websocket )
-    let subscriber = Subscription(websocket)
-    _graphs.subscribe( subscriber )
+    let subscription = Subscription(websocket)
+    _graphs.subscribe( subscription )
 
   fun subscribe_links( connection:WebSocketSender, graph:String, subscriptions:Array[LinkSubscription] val) =>
     _link_subscribers.subscribe_links( connection, graph, subscriptions )
@@ -83,6 +88,77 @@ class val Fbp
     _graphs.unsubscribe( subscriber )
     _context.remove_remote( websocket )
     _link_subscribers.close(websocket)
+
+class val GraphFilterSubscription is GraphNotify
+  let _underlying: GraphNotify
+  let _graphid:String
+
+  new val create(graphid:String, underlying: GraphNotify) =>
+    _underlying = underlying
+    _graphid = graphid
+
+  fun err( type':String, message:String ) =>
+    _underlying.err(type', message )
+
+  fun added_block( graph:String, block:String, component:String, x:I64, y:I64 ) =>
+    if graph == _graphid then
+      _underlying.added_block( graph, block, component, x, y )
+    end
+
+  fun renamed_block( graph:String, from:String, to:String ) =>
+    if graph == _graphid then
+      _underlying.renamed_block( graph, from, to )
+    end
+
+  fun changed_block( graph:String, block:String, x:I64, y:I64 ) =>
+    if graph == _graphid then
+      _underlying.changed_block( graph, block, x, y )
+    end
+
+  fun removed_block( graph:String, block:String ) =>
+    if graph == _graphid then
+      _underlying.removed_block( graph, block )
+    end
+
+  fun added_connection(graph:String, from_block:String, from_output:String, to_block:String, to_input:String) =>
+    if graph == _graphid then
+      _underlying.added_connection(graph, from_block, from_output, to_block, to_input)
+    end
+
+  fun removed_connection(graph:String, from_block:String, from_output:String, to_block:String, to_input:String) =>
+    if graph == _graphid then
+      _underlying.removed_connection(graph, from_block, from_output, to_block, to_input)
+    end
+
+  fun added_initial(graph:String, initial_value:(String|I64|F64|Metric|Bool), to_block:String, to_input:String) =>
+    if graph == _graphid then
+      _underlying.added_initial(graph, initial_value, to_block, to_input)
+    end
+
+  fun removed_initial(graph:String, initial_value:(String|I64|F64|Metric|Bool), to_block:String, to_input:String) =>
+    if graph == _graphid then
+      _underlying.removed_initial(graph, initial_value, to_block, to_input)
+    end
+
+  fun started( graph: String, time_started:PosixDate val, started':Bool, running:Bool, debug:Bool) =>
+    if graph == _graphid then
+      _underlying.started( graph, time_started, started', running, debug)
+    end
+
+  fun stopped( graph: String, time_started:PosixDate val, uptime:I64, started':Bool, running:Bool, debug:Bool  ) =>
+    if graph == _graphid then
+      _underlying.stopped( graph, time_started, uptime, started', running, debug  )
+    end
+
+  fun status( graphid: String, name':String, descr:String, uptime:I64, started':Bool, running:Bool, debug:Bool ) =>
+    _underlying.status( graphid, name', descr, uptime, started', running, debug )
+
+  fun box eq(that: GraphNotify): Bool val =>
+    if this is that then
+      true
+    else
+      _underlying.eq( that )
+    end
 
 class val Subscription is GraphNotify
   let _connection: WebSocketSender val
@@ -123,8 +199,8 @@ class val Subscription is GraphNotify
   fun stopped( graph: String, time_started:PosixDate val, uptime:I64, started':Bool, running:Bool, debug:Bool  ) =>
     StoppedMessage.reply( _connection, graph, time_started, uptime, started', running, debug )
 
-  fun status( graph: String, uptime:I64, started':Bool, running:Bool, debug:Bool ) =>
-    StatusMessage.reply( _connection, graph, uptime, started', running, debug )
+  fun status( graphid: String, name':String, descr:String, uptime:I64, started':Bool, running:Bool, debug:Bool ) =>
+    StatusMessage.reply( _connection, graphid, name', descr, uptime, started', running, debug )
 
   fun box eq(that: GraphNotify): Bool val =>
     if this is that then 

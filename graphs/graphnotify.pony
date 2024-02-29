@@ -6,24 +6,24 @@ trait val GraphNotify is Equatable[GraphNotify]
 
   fun err( type':String, message:String )
   
-  fun added_block(graph:String, block:String, component:String, x:I64, y:I64)
+  fun added_block(graphid:String, block:String, component:String, x:I64, y:I64)
   
-  fun renamed_block(graph:String, from:String, to:String)
+  fun renamed_block(graphid:String, from:String, to:String)
 
-  fun changed_block(graph:String, block:String, x:I64, y:I64)
+  fun changed_block(graphid:String, block:String, x:I64, y:I64)
   
-  fun removed_block(graph:String, block:String)
+  fun removed_block(graphid:String, block:String)
 
-  fun added_connection(graph:String, from_block:String, from_output:String, to_block:String, to_input:String)
+  fun added_connection(graphid:String, from_block:String, from_output:String, to_block:String, to_input:String)
   
-  fun removed_connection(graph:String, from_block:String, from_output:String, to_block:String, to_input:String)
+  fun removed_connection(graphid:String, from_block:String, from_output:String, to_block:String, to_input:String)
 
-  fun added_initial(graph:String, initial_value:(String|I64|F64|Metric|Bool), to_block:String, to_input:String)
+  fun added_initial(graphid:String, initial_value:(String|I64|F64|Metric|Bool), to_block:String, to_input:String)
 
-  fun removed_initial(graph:String, initial_value:(String|I64|F64|Metric|Bool), to_block:String, to_input:String)
+  fun removed_initial(graphid:String, initial_value:(String|I64|F64|Metric|Bool), to_block:String, to_input:String)
 
-  fun started(graph: String, time_started:PosixDate val, started':Bool, running:Bool, debug:Bool)
+  fun started(graphid: String, time_started:PosixDate val, started':Bool, running:Bool, debug:Bool)
   
-  fun stopped(graph: String, time_started:PosixDate val, uptime:I64, started':Bool, running:Bool, debug:Bool)
+  fun stopped(graphid: String, time_started:PosixDate val, uptime:I64, started':Bool, running:Bool, debug:Bool)
   
-  fun status(graph: String, uptime:I64, started':Bool, running:Bool, debug:Bool )
+  fun status(graphid: String, name':String, descr':String, uptime:I64, started':Bool, running:Bool, debug:Bool )

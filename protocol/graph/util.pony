@@ -1,3 +1,4 @@
+use "debug"
 use "jay"
 use "../../system"
 
@@ -9,7 +10,7 @@ primitive Util
     try
       n(prop) as String
     else
-      Print("parse error for '" + prop + "', " + n.string() + "\n")
+      Debug.err("parse error for '" + prop + "', " + n.string() + "\n")
       error
     end
     
@@ -17,6 +18,6 @@ primitive Util
     try
       n("index") as (I64|NotSet)
     else
-      Print("parse error for 'index': " + n.string() + "\n")
+      Debug.err("parse error for 'index': " + n.string() + "\n")
       error
     end

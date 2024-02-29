@@ -1,3 +1,4 @@
+use "debug"
 use "files"
 use "process"
 use "backpressure"
@@ -30,19 +31,19 @@ class tag SendMail
 class ProcessClient is ProcessNotify
   fun ref stdout(process: ProcessMonitor ref, data: Array[U8] iso) =>
     let out = String.from_array(consume data)
-    Print("STDOUT: " + out)
+    Debug.out("STDOUT: " + out)
 
   fun ref stderr(process: ProcessMonitor ref, data: Array[U8] iso) =>
     let err = String.from_array(consume data)
-    Print("STDERR: " + err)
+    Debug.err("STDERR: " + err)
 
   fun ref failed(process: ProcessMonitor ref, err: ProcessError) =>
-    Print(err.string())
+    Debug.err(err.string())
 
   fun ref dispose(process: ProcessMonitor ref, child_exit_status: ProcessExitStatus) =>
     match child_exit_status
     | let exited: Exited =>
-      Print("Child exit code: " + exited.exit_code().string())
+      Debug.err("Child exit code: " + exited.exit_code().string())
     | let signaled: Signaled =>
-      Print("Child terminated by signal: " + signaled.signal().string())
+      Debug.err("Child terminated by signal: " + signaled.signal().string())
     end

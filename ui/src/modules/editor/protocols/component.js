@@ -11,6 +11,7 @@ var component_protocol = {
         });
     },
     list: function (connection, payload) {
+        console.log("NICLAS!!")
         for( idx in components )        {
             if( components.hasOwnProperty(idx)){
                 connection.send({

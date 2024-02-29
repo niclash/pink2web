@@ -6,7 +6,7 @@
       <excludeFolder url="file://$MODULE_DIR$/_corral" />
       <excludeFolder url="file://$MODULE_DIR$/_repos" />
     </content>
-    <orderEntry type="inheritedJdk" />
+    <orderEntry type="jdk" jdkName="17" jdkType="JavaSDK" />
     <orderEntry type="sourceFolder" forTests="false" />
     <orderEntry type="library" name="Backbone.ModelBinder" level="application" />
     <orderEntry type="library" name="twitter-bootstrap" level="application" />

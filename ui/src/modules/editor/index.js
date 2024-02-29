@@ -4,19 +4,25 @@ var viewModel;
 const libVue = new Vue({
     el: '#editor',
     data: {
-        processes: [
-            {id: "main", name: "main", description: "This is the default process.", icon: ""},
-            {
-                id: "radiator_regulator",
-                name: "Radiator Regulator",
-                description: "This is the testing process. With a longer description to see what happens.",
-                icon: ""
-            }
-        ],
-        components: {}
+        processes: {},
+        components: {},
+        selectBlocks: () => {
+            viewModel.nodeDataArray.forEach( (n) => {
+                graph.findNodeForKey(n.id).isSelected = true;
+            } );
+        },
+        selectLinks: () => {
+            viewModel.linkDataArray.forEach( (n) => {
+                graph.findLinkForData(n).isSelected = true;
+            } );
+        }
+
     }
 });
 
+function add_process() {
+    graph_protocol.new_graph();
+}
 
 function initPink2Web() {
     let onOpened = function (conn) {
@@ -56,6 +62,7 @@ function initPink2Web() {
             "linkReshapingTool.handleArchetype":
                 $$$(go.Shape, "Diamond", {desiredSize: new go.Size(7, 7), fill: "lightblue", stroke: "deepskyblue"}),
             "ChangedSelection": function (evt) {
+                console.log("ChangedSelection");
                 var links = [];
                 if (evt.subject === null) {
                     return;
@@ -510,6 +517,7 @@ function makeTemplate(fullname, component) {
     graph.nodeTemplateMap.set(fullname, node);
     graph.commitTransaction("make template");
 }
+
 
 let componentCounter = 0;
 

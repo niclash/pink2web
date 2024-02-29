@@ -1,6 +1,7 @@
 use "./app"
 use "./blocktypes"
 use "./drivers"
+use "./engine"
 use "./graphs"
 use "./protocol"
 use "./system"
@@ -15,9 +16,7 @@ use "promises"
 use "websocket"
 
 actor Main
-  var _rest: (RestServer|None) = None
-  var _websocketListener: (WebSocketListener|None) = None
-  
+
   new create( env: Env ) =>
     pi.RPi.wiringPiSetup()
     try
@@ -57,12 +56,13 @@ actor Main
             match c.fullname()
             | "pink2web/list/types" => list_types(blocktypes, context)
             | "pink2web/run/process" =>
-                let config = _create_runtime_configuration( c, context )
-                (let graphs, let promise) = _initialize_runtime( config, blocktypes, context )
-                let filename = c.arg( "filename" ).string()
-                context(Fine) and context.log(Fine, "Starting process " + filename)
-                run_process(filename,graphs,blocktypes,context, promise)
-
+                let config = _create_runtime_configuration( c )
+                let engine = RuntimeEngine( config, blocktypes, context )
+                let filenames = c.arg( "filenames" ).string()
+                for filename in filenames.split(":").values() do
+                  context(Fine) and context.log(Fine, "Starting graph " + filename)
+                  engine.load_graph(filename)
+                end
             | "pink2web/describe/type" => describe_type(c.arg("typename" ).string(),blocktypes,context)
             | "pink2web/describe/topology" => 
                 describe_topology(c.arg("filename").string(),blocktypes,context)
@@ -101,7 +101,7 @@ actor Main
     ],[
       CommandSpec.leaf( "process", "Run the process.", [
       ], [
-        ArgSpec.string("filename", "Name of json file containing the process to run.", None )
+        ArgSpec.string("filenames", "List of json files containing the graphs to start.", "" )
       ] )?
     ])?
 
@@ -142,31 +142,14 @@ actor Main
         context(Error) and context.log( Error, "Unable to load " + filename )
       end
     })
-    loader.load( filename, loadpromise )?
+    loader.load_from_file( filename, loadpromise )?
 
   fun run_application(filename:String, graphs: Graphs, blocktypes:BlockTypes, context:SystemContext, promise:Promise[(String,Graph|None)]) =>
     None
 
-  fun run_process(filename:String, graphs: Graphs, blocktypes:BlockTypes, context:SystemContext, promise:Promise[(String,Graph|None)]) =>
-    let loader = Loader(graphs, blocktypes, context)
-    let p = Promise[(String, Graph|None)]
-    p.next[None]( { (pair) =>
-      (let id:String, let graph:(Graph|None)) = pair
-      match graph
-      | let g:Graph =>
-        g.start()
-        context(Info) and context.log(Info, "Main graph: " + id )
-      else
-        context(Error) and context.log(Error, "Unable to load " + filename )
-      end
-      promise((id, graph))
-    })
-    loader.load( filename, p )
-
-  fun _create_runtime_configuration( c: Command, context: SystemContext ): RuntimeConfiguration =>
+  fun _create_runtime_configuration( c: Command ): RuntimeConfiguration =>
     let host = c.option("host").string()
     let p = c.option("port")
-    context(Info) and context.log( Info, "--port=" + p.i64().string() )
     var port = p.i64().u32()
     // bug in cli, default port isn't working properly
     if port == 0 then port = 3568 end
@@ -177,57 +160,3 @@ actor Main
     let driversToLoad = c.option("load-driver").string_seq()
     RuntimeConfiguration( host, port, path, startpage, driversToLoad )
 
-  fun _initialize_runtime( config: RuntimeConfiguration, blocktypes:BlockTypes, context: SystemContext ): (Graphs,  Promise[(String, Graph|None)]) =>
-
-    let graphs = Graphs( blocktypes, context )
-    let promise = Promise[(String, Graph|None)]
-    promise.next[None]({ (pair) =>
-      (let main_graph:String, let graph:(Graph|None)) = pair
-      match graph
-      | let g:Graph =>
-        let host = config.host
-        let port = config.port
-        let fbp = Fbp("619362b3-1aee-4dca-b109-bef38e0e1ca8", main_graph, graphs, blocktypes, context)
-        let ws_port:String val = (port+1).string()
-
-        let tcplauth: TCPListenAuth = TCPListenAuth(context.auth())
-        _websocketListener = WebSocketListener(tcplauth,ListenNotify(fbp,context),host,ws_port)
-        context(Info) and context.log(Info, "Web directory:"+config.webdir)
-        context(Info) and context.log(Info, "Start Page:"+config.startpage)
-        context(Info) and context.log(Info, "Started to listen: ws://"+host+":"+ws_port)
-        _rest = RestServer(host, port, config.webdir, config.startpage, context )
-      end
-    })
-    let drivers = Drivers(context, blocktypes)
-
-    for driver in config.drivers.values() do
-      context(Info) and context.log(Info, "Loading " + driver )
-      drivers.load(driver)
-    else
-      context(Info) and context.log(Info, "Loading no drivers." )
-    end
-
-    context(Info) and context.log(Info, "Drivers available " )
-    let p2 = Promise[Array[String val] val]
-    p2.next[None]( { (drivers) =>
-      for driver in drivers.values() do
-        context.log( Info, "  " + driver )
-      end
-    })
-    drivers.available(p2)
-    drivers.start()
-    (graphs, promise)
-
-class val RuntimeConfiguration
-  let host: String
-  let port: U32
-  let drivers: ReadSeq[String]
-  let webdir: String
-  let startpage: String
-
-  new val create(host': String, port': U32, webdir': String, startpage': String, drivers': ReadSeq[String val] val ) =>
-    host = host'
-    port = port'
-    drivers = drivers'
-    webdir = webdir'
-    startpage = startpage'

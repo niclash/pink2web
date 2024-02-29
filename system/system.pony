@@ -5,8 +5,8 @@ use "time"
 use "../web"
 
 class val SystemContext
-  let _timers:Timers
-  let _filelocations:FileLocations
+  let timers:Timers
+  let _filelocations:FileLocations val
   let _auth: AmbientAuth
   let _remote_out: RemoteOutStream
   let _remote_err: RemoteOutStream
@@ -16,10 +16,10 @@ class val SystemContext
 
   new val create(auth':AmbientAuth, stdout':OutStream, stderr':OutStream, level:LogLevel, base_dir:FilePath, remote_log:Bool = false) =>
     _auth = auth'
-    _timers = Timers
+    timers = Timers(20) // ~millisecond resolution
     _stdout = stdout'
     _stderr = stderr'
-    _filelocations = FileLocations(base_dir)
+    _filelocations = recover val FileLocations(base_dir) end
     _remote_out = RemoteOutStream( stdout', false )
     _remote_err = RemoteOutStream( stderr', true )
     if remote_log then
@@ -52,9 +52,6 @@ class val SystemContext
 
   fun val auth(): AmbientAuth val =>
     _auth
-
-  fun val timers(): Timers =>
-    _timers
 
   fun add_remote( socket:WebSocketSender ) =>
     _remote_out.add_remote( socket )

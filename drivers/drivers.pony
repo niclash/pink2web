@@ -35,7 +35,7 @@ actor Drivers
 
   be list(promise:Promise[Array[String val] val]) =>
     _context(Info) and _context.log(Info, "List drivers" )
-    var result:Array[String] iso = Array[String]()
+    var result:Array[String] iso = recover iso Array[String]() end
     for drivername in _drivers.keys() do
       result.push( drivername )
     end

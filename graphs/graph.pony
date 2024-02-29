@@ -15,8 +15,8 @@ actor Graph
   let _graphs:Graphs
   let _blocks: Map[String,Block tag] 
   let _block_types: MapIs[Block tag, BlockTypeDescriptor val] 
-  let _descriptor: GraphDescriptor
-  
+
+  var _descriptor: GraphDescriptor
   var _time_started:PosixDate val= recover val PosixDate end
   var _uptime: I64 = 0  // in seconds
   var _started: Bool = false
@@ -56,7 +56,7 @@ actor Graph
     else
       let msg: String val = "Unable to save graph: " + _descriptor.name + " (" + _descriptor.id + ")"
       _context(Error) and _context.log(Error, msg)
-      _graphs.report_error("graph", msg )
+      _graphs.report_error(_descriptor.name, "graph", msg )
     end
 
   fun ref _stop() =>
@@ -74,9 +74,14 @@ actor Graph
       remove_block(block_name)
     end
     _blocks.clear()
-    
+
+  be rename( old_name:String, new_name:String ) =>
+    if old_name == _descriptor.name then
+      _descriptor = GraphDescriptor( _descriptor.id, new_name, _descriptor.description, _descriptor.icon)
+    end
+
   be status() =>
-    _graphs._status(_descriptor.id, _uptime, _running, _started, _debug )
+    _graphs._status(_descriptor.id, _descriptor.name, _descriptor.description, _uptime, _running, _started, _debug)
     
   be tick() =>
     if _running then
@@ -115,10 +120,9 @@ actor Graph
             _graphs._added_initial(_descriptor.id, initial_value, block', input )
           end
       })
-      Debug.out("NICLAS00")
       block.get_input( input, promise )
     else
-      _graphs.report_error( "graph", "Unknown Node: " + block' )
+      _graphs.report_error( _descriptor.name, "graph", "Unknown Node: " + block' )
     end
   
   be change_block( name':String, x:I64, y:I64 ) =>
@@ -127,7 +131,7 @@ actor Graph
       block.change(x, y)
       _graphs._changed_block(_descriptor.id, name', x, y )
     else
-      _graphs.report_error( "graph", "Unknown Node" )
+      _graphs.report_error( _descriptor.name, "graph", "Unknown Node" )
     end
   
   be disconnect( src_block: String, src_output: String, dest_block: String, dest_input: String ) =>

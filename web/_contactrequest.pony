@@ -1,3 +1,4 @@
+use "debug"
 use "files"
 use "jennet"
 use "../mail"
@@ -37,15 +38,15 @@ class val _ContactRequest is RequestHandler
         file.write("\n")
         file.flush()
       | FileError =>
-        Print("logfile opened: FileError")
+        Debug.err("logfile opened: FileError")
       | FileEOF =>
-        Print("logfile opened: FileEOF")
+        Debug.err("logfile opened: FileEOF")
       | FileBadFileNumber =>
-        Print("logfile opened: FileBadFileNumber")
+        Debug.err("logfile opened: FileBadFileNumber")
       | FileExists =>
-        Print("logfile opened: FileExists")
+        Debug.err("logfile opened: FileExists")
       | FilePermissionDenied =>
-        Print("logfile opened: FilePermissionDenied")
+        Debug.err("logfile opened: FilePermissionDenied")
       end
     end
     try
@@ -53,7 +54,7 @@ class val _ContactRequest is RequestHandler
       SendMail(_ctx, "Niclas Hedhman", "niclas@hedhman.org", "Site Feedback", txt )
       _logfile.remove()
     else
-      Print("Unable to send email")
+      Debug.err("Unable to send email")
     end
     _ServeFile(consume ctx, _ackfile)
 

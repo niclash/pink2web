@@ -26,10 +26,11 @@ class val ListenNotify is WebSocketListenNotify
 
     
 class _ConnectionNotify is WebSocketConnectionNotify
+  let _context:SystemContext
   let _fbp: Fbp val
   var _connection: (WebSocketConnection | None) = None
-  let _context:SystemContext
-  
+  var _sender: (WebSocketSender | None) = None
+
   new iso create( fbp: Fbp val, context:SystemContext ) =>
     _context = context
     _context(Info) and _context.log(Info, "Created websocket" )
@@ -38,21 +39,38 @@ class _ConnectionNotify is WebSocketConnectionNotify
   fun ref opened(conn: WebSocketConnection ref) =>
     _context(Info) and _context.log(Info, "Opened websocket" )
     _connection = conn
-    _fbp.subscribe( WebSocketSender(conn, _context) )
+    let sender = WebSocketSender(conn, _context)
+    _sender = sender
+    _fbp.subscribe( sender )
 
   fun ref text_received(conn: WebSocketConnection ref, text: String) =>
     _context(Info) and _context.log(Info, "  ==> " + text )
-    _fbp.execute( WebSocketSender(conn, _context), text )
+    match _sender
+    | let sender:WebSocketSender =>
+      _fbp.execute( sender, text )
+    else
+      _context(Error) and _context.log( Error, "Internal error?" )
+    end
 
   fun ref binary_received(conn: WebSocketConnection ref, data: Array[U8] val) =>
     _context(Info) and _context.log(Info, "binary_received" )
-    let connection = WebSocketSender(conn, _context)
-    ErrorMessage( connection, None, "Binary formats are not supported.", true )
+    match _sender
+    | let sender:WebSocketSender =>
+      ErrorMessage( sender, None, "Binary formats are not supported.", true )
+    else
+      _context(Error) and _context.log( Error, "Internal error?" )
+    end
 
   fun ref closed(conn: WebSocketConnection ref) =>
     _context(Info) and _context.log(Info, "Closed websocket" )
-    _fbp.closing( WebSocketSender(conn, _context) )
+    match _sender
+    | let sender:WebSocketSender =>
+      _fbp.closing( sender )
+    else
+      _context(Error) and _context.log( Error, "Internal error?" )
+    end
     _connection = None
+    _sender = None
   
 class val WebSocketSender is (Equatable[WebSocketSender] & Hashable)
   let _connection:WebSocketConnection

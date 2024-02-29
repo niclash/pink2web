@@ -8,18 +8,66 @@ const graph_protocol = {
             payload: payload
         });
     },
-    request_load: function (connection, graphName, humanName, library, main, icon, description) {
-        console.log("Request load:" + graphName);
+    request_list_graphs: function (connection) {
+        console.log("Request list graphs");
         connection.send({
             protocol: "graph",
-            command: "clear",
+            command: "list",
             payload: {
-                id: graphName,
-                name: humanName,
-                library: library,
-                main: main,
-                icon: icon,
-                description: description
+            }
+        });
+    },
+    request_new_graph: function (connection, graphName, description) {
+        console.log("Request new graph:" + graphName);
+        connection.send({
+            protocol: "graph",
+            command: "new",
+            payload: {
+                name: graphName,
+                description: description,
+            }
+        });
+    },
+    request_delete_graph: function (connection, graphId, graphName) {
+        console.log("Request new graph:" + graphName);
+        connection.send({
+            protocol: "graph",
+            command: "delete",
+            payload: {
+                id: graphId,
+                name: graphName
+            }
+        });
+    },
+    request_rename_graph: function (connection, graphId, oldName, newName) {
+        console.log("Request new graph:" + graphName);
+        connection.send({
+            protocol: "graph",
+            command: "delete",
+            payload: {
+                id: graphId,
+                from: oldName,
+                to: newName,
+            }
+        });
+    },
+    request_connect: function (connection, graphName) {
+        console.log("Request connect:" + graphName);
+        connection.send({
+            protocol: "graph",
+            command: "connect",
+            payload: {
+                id: graphName
+            }
+        });
+    },
+    request_disconnect: function (connection, graphName) {
+        console.log("Request disconnect:" + graphName);
+        connection.send({
+            protocol: "graph",
+            command: "disconnect",
+            payload: {
+                id: graphName
             }
         });
     },

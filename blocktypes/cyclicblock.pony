@@ -76,14 +76,14 @@ actor CyclicBlock is Block
     _last_time = Time.millis()
     let t':Timer iso = Timer( CyclicHandler(it), _cycle_ms, _cycle_ms)
     timer = t'
-    _context.timers()(consume t')
+    _context.timers(consume t')
 
   be stop() =>
     _context(Fine) and _context.log(Fine, "stop()")
     if _started then
       _started = false
       match timer
-      | let t:Timer tag => _context.timers().cancel(t)
+      | let t:Timer tag => _context.timers.cancel(t)
       end
       timer = None
     end

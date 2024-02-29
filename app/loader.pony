@@ -16,7 +16,16 @@ actor Loader
     _blocktypes = blocktypes
     _graphs = graphs
 
-  be load( pathname: String, promise:Promise[(String, Graph|None)] ) =>
+  be load_from_text( json: String, promise:Promise[(String, Graph|None)] ) =>
+    try
+      _context(Fine) and _context.log( Fine, "Loading json: " + json )
+      let root = JParse.from_string( json )? as JObj
+      _parse_root(root, promise)
+    else
+      promise(("", None))
+    end
+
+  be load_from_file( pathname: String, promise:Promise[(String, Graph|None)] ) =>
     try
       _context(Fine) and _context.log( Fine, "Loading " + pathname )
       let content: String = Files.read_text_from_pathname(pathname, FileAuth(_context.auth()))?
@@ -53,7 +62,7 @@ actor Loader
       // We must stop and wait for all the blocks to be loaded before we can
       // proceed to wire them up. Hence the rather awkward recursive call sequence
       // of _continue_with_pass2 -> graph.list_blocks -> promise -> _continue_with_pass2
-      // but was the only pattern I could figure out.
+      // but was the only pattern I could figure out. Should possibly be done with Promises.join or something.
       _continue_with_pass2( names_to_waitfor, graph, root, id, promise )
     else
       _context(Error) and _context.log( Error, "A 'blocks' object must exist in root object." )

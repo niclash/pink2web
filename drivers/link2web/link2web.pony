@@ -118,7 +118,7 @@ class Link2WebMultiplexer
   fun reset() =>
     RPi.digitalWrite(_reset_pin, LOW )
     let t':Timer iso = Timer( _RestoreNotify(_reset_pin), 5, 5)
-    _context.timers()(consume t')
+    _context.timers(consume t')
 
 class iso _RestoreNotify is TimerNotify
   let _reset_pin:I32

@@ -11,7 +11,7 @@ use "../system"
 actor RestServer
 
   new create( host': String, port': U32, basedir:String, redirectTo:String, context: SystemContext ) =>
-    context(Info) and context.log(Info, "Rest Server starting on: " + host' + ":" + port'.string() + ", basedir=" + basedir)
+    context(Info) and context.log(Info, "Rest Server starting on: " + host' + ":" + port'.string() + ", basedir=" + basedir + "\n")
     let tcplauth = TCPListenAuth(context.auth())
     let fileauth = FileAuth(context.auth())
     let jennet = Jennet(tcplauth, context.stdout(), host', port'.string())

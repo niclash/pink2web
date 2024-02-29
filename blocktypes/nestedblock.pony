@@ -1,4 +1,5 @@
 use "collections"
+use "debug"
 use "jay"
 use "metric"
 use "promises"
@@ -259,7 +260,7 @@ actor NestedBlockTypeBuilder
   be build(factories: Array[BlockFactory] val) =>
     try
       if factories.size() != _blocks.size() then
-        Print("ERROR!!!!")
+        Debug.err("ERROR!!!!")
       end
       let blocks = _blocks = recover Map[String val, BlockFactory] end
       let blocktypedescriptor = NestedBlockDescriptor(_name, _description, _inports, _outports, _edges, _initials, consume blocks)

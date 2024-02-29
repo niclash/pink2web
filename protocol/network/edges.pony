@@ -1,3 +1,4 @@
+use "debug"
 use "jay"
 use "promises"
 use "../../graphs"
@@ -36,7 +37,7 @@ primitive EdgesMessage
 
   fun apply( connection: WebSocketSender val, fbp: Fbp, payload: JObj ) =>
     try
-      let graph = try payload("graph") as String else Print("No 'graph' property.") ; error end
+      let graph = try payload("graph") as String else Debug.err("No 'graph' property.") ; error end
       let edges = payload("edges") as JArr
       let links = recover val
         let result = Array[(String,String,String,String)]

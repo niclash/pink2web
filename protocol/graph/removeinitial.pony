@@ -1,3 +1,4 @@
+use "debug"
 use "jay"
 use "metric"
 use "promises"
@@ -12,7 +13,7 @@ primitive RemoveInitialMessage
 
   fun apply( connection: WebSocketSender, graphs: Graphs, payload: JObj ) =>
     try
-      let graph = try payload("graph") as String else Print("No 'graph' property.") ; error end
+      let graph = try payload("graph") as String else Debug.err("No 'graph' property.") ; error end
       (let block, let input, let index) = Util._parse( payload("tgt") as JObj )?
       let src = payload("src") as JObj
       let initial_value = src("data")

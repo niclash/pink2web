@@ -1,3 +1,4 @@
+use "debug"
 use "jay"
 use "promises"
 use ".."
@@ -38,7 +39,7 @@ primitive AddEdgeMessage
     try
       (let src_block, let src_output, let src_index) = Util._parse( payload("src") as JObj )?
       (let dest_block, let dest_input, let dest_index) = Util._parse( payload("tgt") as JObj )?
-      let graph = try payload("graph") as String else Print("No 'graph' property.") ; error end
+      let graph = try payload("graph") as String else Debug.err("No 'graph' property.") ; error end
 
       let promise = Promise[ Graph ]
       promise.next[None]( { (graph: Graph) =>

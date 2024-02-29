@@ -1,4 +1,5 @@
 use "collections"
+use "debug"
 use "jay"
 use "metric"
 use "promises"
@@ -12,7 +13,7 @@ actor IntervalTimerBlock is Block
   let _descriptor: BlockTypeDescriptor
   let _interval: Input
   let _initial: Input
-  let _rearm': Input
+  let _run': Input
   let _oneshot: Input
   let _output: Output
   let _context:SystemContext
@@ -32,10 +33,10 @@ actor IntervalTimerBlock is Block
     _x = x
     _y = y
     _interval = InputImpl( _name, _descriptor.input(0) )
-    _interval.set( F64(1000000) ) // 1 sec ?
+    _interval.set( F64(500) ) // 0.5 sec
     _initial = InputImpl( _name, _descriptor.input(1) )
-    _initial.set( F64(1000000) ) // 1 sec ?
-    _rearm' = InputImpl( _name, _descriptor.input(2) )
+    _initial.set( F64(500) ) // 0.5 sec
+    _run' = InputImpl( _name, _descriptor.input(2) )
     _oneshot = InputImpl( _name, _descriptor.input(2) )
     _output = OutputImpl( _name, _descriptor.output(0) )
 
@@ -46,7 +47,7 @@ actor IntervalTimerBlock is Block
   be get_input(input: String, promise:Promise[(String|I64|F64|Metric|Bool)]) =>
     match input
     | "interval" => promise(_interval.value())
-    | "rearm" => promise(_rearm'.value())
+    | "run" => promise(_run'.value())
     | "oneshot" => promise(_oneshot.value())
     | "initial" => promise(_initial.value())
     else
@@ -67,48 +68,50 @@ actor IntervalTimerBlock is Block
       _started = false
       stop()
     else
-      _output.set( ToBool(_output.value()) xor true )
+      _output.set( not ToBool(_output.value()) )
     end
 
   be start() =>
+    _start()
+
+  fun ref _start() =>
     _context(Fine) and _context.log(Fine, "start()")
     if not _started then
       _started = true
-      _arm(ToU64(_initial.value()),ToU64(_initial.value()))
+      _arm(ToU64(_initial.value()),ToU64(_interval.value()))
     end
 
   be stop() =>
-    refresh()
+    _stop()
+
+  fun ref _stop() =>
+    _refresh()
     _context(Fine) and _context.log(Fine, "stop()")
     if _started then
       _started = false
       match timer
-      | let t:Timer tag => _context.timers().cancel(t)
+      | let t:Timer tag => _context.timers.cancel(t)
       end
       timer = None
     end
 
   fun ref _arm(initial:U64, interval:U64) =>
-    Print("arm" + initial.string() + ", " + interval.string() )
+    Debug.out("arm(" + initial.string() + ", " + interval.string() + ")" )
     let it:IntervalTimerBlock tag = this
-    let t':Timer iso = Timer( TimerHandler(it), initial, interval)
+    let t':Timer iso = Timer( TimerHandler(it, ToBool(_oneshot.value())), initial * 1000000, interval * 1000000) // scale to milliseconds.
     timer = t'
-    _context.timers()(consume t')
+    _context.timers(consume t')
 
   fun ref _rearm() =>
-    match timer
-    | let t:None => start()
-    | let t:Timer tag =>
-      stop()
-      _arm(ToU64(_interval.value()),ToU64(_initial.value()))
-      _rearm'.set(false)
-    end
+    Debug.out("_rearm()")
+    _stop()
+    _start()
 
   be connect( output: String, to_block: Block, to_input: String) =>
     if output == "out"  then
       _output.connect(to_block, to_input)
     end
-    refresh()
+    _refresh()
 
   be disconnect_block( block: Block, disconnects: LinkRemoveNotify ) =>
     _output.disconnect_block( block, disconnects )
@@ -119,7 +122,7 @@ actor IntervalTimerBlock is Block
     end
 
   be destroy(disconnects: LinkRemoveNotify) =>
-    refresh()
+    _refresh()
     _context(Fine) and _context.log(Fine, "destroy()")
     _started = false
     _output.disconnect_all(disconnects)
@@ -131,7 +134,7 @@ actor IntervalTimerBlock is Block
   be rename_of( block: Block, old_name: String, new_name: String ) =>
     _interval.rename_of_block( block, old_name, new_name )
     _initial.rename_of_block( block, old_name, new_name )
-    _rearm'.rename_of_block( block, old_name, new_name )
+    _run'.rename_of_block( block, old_name, new_name )
     _oneshot.rename_of_block( block, old_name, new_name )
     _output.rename_of_block( block, old_name, new_name )
 
@@ -144,13 +147,15 @@ actor IntervalTimerBlock is Block
     | let v: F64 =>
       if input == "interval" then _interval.set( v ) end
       if input == "initial" then _initial.set( v ) end
+      if input == "run" then _run'.set( ToBool(v) ) end
+      if input == "oneshot" then _oneshot.set( ToBool(v) ) end
     | let v: Bool =>
-      if input == "rearm" then if v then _rearm() end  end
+      if input == "run" then _run'.set( v ) end
       if input == "oneshot" then _oneshot.set( v ) end
     | let v: String =>
       if input == "interval" then _interval.set( ToF64(v) ) end
-      if input == "rearm" then if v == "true" then _rearm() end end
-      if input == "oneshot" then _oneshot.set( v == "true" ) end
+      if input == "run" then _run'.set( ToBool(v) ) end
+      if input == "oneshot" then _oneshot.set( ToBool(v) ) end
       if input == "initial" then _initial.set( ToF64(v) ) end
     end
 
@@ -161,24 +166,27 @@ actor IntervalTimerBlock is Block
     _time_since_last_eventrate_update = now
 
   be set_initial(input: String, initial_value:(String|I64|F64|Metric|Bool|None)) =>
-    match initial_value
-    | let v:Stringable => _context(Fine) and _context.log(Fine, "IntervalTimer[ " + _name + "." + input + " = " + v.string() + " ]")
-    end
+    _context(Fine) and _context.log(Fine, "IntervalTimer[ " + _name + "." + input + " = " + initial_value.string() + " ]")
     match initial_value
     | let v: F64 =>
       if input == "interval" then _interval.set_initial( v ) end
       if input == "initial" then _initial.set_initial( v ) end
+      if input == "run" then _run'.set_initial( ToBool(v) ) end
+      if input == "oneshot" then _oneshot.set_initial( ToBool(v) ) end
     | let v: Bool =>
-      if input == "rearm" then if v then _rearm() end  end
+      if input == "run" then _run'.set_initial( v ) end
       if input == "oneshot" then _oneshot.set_initial( v ) end
     | let v: String =>
       if input == "interval" then _interval.set_initial( ToF64(v) ) end
-      if input == "rearm" then if v == "true" then _rearm() end end
-      if input == "oneshot" then _oneshot.set_initial( v == "true" ) end
       if input == "initial" then _initial.set_initial( ToF64(v) ) end
+      if input == "run" then _run'.set_initial( ToBool(v) ) end
+      if input == "oneshot" then _oneshot.set_initial( ToBool(v) ) end
     end
 
   be refresh() =>
+    _refresh()
+
+  fun _refresh() =>
     None
 
   be name( promise: Promise[String] tag ) =>
@@ -188,42 +196,42 @@ actor IntervalTimerBlock is Block
     promise(_descriptor)
 
   be describe( promise:Promise[JObj val] tag ) =>
-    BlockDescription(promise, _name, _descriptor.name(), _started, [_interval; _rearm'; _oneshot; _initial], [_output] )
+    BlockDescription(promise, _name, _descriptor.name(), _started, [_interval; _run'; _oneshot; _initial], [_output] )
 
   be subscribe_link( subscription:LinkSubscription ) =>
     match subscription.dest_port
     | "interval" => _interval.subscribe(subscription)
     | "initial" =>  _initial.subscribe(subscription)
-    | "rearm" =>    _rearm'.subscribe(subscription)
+    | "run" =>    _run'.subscribe(subscription)
     | "oneshot" =>  _oneshot.subscribe(subscription)
     end
-    refresh()
+    _refresh()
 
   be unsubscribe_link( subscription:LinkSubscription ) =>
     match subscription.dest_port
     | "interval" => _interval.unsubscribe(subscription)
     | "initial" =>  _initial.unsubscribe(subscription)
-    | "rearm" =>    _rearm'.unsubscribe(subscription)
+    | "run" =>    _run'.unsubscribe(subscription)
     | "oneshot" =>  _oneshot.unsubscribe(subscription)
     end
-    refresh()
+    _refresh()
 
 class val IntervalTimerBlockDescriptor is BlockTypeDescriptor
   let _interval:InputDescriptor
   let _initial:InputDescriptor
-  let _rearm:InputDescriptor
+  let _run:InputDescriptor
   let _oneshot:InputDescriptor
   let _out:OutputDescriptor
 
   new val create() =>
       _interval = InputDescriptor("interval", "number", "interval after the initial interval", false )
       _initial = InputDescriptor("initial", "number", "first interval", false )
-      _rearm = InputDescriptor("rearm", "bool", "restart counting sequence", false )
+      _run = InputDescriptor("run", "bool", "run/stop of timer", false )
       _oneshot = InputDescriptor("oneshot", "bool", "true if only one count sequence to run", false )
       _out = OutputDescriptor("out", "bool", "true when timer expired, false when timer counting", false )
 
   fun val inputs(): Array[InputDescriptor] val =>
-    [ _interval; _initial; _rearm; _oneshot ]
+    [ _interval; _initial; _run; _oneshot ]
 
   fun val outputs(): Array[OutputDescriptor] val =>
     [ _out ]
@@ -232,7 +240,7 @@ class val IntervalTimerBlockDescriptor is BlockTypeDescriptor
 
   fun initial(): InputDescriptor => _initial
 
-  fun rearm(): InputDescriptor => _rearm
+  fun run(): InputDescriptor => _run
 
   fun oneshot(): InputDescriptor => _oneshot
 
@@ -242,7 +250,7 @@ class val IntervalTimerBlockDescriptor is BlockTypeDescriptor
     match index
     | 0 => _interval
     | 1 => _initial
-    | 2 => _rearm
+    | 2 => _run
     | 3 => _oneshot
     else
       InputDescriptor( "INVALID", "number", "INVALID", false)
@@ -279,10 +287,12 @@ class val IntervalTimerBlockFactory is BlockFactory
 
 class TimerHandler is TimerNotify
   let _timer:IntervalTimerBlock tag
+  let _oneshot:Bool
 
-  new iso create(timer:IntervalTimerBlock tag ) =>
+  new iso create(timer:IntervalTimerBlock tag, oneshot':Bool ) =>
     _timer = timer
+    _oneshot = oneshot'
 
   fun ref apply(timer:Timer, count:U64): Bool =>
     _timer._notify()
-    true
+    not _oneshot
