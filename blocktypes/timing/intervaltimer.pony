@@ -263,6 +263,9 @@ class val IntervalTimerBlockDescriptor is BlockTypeDescriptor
       OutputDescriptor( "INVALID", "number", "INVALID", false)
     end
 
+  fun val icon(): String =>
+    "timer"
+
   fun val name(): String =>
     "timing/Interval"
 

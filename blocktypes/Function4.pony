@@ -188,15 +188,17 @@ class val Function4BlockDescriptor is BlockTypeDescriptor
   let _in4:InputDescriptor
   let _out:OutputDescriptor
   let _name:String
+  let _icon:String
   let _description:String
 
-  new val create(blockname:String, block_description:String,
+  new val create(blockname:String, icon':String, block_description:String,
                  outdescr:String, output_type:String,
                  name1:String, type1:String, descr1:String,
                  name2:String, type2:String, descr2:String,
                  name3:String, type3:String, descr3:String,
                  name4:String, type4:String, descr4:String ) =>
       _name = blockname
+      _icon = icon'
       _description = block_description
       _in1 = InputDescriptor(name1, type1, descr1, false )
       _in2 = InputDescriptor(name2, type2, descr2, false )
@@ -240,6 +242,9 @@ class val Function4BlockDescriptor is BlockTypeDescriptor
   fun val name(): String =>
     _name
 
+  fun val icon(): String =>
+    _icon
+
   fun val description(): String =>
     _description
 
@@ -256,7 +261,7 @@ class val Function4BlockDescriptor is BlockTypeDescriptor
       + ("name", name() )
       + ("description", description() )
       + ("subgraph", false )
-      + ("icon", "plus" )
+      + ("icon", icon() )
       + ("inPorts", inps)
       + ("outPorts", outps )
 
@@ -264,10 +269,10 @@ class val Function4BlockFactory is BlockFactory
   let _descriptor: Function4BlockDescriptor val
   let _function:Function4
 
-  new val create( blockname:String, block_description:String, fn:Function4 ) =>
+  new val create( blockname:String, icon':String, block_description:String, fn:Function4 ) =>
     _function = fn
     _descriptor = recover
-      Function4BlockDescriptor(blockname, block_description,
+      Function4BlockDescriptor(blockname, icon', block_description,
                                "output of function", "number",
                                "in1", "number", "input1",
                                "in2", "number", "input2",
@@ -275,10 +280,10 @@ class val Function4BlockFactory is BlockFactory
                                "in4", "number", "input4" )
     end
 
-  new val typed( blockname:String, block_description:String, types:Array[String] val, fn:Function4 )? =>
+  new val typed( blockname:String, icon':String, block_description:String, types:Array[String] val, fn:Function4 )? =>
     _function = fn
     _descriptor = recover
-      Function4BlockDescriptor(blockname, block_description,
+      Function4BlockDescriptor(blockname, icon', block_description,
                                "output of function", types(0)?,
                                "in1", types(1)?, "input1",
                                "in2", types(2)?, "input2",
@@ -286,10 +291,10 @@ class val Function4BlockFactory is BlockFactory
                                "in4", types(4)?, "input4" )
     end
 
-  new val named( blockname:String, block_description:String, types:Array[String] val, names:Array[String] val, fn:Function4 )? =>
+  new val named( blockname:String, icon':String, block_description:String, types:Array[String] val, names:Array[String] val, fn:Function4 )? =>
     _function = fn
     _descriptor = recover
-      Function4BlockDescriptor(blockname, block_description,
+      Function4BlockDescriptor(blockname, icon', block_description,
                                "output of function", types(0)?,
                                names(0)?, types(1)?, "input1",
                                names(1)?, types(2)?, "input2",

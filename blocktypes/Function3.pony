@@ -164,14 +164,16 @@ class val Function3BlockDescriptor is BlockTypeDescriptor
   let _in3:InputDescriptor
   let _out:OutputDescriptor
   let _name:String
+  let _icon:String
   let _description:String
 
-  new val create(blockname:String, block_description:String,
+  new val create(blockname:String, icon':String, block_description:String,
                  outdescr:String, output_type:String,
                  name1:String, type1:String, descr1:String,
                  name2:String, type2:String, descr2:String,
                  name3:String, type3:String, descr3:String ) =>
       _name = blockname
+      _icon = icon'
       _description = block_description
       _in1 = InputDescriptor(name1, type1, descr1, false )
       _in2 = InputDescriptor(name2, type2, descr2, false )
@@ -211,6 +213,9 @@ class val Function3BlockDescriptor is BlockTypeDescriptor
   fun val name(): String =>
     _name
 
+  fun val icon(): String =>
+    _icon
+
   fun val description(): String =>
     _description
 
@@ -227,7 +232,7 @@ class val Function3BlockDescriptor is BlockTypeDescriptor
       + ("name", name() )
       + ("description", description() )
       + ("subgraph", false )
-      + ("icon", "plus" )
+      + ("icon", icon() )
       + ("inPorts", inps)
       + ("outPorts", outps )
 
@@ -235,30 +240,30 @@ class val Function3BlockFactory is BlockFactory
   let _descriptor: Function3BlockDescriptor val
   let _function:Function3
 
-  new val create( blockname:String, block_description:String, fn:Function3 ) =>
+  new val create( blockname:String, icon':String, block_description:String, fn:Function3 ) =>
     _function = fn
     _descriptor = recover
-      Function3BlockDescriptor(blockname, block_description,
+      Function3BlockDescriptor(blockname, icon', block_description,
                                "output of function", "number",
                                "in1", "number", "input1",
                                "in2", "number", "input2",
                                "in3", "number", "input3" )
     end
 
-  new val typed( blockname:String, block_description:String, types:Array[String] val, fn:Function3 )? =>
+  new val typed( blockname:String, icon':String, block_description:String, types:Array[String] val, fn:Function3 )? =>
     _function = fn
     _descriptor = recover
-      Function3BlockDescriptor(blockname, block_description,
+      Function3BlockDescriptor(blockname, icon', block_description,
                                "output of function", types(0)?,
                                "in1", types(1)?, "input1",
                                "in2", types(2)?, "input2",
                                "in3", types(3)?, "input3" )
     end
 
-  new val named( blockname:String, block_description:String, types:Array[String] val, names:Array[String] val, fn:Function3 )? =>
+  new val named( blockname:String, icon':String, block_description:String, types:Array[String] val, names:Array[String] val, fn:Function3 )? =>
     _function = fn
     _descriptor = recover
-      Function3BlockDescriptor(blockname, block_description,
+      Function3BlockDescriptor(blockname, icon', block_description,
                                "output of function", types(0)?,
                                names(0)?, types(1)?, "input1",
                                names(1)?, types(2)?, "input2",

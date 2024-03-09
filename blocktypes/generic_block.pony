@@ -191,10 +191,12 @@ class val GenericBlockTypeDescriptor is BlockTypeDescriptor
   let _inputs:Array[InputDescriptor] val
   let _outputs:Array[OutputDescriptor] val
   let _name:String val
+  let _icon:String val
   let _description:String val
 
-  new val create(name':String, description':String, inputs':Array[InputDescriptor] val, outputs':Array[OutputDescriptor] val ) =>
+  new val create(name':String, icon':String, description':String, inputs':Array[InputDescriptor] val, outputs':Array[OutputDescriptor] val ) =>
     _name = name'
+    _icon = icon'
     _description = description'
     _inputs = inputs'
     _outputs = outputs'
@@ -222,6 +224,9 @@ class val GenericBlockTypeDescriptor is BlockTypeDescriptor
   fun val name(): String =>
     _name
 
+  fun val icon(): String =>
+    _icon
+
   fun val description(): String =>
     _description
 
@@ -238,7 +243,7 @@ class val GenericBlockTypeDescriptor is BlockTypeDescriptor
       + ("name", name() )
       + ("description", description() )
       + ("subgraph", false )
-      + ("icon", "plus" )
+      + ("icon", icon() )
       + ("inPorts", inps)
       + ("outPorts", outps )
     json6
@@ -247,8 +252,8 @@ class val GenericBlockFactory is BlockFactory
   let _descriptor: BlockTypeDescriptor val
   let _algorithm:Algorithm
 
-  new val create(name':String, description':String, algo:Algorithm, inputs':Array[InputDescriptor] val, outputs':Array[OutputDescriptor] val) =>
-    _descriptor = GenericBlockTypeDescriptor(name', description', inputs', outputs')
+  new val create(name':String, icon':String, description':String, algo:Algorithm, inputs':Array[InputDescriptor] val, outputs':Array[OutputDescriptor] val) =>
+    _descriptor = GenericBlockTypeDescriptor(name', icon', description', inputs', outputs')
     _algorithm = algo
 
   fun create_block( instance_name: String, context:SystemContext val, x:I64, y:I64):Block =>

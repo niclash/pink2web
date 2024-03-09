@@ -35,6 +35,9 @@ class DummyDescriptor is BlockTypeDescriptor
   fun val name(): String =>
     "tests/dummy"
     
+  fun val icon(): String =>
+    "sentiment_dissatisfied"
+
   fun val description(): String =>
     "dummy block created when missing type information is found in json files."
     

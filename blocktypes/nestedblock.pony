@@ -24,25 +24,25 @@ actor NestedBlock is Block
   new create(name': String, descriptor': NestedBlockDescriptor val, blocktypes:BlockTypes, context:SystemContext, x:I64, y:I64 ) =>
     try
       for (blockname',blockfactory) in descriptor'.factories().pairs() do
-        let block:Block tag = blockfactory.create_block( blockname', context, x, y )
-        _blocks.add( blockname', block )
+        let block1:Block tag = blockfactory.create_block( blockname', context, x, y )
+        _blocks.add( blockname', block1 )
       end
 
       for inp in descriptor'.inputs().values() do
-        (let block', let inputname) = BlockName(inp.target)?
-        let target_block = _blocks(block')?
+        (let block2, let inputname) = BlockName(inp.target)?
+        let target_block = _blocks(block2)?
         _inputs.add(inp.name, (target_block, inputname ) )
       end
 
       for outp in descriptor'.outputs().values() do
-        (let block', let outputname) = BlockName(outp.source)?
-        let source_block = _blocks(block')?
+        (let block3, let outputname) = BlockName(outp.source)?
+        let source_block = _blocks(block3)?
         _outputs.add(outp.name, (source_block, outputname ) )
       end
 
       for init in descriptor'.initials().values() do
-        let block:Block = _blocks(init.target_blockname())?
-        block.update( init.target_input(), init.source() )
+        let block4:Block = _blocks(init.target_blockname())?
+        block4.update( init.target_input(), init.source() )
       end
 
       for (src,tgt) in descriptor'.edges().values() do
@@ -206,6 +206,7 @@ actor NestedBlockTypeBuilder
     ```json
     {
         "name": "Example Block",
+        "icon": "timelapse",
         "description": "Showcasing the nested block feature.",
         "blocks": [
           { "name":"Add1", "type": "Math/Add" },
@@ -232,6 +233,7 @@ actor NestedBlockTypeBuilder
     """
   var _blocks:Map[String val, BlockFactory] iso = recover Map[String val, BlockFactory] end
   var _name:String = ""
+  var _icon:String = ""
   var _description:String = ""
   var _inports:Array[InputDescriptor] val = recover Array[InputDescriptor] end
   var _outports:Array[OutputDescriptor] val = recover Array[OutputDescriptor] end
@@ -243,6 +245,7 @@ actor NestedBlockTypeBuilder
     try
       _blocktypes = blocktypes'
       _name = descriptor'("name") as String
+      _icon = descriptor'("icon") as String
       _description = descriptor'("description") as String
       _inports = _parse_inports(descriptor'("inports") as JArr)?
       _outports = _parse_outports(descriptor'("outports") as JArr)?
@@ -263,7 +266,7 @@ actor NestedBlockTypeBuilder
         Debug.err("ERROR!!!!")
       end
       let blocks = _blocks = recover Map[String val, BlockFactory] end
-      let blocktypedescriptor = NestedBlockDescriptor(_name, _description, _inports, _outports, _edges, _initials, consume blocks)
+      let blocktypedescriptor = NestedBlockDescriptor(_name, _icon, _description, _inports, _outports, _edges, _initials, consume blocks)
       let factory = NestedBlockFactory(blocktypedescriptor, _blocktypes as BlockTypes)
       (_blocktypes as BlockTypes).add_user_blocktype( factory )
     end
@@ -343,6 +346,7 @@ actor NestedBlockTypeBuilder
 
 class val NestedBlockDescriptor is BlockTypeDescriptor
   let _name:String val
+  let _icon:String val
   let _description:String val
   let _inports:Array[InputDescriptor val] val
   let _outports:Array[OutputDescriptor val] val
@@ -350,9 +354,10 @@ class val NestedBlockDescriptor is BlockTypeDescriptor
   let _initials:Array[InitialDescriptor val] val
   let _blocks:Map[String val, BlockFactory val] val
 
-  new val create( name':String val, description':String val, inports':Array[InputDescriptor val] val, outports':Array[OutputDescriptor val] val,
+  new val create( name':String val, icon':String, description':String val, inports':Array[InputDescriptor val] val, outports':Array[OutputDescriptor val] val,
                   edges':Array[(String,String)] val, initials':Array[InitialDescriptor val] val, blocks':Map[String val, BlockFactory val] val ) =>
     _name=name'
+    _icon=icon'
     _description=description'
     _inports=inports'
     _outports=outports'
@@ -368,6 +373,7 @@ class val NestedBlockDescriptor is BlockTypeDescriptor
   fun edges(): Array[(String,String)] val => _edges
   fun initials(): Array[InitialDescriptor val] val => _initials
   fun name(): String => _name
+  fun icon(): String => _icon
   fun description(): String => _description
 
 

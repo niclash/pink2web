@@ -1,3 +1,9 @@
+
+
+// THIS IS USING GoJS which is a commercial product and NOT open source licensed.
+//
+// Do not use.
+
 var $$$ = go.GraphObject.make;
 var viewModel;
 

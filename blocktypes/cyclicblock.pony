@@ -202,11 +202,13 @@ class val CyclicBlockTypeDescriptor is BlockTypeDescriptor
   let _inputs:Array[InputDescriptor] val
   let _outputs:Array[OutputDescriptor] val
   let _name:String val
+  let _icon:String val
   let _description:String val
   let _cycle_ms:U64
 
-  new val create(name':String, description':String, cycle_ms':U64, inputs':Array[InputDescriptor] val, outputs':Array[OutputDescriptor] val ) =>
+  new val create(name':String, icon':String, description':String, cycle_ms':U64, inputs':Array[InputDescriptor] val, outputs':Array[OutputDescriptor] val ) =>
     _name = name'
+    _icon = icon'
     _description = description'
     _inputs = inputs'
     _outputs = outputs'
@@ -238,6 +240,9 @@ class val CyclicBlockTypeDescriptor is BlockTypeDescriptor
   fun val name(): String =>
     _name
 
+  fun val icon(): String =>
+    _icon
+
   fun val description(): String =>
     _description
 
@@ -254,7 +259,7 @@ class val CyclicBlockTypeDescriptor is BlockTypeDescriptor
       + ("name", name() )
       + ("description", description() )
       + ("subgraph", false )
-      + ("icon", "plus" )
+      + ("icon", icon() )
       + ("inPorts", inps)
       + ("outPorts", outps )
     json6
@@ -263,8 +268,8 @@ class val CyclicBlockFactory is BlockFactory
   let _descriptor: CyclicBlockTypeDescriptor val
   let _algorithm:CyclicAlgorithm
 
-  new val create(name':String, description':String, algo:CyclicAlgorithm, cycle_ms':U64, inputs':Array[InputDescriptor] val, outputs':Array[OutputDescriptor] val) =>
-    _descriptor = CyclicBlockTypeDescriptor(name', description', cycle_ms', inputs', outputs')
+  new val create(name':String, icon':String, description':String, algo:CyclicAlgorithm, cycle_ms':U64, inputs':Array[InputDescriptor] val, outputs':Array[OutputDescriptor] val) =>
+    _descriptor = CyclicBlockTypeDescriptor(name', icon', description', cycle_ms', inputs', outputs')
     _algorithm = algo
 
   fun create_block( instance_name: String, context:SystemContext val, x:I64, y:I64):Block =>

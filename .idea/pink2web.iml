@@ -5,6 +5,7 @@
     <content url="file://$MODULE_DIR$">
       <excludeFolder url="file://$MODULE_DIR$/_corral" />
       <excludeFolder url="file://$MODULE_DIR$/_repos" />
+      <excludeFolder url="file://$MODULE_DIR$/ui" />
     </content>
     <orderEntry type="jdk" jdkName="17" jdkType="JavaSDK" />
     <orderEntry type="sourceFolder" forTests="false" />

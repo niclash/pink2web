@@ -5,8 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
   <title>Link2Web - Next Generation</title>
   <link href="/css/app.css" rel="stylesheet">
-  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.2.3/dist/css/bootstrap.min.css" rel="stylesheet"
-        integrity="sha384-rbsA2VBKQhggwzxH7pPCaAqO46MgnOM80zW1RWuH61DGLwZJEdK2Kadq2F9CUG65" crossorigin="anonymous">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" integrity="sha384-T3c6CoIi6uLrA9TneNEoa7RxnatzjcDSCmG1MXxSR1GAsXEV/Dwwykc2MPK8M2HN" crossorigin="anonymous">  <script src="https://unpkg.com/systemjs@6.14.1/dist/system.min.js"></script>
 </head>
 <body onload="initPink2Web()">
 <nav class="navbar bg-light">
@@ -18,7 +17,7 @@
     <span class="navbar-brand mb-0 h1">Support</span>
   </div>
 </nav>
-<div class="container-fluid h-100" id="editor">
+<div class="container-fluid h-100" id="graph-container">
   <div class="navbar navbar-light bg-light">
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#processes"
             aria-controls="processes" aria-expanded="true" aria-label="Toggle processes">
@@ -98,13 +97,8 @@
   </div>
 </div>
 
-
-<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.2.3/dist/js/bootstrap.bundle.min.js"
-        integrity="sha384-kenU1KFdBIe4zVF0s0G1M5b4hcpxyD9F7jL+jjXkk+Q2h455rYXK/7HAuoJl+0I4"
-        crossorigin="anonymous"></script>
 <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/vue/2.6.12/vue.min.js"></script>
-<script type="text/javascript" src="/js/go.js"></script>
-<script type="text/javascript" src="dragselection.js"></script>
+<script type="text/javascript" src="/js/maxgraph/index.js"></script>
 <script type="text/javascript" src="protocols/websocket.js"></script>
 <script type="text/javascript" src="protocols/component.js"></script>
 <script type="text/javascript" src="protocols/graph.js"></script>
@@ -112,6 +106,6 @@
 <script type="text/javascript" src="protocols/runtime.js"></script>
 <script type="text/javascript" src="protocols/trace.js"></script>
 <script type="text/javascript" src="protocols/protocols.js"></script>
-<script type="text/javascript" src="index.js"></script>
+<script src="editor.js" data-main="editor"></script> <!-- Change this line -->
 </body>
 </html>

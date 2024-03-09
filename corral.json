@@ -36,6 +36,10 @@
       "version": "main"
     },
     {
+      "locator": "github.com/ponylang/json.git",
+      "version": "main"
+    },
+    {
       "locator": "github.com/niclash/pony-uuid.git",
       "version": "master"
     }

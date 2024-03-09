@@ -1,5 +1,5 @@
 
-var protocols = {
+export const protocols = {
     network: network_protocol,
     component: component_protocol,
     graph: graph_protocol,
