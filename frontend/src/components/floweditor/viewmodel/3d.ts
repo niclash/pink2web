@@ -165,5 +165,6 @@ export async function createEditor(container: HTMLElement) {
 
   return {
     destroy: () => area.destroy(),
+    editor: editor,
   };
 }

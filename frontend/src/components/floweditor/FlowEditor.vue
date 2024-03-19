@@ -1,108 +1,124 @@
-<script lang="ts">
-import { defineComponent, onMounted, ref, getCurrentInstance } from 'vue';
-import { createEditor } from './viewmodel';
-import { websocket } from './protocols/websocket.js';
-import { graph_protocol } from './protocols/graph.js';
-import { runtime_protocol } from './protocols/runtime.js';
+<script lang="ts" setup>
 import Processes from "@/components/floweditor/Processes.vue";
 import Components from "@/components/floweditor/Components.vue";
+import {Connection} from "./protocols/websocket";
+import {onMounted, ref, watch} from "vue";
+import ReteEditor from "@/components/floweditor/ReteEditor.vue";
+import {vueModel} from "@/components/floweditor/model";
 
-export default defineComponent({
-  name: "FlowEditor",
-  components: { Components, Processes },
-  props: {
-    initialGraph: "",
-    initialSecret: "1234",
-    connection: Object,
-  },
-  methods: {
+const name = "FlowEditor";
+const components = {Components, Processes};
+const callbackMethods: Record<string, Function[]> = {};
 
-  },
-  setup(props) {
-    const componentsRef = ref(null);
-    const processesRef = ref(null);
-    const instance = getCurrentInstance();
-
-    onMounted(() => {
-
-      // Access refs directly from the component instance
-      componentsRef.value = instance.refs.Components;
-      processesRef.value = instance.refs.Processes;
-
-      setupWebSocketListener();
-      graph_protocol.currentGraph = instance.props.initialGraph;
-
-      // Call createEditor with componentsRef and processesRef if needed
-      createEditor(instance.refs.rete as HTMLElement, componentsRef, processesRef);
-    });
-
-    const onOpened = (conn: any) => {
-      props.connection = conn;
-      runtime_protocol.request_runtime(conn, instance.props.initialSecret);
-    };
-
-    const onClosed = () => {
-      console.log("WebSocket closed.");
-    };
-
-    const onError = () => {
-      console.log("WebSocket ERROR!");
-    };
-
-    const setupWebSocketListener = () => {
-      const callbackMethods = {};
-
-      const componentMethods = componentsRef.value; // Assuming componentsRef contains methods
-
-      const cMethodsToInclude = ['addComponent'];
-      cMethodsToInclude.forEach((methodName) => {
-        if (typeof componentMethods[methodName] === 'function') {
-          callbackMethods[methodName] = componentMethods[methodName].bind(componentMethods);
-        }
-      });
-
-      const processesMethods = processesRef.value; // Assuming componentsRef contains methods
-      const pMethodsToInclude = ['addGraph', 'removeGraph', 'findGraph'];
-      pMethodsToInclude.forEach((methodName) => {
-        if (typeof processesMethods[methodName] === 'function') {
-          callbackMethods[methodName] = processesMethods[methodName].bind(processesMethods);
-        }
-      });
-
-      websocket.init(callbackMethods, onOpened, onClosed, onError);
-    };
-
-    return {
-      setupWebSocketListener,
-    };
-  },
+const props = defineProps({
+  secret: {
+    type: String,
+    required: true
+  }
 });
+
+
+const openProcess = (processId: string) => {
+  console.log("openProcess(" + processId + ");");
+  vueModel.connection.value?.proto.graph.request_connect(processId);
+}
+
+const addComponent = (componentType: string) => {
+  console.log("addComponent(" + componentType + ");");
+
+}
+
+///// Startup code
+watch(() => props.secret, (newQ, oldQ) => {
+  if (props.secret !== "") {
+    vueModel.connection.value = new Connection(props.secret);
+    setupCallbackMethods();
+    vueModel.connection.value.setupListeners(callbackMethods);
+  }
+});
+
+const onOpened = (conn: Connection) => {
+  console.log("onOpened")
+  vueModel.connection.value = conn;
+  conn.proto.runtime.request_getruntime();
+};
+
+const onClosed = () => {
+  console.log("WebSocket closed.");
+  vueModel.connection.value = undefined;
+};
+
+const onError = () => {
+  console.log("WebSocket ERROR!");
+};
+// const allProtocolMethods = (conn: Connection): string[] => {
+//   let allNames: string[] = [];
+//   Object.keys(conn.proto.component.listeners).forEach( (method) => allNames.push(method) );
+//   Object.keys(conn.proto.graph.listeners).forEach( (method) => allNames.push(method) );
+//   Object.keys(conn.proto.network.listeners).forEach( (method) => allNames.push(method) );
+//   Object.keys(conn.proto.runtime.listeners).forEach( (method) => allNames.push(method) );
+//   Object.keys(conn.proto.trace.listeners).forEach( (method) => allNames.push(method) );
+//   console.log( allNames );
+//   return allNames;
+// };
+const comps = ref(null);
+const procs = ref(null);
+const editor = ref(null);
+
+const setupCallbackMethods = () => {
+  console.log("FlowEditor.setupCallbackMethods()");
+  // let conn = model.connection.value as Connection;
+  // const methodsToInclude = allProtocolMethods(conn);
+
+  addCallbackMethod('onOpened', onOpened);
+  addCallbackMethod('onClosed', onClosed);
+  addCallbackMethod('onError', onError);
+
+  const componentMethods: { callbacks: ((payload: any) => void)[] } = comps.value!;
+  const processesMethods: { callbacks: ((payload: any) => void)[] } = procs.value!;
+  const editorMethods: { callbacks: ((payload: any) => void)[] } = editor.value!;
+
+  componentMethods.callbacks.forEach((m) => {
+    let methodName = m.name;
+    addCallbackMethod(methodName, m);
+  });
+  processesMethods.callbacks.forEach((m) => {
+    let methodName = m.name;
+    addCallbackMethod(methodName, m);
+  });
+  editorMethods.callbacks.forEach((m) => {
+    let methodName = m.name;
+    addCallbackMethod(methodName, m);
+  });
+}
+const addCallbackMethod = (name: string, fn: (conn: Connection) => void) => {
+  if (!(name in callbackMethods)) {
+    callbackMethods[name] = [];
+  }
+  callbackMethods[name].push(fn);
+}
+
+onMounted(() => {
+  console.log("FlowEditor.mounted()");
+});
+/////
 </script>
+
+
 <template>
   <div class="container-fluid">
     <div class="row">
       <div class="col-auto">
-        <Processes ref="Processes">Processes!</Processes>
+        <Processes ref="procs" @onSelection="(processName:string) => {openProcess(processName)}">Processes!</Processes>
       </div>
       <div class="col-auto">
-        <Components ref="Components">Components!</Components>
+        <Components ref="comps" @onSelection="(compType:string) => {addComponent(compType)}">Components!</Components>
       </div>
-      <div class="col">
-        <main class="rete" ref="rete"></main>
-      </div>
+      <ReteEditor ref="editor"/>
     </div>
   </div>
 </template>
 
 <style scoped>
-.rete {
-  position: relative;
-  height: 90vh;
-  font-size: 1rem;
-  background: white;
-  border-radius: 1em;
-  text-align: left;
-  border: 3px solid #55b881;
-  line-height: 1;
-}
+
 </style>

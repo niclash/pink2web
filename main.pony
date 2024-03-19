@@ -96,6 +96,7 @@ actor Main
       OptionSpec.string("webdir", "Directory of web resources" where default' = "")
       OptionSpec.string("startpage", "Start page on the web server" where default' = "")
       OptionSpec.string("host", "Host interface to connect to" where default' = "0.0.0.0")
+      OptionSpec.string("secret", "The secret needed to connect" where default' = "1234")
       OptionSpec.i64("port", "Port number to listen on" where default' = 3568)
       OptionSpec.string_seq("load-driver", "Driver to be loaded.(may be used many times)")
     ],[
@@ -148,15 +149,16 @@ actor Main
     None
 
   fun _create_runtime_configuration( c: Command ): RuntimeConfiguration =>
+    let secret = c.option("secret").string()
     let host = c.option("host").string()
     let p = c.option("port")
     var port = p.i64().u32()
     // bug in cli, default port isn't working properly
     if port == 0 then port = 3568 end
     var path:String = c.option("webdir").string()
-    if path == "" then path = Path.cwd() + "/ui/src" end
+    if path == "" then path = Path.cwd() + "/frontend/src" end
     var startpage:String = c.option("startpage").string()
     if startpage == "" then startpage = "login" end
     let driversToLoad = c.option("load-driver").string_seq()
-    RuntimeConfiguration( host, port, path, startpage, driversToLoad )
+    RuntimeConfiguration( secret, host, port, path, startpage, driversToLoad )
 

@@ -1,0 +1,230 @@
+title: 'Runtime protocol'
+description: >-
+  When a client connects to a FBP procotol it may choose to discover the
+  capabilities and other information about the runtime.
+input:
+
+  getruntime:
+    id: 'input/getruntime'
+    description: >-
+      Request the information about the runtime. When receiving this message
+      the runtime should response with a runtime message.
+      If the runtime is currently running a graph and it is
+      able to speak the full Runtime protocol, it should follow up
+      with a ports message.
+    allOf:
+      - $ref: '#/shared/input_message'
+      - properties:
+          protocol:
+            enum: ['runtime']
+          command:
+            enum: ['getruntime']
+          payload:
+            required: []
+            properties:
+
+  packet:
+    id: 'input/packet'
+    description: >-
+      Runtimes that can be used as remote subgraphs (i.e. ones that have
+      reported supporting the protocol:runtime capability) need to be able to
+      receive and transmit information packets at their exposed ports.
+
+      These packets can be send from the client to the runtimes input ports, or from
+      runtimes output ports to the client.
+    allOf:
+      - $ref: '#/shared/input_message'
+      - properties:
+          protocol:
+            enum: ['runtime']
+          command:
+            enum: ['packet']
+          payload:
+            required: ['port', 'event', 'graph']
+            additionalProperties: false
+            properties:
+              port:
+                $ref: '#/shared/port_id'
+              event:
+                type: string
+                enum:
+                  - connect
+                  - begingroup
+                  - data
+                  - endgroup
+                  - disconnect
+                description: 'packet event'
+              type:
+                type: string
+                description: 'The basic datatype sent'
+                example: 'array'
+              schema:
+                type: string
+                format: uri
+                description: 'Link to JSON schema describing the format of the data'
+                example: 'https://example.net/schemas/person.json'
+              payload:
+                description: >-
+                  payload for the packet. Used only with begingroup
+                  (for group names) and data packets
+              graph: { $ref: '#/shared/graph_id' }
+
+output:
+  error:
+    id: 'output/error'
+    description: 'Error response to a command on runtime protocol'
+    allOf:
+      - $ref: '#/shared/output_message'
+      - properties:
+          protocol:
+            enum: ['runtime']
+          command:
+            enum: ['error']
+          payload:
+            required: ['message']
+            properties:
+              message:
+                type: 'string'
+                description: 'Error message describing what went wrong'
+
+  ports:
+    id: 'output/ports'
+    description: >-
+      Message sent by the runtime to signal its available ports. The runtime
+      is responsible for sending the up-to-date list of available ports back to
+      client whenever it changes.
+    allOf:
+      - $ref: '#/shared/output_message'
+      - properties:
+          protocol:
+            enum: ['runtime']
+          command:
+            enum: ['ports']
+          payload:
+            required: ['graph', 'inPorts', 'outPorts']
+            additionalProperties: false
+            properties:
+              inPorts:
+                description: 'list of input ports of the runtime'
+                $ref: '#/shared/port_definition'
+              outPorts:
+                description: 'list of output ports of the runtime'
+                $ref: '#/shared/port_definition'
+              graph: { $ref: '#/shared/graph_id' }
+
+  runtime:
+    id: 'output/runtime'
+    description: 'Response from the runtime to the getruntime request.'
+    allOf:
+      - $ref: '#/shared/output_message'
+      - properties:
+          protocol:
+            enum: ['runtime']
+          command:
+            enum: ['runtime']
+          payload:
+            required: ['version', 'capabilities', 'type']
+            additionalProperties: false
+            properties:
+              id:
+                type: string
+                description: 'unique runtime ID. Must be a UUID, version 4'
+                example: 'f18a4924-9d4f-414d-a37c-cd24b39bba10'
+              label:
+                description: 'Human-readable description of the runtime'
+                type: string
+              version:
+                description: >-
+                  version of the runtime protocol that the runtime supports
+                type: string
+                example: '0.6'
+              allCapabilities:
+                description: >-
+                  <a href='#capabilities'>capability strings</a> for things the runtime is able to do.
+                  May include things not permitted for this client.
+                $ref: '#/shared/capabilities'
+              capabilities:
+                description: >-
+                  <a href='#capabilities'>capability strings</a> for things the runtime is able to do for this client.
+                $ref: '#/shared/capabilities'
+              graph:
+                description: >-
+                  ID of the currently configured main graph running
+                  on the runtime, if any
+                type: string
+                example: 'service-main'
+                $ref: '#/shared/graph_id'
+              type:
+                description: 'type of the runtime'
+                type: string
+                example: 'microflo'
+              namespace:
+                description: >-
+                  Library namespace of the project running on the runtime,
+                  if any. Must match that of components belonging to the (top-level) of project.
+                type: string
+                example: 'my-project-foo'
+              repository:
+                description: >-
+                  Source-code repository URL of the project running on the runtime,
+                  if any
+                type: string
+                example: 'https://github.com/flowbased/fbp-protocol.git'
+              repositoryVersion:
+                description: >-
+                  Unique version identifier of the source code of the project,
+                  if known. The version should be available in @repository.
+                type: string
+                example: '0.6.3-8-g90edcfc'
+
+  packetsent:
+    id: 'output/packetsent'
+    description: Confirmation that a packet has been sent
+    allOf:
+      - $ref: '#/shared/output_message'
+      - properties:
+          protocol:
+            enum: ['runtime']
+          command:
+            enum: ['packetsent']
+          payload:
+            required: ['port', 'event', 'graph']
+            additionalProperties: false
+            properties:
+              port:
+                description: 'port name for the input port'
+                $ref: '#/shared/port_id'
+              event:
+                type: string
+                enum:
+                  - connect
+                  - begingroup
+                  - data
+                  - endgroup
+                  - disconnect
+                description: 'packet event'
+              type:
+                type: string
+                description: 'The basic datatype sent'
+                example: 'array'
+              schema:
+                type: string
+                format: uri
+                description: 'Link to JSON schema describing the format of the data'
+                example: 'https://example.net/schemas/person.json'
+              payload:
+                description: >-
+                  payload for the packet. Used only with begingroup
+                  (for group names) and data packets
+              graph: { $ref: '#/shared/graph_id' }
+
+  packet:
+    id: 'output/packet'
+    description: >-
+      Runtimes that can be used as remote subgraphs (i.e. ones that have
+      reported supporting the protocol:runtime capability) need to be able to
+      receive and transmit information packets at their exposed ports.
+
+      These packets can be send from the client to the runtimes input ports, or from
+      runtimes output ports to the client.
+    $ref: '#/runtime/input/packet'

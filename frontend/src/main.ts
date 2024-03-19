@@ -1,4 +1,5 @@
 import './assets/main.css'
+import './components/floweditor/model'
 
 import { createApp } from 'vue'
 import App from './App.vue'

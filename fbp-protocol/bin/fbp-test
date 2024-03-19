@@ -1,0 +1,36 @@
+#!/usr/bin/env node
+// vim: set filetype=javascript:
+
+// this is a simple wrapper around the mocha executable, with the test
+// files location automatically provided.
+
+var spawn = require('child_process').spawn,
+     path = require('path');
+// TODO: handle -h/--help
+var args = [
+  path.resolve(process.cwd(), './node_modules/.bin/_mocha'),
+  path.resolve(__dirname, '../test/*.js'),
+  '--reporter',
+  'spec'
+];
+args = args.concat(process.argv.slice(2));
+
+// code below is taken from the mocha executable:
+// (we use node as the first argument so that this works on windows)
+var proc = spawn(process.execPath, args, { stdio: 'inherit' });
+proc.on('exit', function (code, signal) {
+  process.on('exit', function(){
+    if (signal) {
+      process.kill(process.pid, signal);
+    } else {
+      process.exit(code);
+    }
+  });
+});
+
+// terminate children.
+process.on('SIGINT', function () {
+  proc.kill('SIGINT'); // calls runner.abort()
+  proc.kill('SIGTERM'); // if that didn't work, we're probably in an infinite loop, so make it die.
+  process.kill(process.pid, 'SIGINT');
+});

@@ -1,0 +1,294 @@
+$schema: 'http://json-schema.org/draft-04/schema#'
+title: 'Shared'
+description: 'Shared schema fragments'
+
+graph_id:
+  id: graph_id
+  description: Graph identifier the message targets
+  type: string
+
+node_id:
+  id: node_id
+  description: Node identifier in a graph
+  type: string
+  example: Repeat
+
+port_id:
+  id: port_id
+  description: Port identifier in a component or process
+  type: string
+  example: in
+
+input_message:
+  id: 'message'
+  description: 'protocol message sent by a client'
+  additionalProperties: false
+  required: ['protocol', 'command', 'payload']
+  properties:
+    protocol:
+      type: string
+      description: 'type of protocol'
+      example: 'graph'
+    command:
+      type: string
+      description: 'command to be executed'
+      example: 'addnode'
+    payload:
+      type: object
+      description: 'content of message'
+      properties:
+    secret:
+      type: string
+      description: access token to authorize the client
+    requestId:
+      type: string
+      description: unique request identifier
+
+output_message:
+  id: 'message'
+  description: 'protocol message sent by a runtime'
+  additionalProperties: false
+  required: ['protocol', 'command', 'payload']
+  properties:
+    protocol:
+      type: string
+      description: 'type of protocol'
+      example: 'graph'
+    command:
+      type: string
+      description: 'command to be executed'
+      example: 'addnode'
+    payload:
+      type: object
+      description: 'content of message'
+    responseTo:
+      type: string
+      description: unique identifier of the request message is response to
+
+metadata_node:
+  id: 'metadata_node'
+  description: 'structure of key-value pairs for graph node metadata'
+  type: object
+  additionalProperties: true
+  required: []
+  properties:
+    x:
+      type: integer
+      description: "X coordinate of a graph entity"
+    y:
+      type: integer
+      description: "Y coordinate of a graph entity"
+
+metadata_edge:
+  id: 'metadata_edge'
+  description: 'structure of key-value pairs for graph edge metadata'
+  type: object
+  additionalProperties: true
+  required: []
+  properties:
+    route:
+      type: integer
+      description: "Route identifier of a graph entity"
+    schema:
+      type: string
+      format: "uri"
+      description: "JSON schema associated with a graph entity"
+    secure:
+      type: boolean
+      description: "Whether graph entity data should be treated as secure"
+
+metadata_group:
+  id: 'metadata_group'
+  description: 'structure of key-value pairs for graph group metadata'
+  type: object
+  additionalProperties: true
+  required: []
+  properties:
+    description:
+      type: string
+      description: "Longer textual description of the group"
+
+port:
+  id: 'port'
+  type: object
+  required: ['node', 'port']
+  additionalProperties: false
+  properties:
+    node:
+      $ref: '#/shared/node_id'
+    port:
+      $ref: '#/shared/port_id'
+    index:
+      type: ["string", "number"]
+      description: 'connection index, for addressable ports'
+
+port_definition:
+  id: 'port_definition'
+  type: array
+  items:
+    type: object
+    required: ['id', 'type']
+    additionalProperties: false
+    properties:
+      id:
+        $ref: '#/shared/port_id'
+      type:
+        description: 'port datatype'
+        type: string
+        example: boolean
+      schema:
+        type: string
+        format: uri
+        description: 'Link to JSON schema for data on this port'
+        example: 'https://example.net/schemas/person.json'
+      required:
+        description: >-
+          whether the port needs to be
+          connected for the component to work
+        type: boolean
+        example: true
+      addressable:
+        type: boolean
+        description: 'whether the port is an ArrayPort'
+        example: false
+      description:
+        type: string
+        description: 'textual description of the port'
+      values:
+        type: array
+        description: 'list of values accepted for the port'
+      default:
+        description: 'default value for the port'
+
+iip:
+  id: 'iip'
+  type: object
+  required: ['data']
+  additionalProperties: false
+  properties:
+    data:
+      description: 'IIP value in its actual data type'
+      type: [ "object", "array", 'string', 'number', 'integer', 'boolean', 'null' ]
+
+network_event:
+  id: 'network_event'
+  required: ['id', 'tgt', 'graph']
+  properties:
+    id:
+      type: 'string'
+      description: >-
+        textual edge identifier, usually in form of
+        a FBP language line
+    src:
+      description: 'source node for the edge'
+      $ref: '#/shared/port'
+    tgt:
+      description: 'target node for the edge'
+      $ref: '#/shared/port'
+    graph:
+      $ref: '#/shared/graph_id'
+    subgraph:
+      type: 'array'
+      description: >-
+        Subgraph identifier for the event.
+        An array of node IDs.
+      items:
+        $ref: '#/shared/node_id'
+
+capabilities:
+  id: 'capabilities'
+  type: array
+  items:
+    type: string
+    enums:
+      - 'protocol:network'
+      - 'network:persist'
+      - 'network:status'
+      - 'network:data'
+      - 'network:control'
+      - 'protocol:component'
+      - 'component:getsource'
+      - 'component:setsource'
+      - 'protocol:runtime'
+      - 'protocol:graph'
+      - 'graph:readonly'
+      - 'protocol:trace'
+    _enumDescriptions: # Documentation
+      - name: 'protocol:network'
+        description: >-
+          can control and introspect its running networks using the Network protocol.
+          DEPRECATED. Instead the individual network:... capabilities should be used.
+          Implies capabilities network:status, network:data, network:control.
+          Does not imply capability network:persist.
+        inputs: [network:start, network:getstatus, network:stop, network:debug, network:edges]
+        outputs: [network:stopped, network:started, network:status, network:output, network:error, network:processerror, network:icon, network:connect, network:begingroup, network:data, network:endgroup, network:disconnect, network:edges]
+
+      - name: 'network:persist'
+        description: >-
+          can *flash* a running graph setup to the runtime, making it persistent across restarts
+        inputs: [network:persist]
+        outputs: [network:persist, network:error]
+
+      - name: 'network:status'
+        description: >-
+          can get and follow changes to network status
+        inputs: ['network:getstatus']
+        outputs: ['network:status', 'network:started', 'network:stopped', 'network:error']
+
+      - name: 'network:data'
+        description: >-
+          can listen to data flowing through the network and processes
+        inputs: ['network:edges']
+        outputs: [network:edges, network:output, network:error,
+          network:data, network:begingroup, network:endgroup, network:connect, network:disconnect,
+          network:icon, network:processerror, network:error]
+
+      - name: 'network:control'
+        description: >-
+          can start and stop networks
+        inputs: ['network:start', 'network:stop', 'network:getstatus', 'network:debug']
+        outputs: ['network:started', 'network:stopped', 'network:status', 'network:error']
+
+      - name: 'protocol:component'
+        description: >-
+          can list components of the runtime using the component:list message.
+        inputs: ['component:list']
+        outputs: ['component:component', 'component:componentsready', 'component:error']
+
+      - name: 'component:getsource'
+        description: >-
+          read and send component source code back to client
+        inputs: ['component:getsource']
+        outputs: ['component:source', 'component:error']
+
+      - name: 'component:setsource'
+        description: >-
+          runtime is able to compile and run custom components
+          sent as source code strings
+        inputs: ['component:source']
+        outputs: ['component:component', 'component:error']
+
+      - name: 'protocol:runtime'
+        description: >-
+          can expose ports of main graph and transmit packet information to/from them
+        inputs: [runtime:packet]
+        outputs: [runtime:ports, runtime:packetsent, runtime:packet, runtime:error]
+
+      - name: 'graph:readonly'
+        description: >-
+          read and follow changes to runtime graphs (but not modify)
+        inputs: []
+        outputs: [graph:clear, graph:addnode, graph:removenode, graph:renamenode, graph:changenode, graph:addedge, graph:removeedge, graph:changeedge, graph:addinitial, graph:removeinitial, graph:addinport, graph:removeinport, graph:renameinport, graph:addoutport, graph:removeoutport, graph:renameoutport, graph:addgroup, graph:removegroup, graph:renamegroup, graph:changegroup]
+
+      - name: 'protocol:graph'
+        description: >-
+          read & modify runtime graphs using the Graph protocol.
+        inputs: [graph:clear, graph:addnode, graph:removenode, graph:renamenode, graph:changenode, graph:addedge, graph:removeedge, graph:changeedge, graph:addinitial, graph:removeinitial, graph:addinport, graph:removeinport, graph:renameinport, graph:addoutport, graph:removeoutport, graph:renameoutport, graph:addgroup, graph:removegroup, graph:renamegroup, graph:changegroup]
+        outputs: [graph:clear, graph:addnode, graph:removenode, graph:renamenode, graph:changenode, graph:addedge, graph:removeedge, graph:changeedge, graph:addinitial, graph:removeinitial, graph:addinport, graph:removeinport, graph:renameinport, graph:addoutport, graph:removeoutport, graph:renameoutport, graph:addgroup, graph:removegroup, graph:renamegroup, graph:changegroup, graph:error]
+
+      - name: 'protocol:trace'
+        description: >-
+          runtime is able to record and send over flowtraces,
+          used for retroactive debugging.
+        inputs: ['trace:start', trace:stop, trace:clear, trace:dump]
+        outputs: ['trace:start', trace:stop, trace:clear, trace:dump, trace:error]

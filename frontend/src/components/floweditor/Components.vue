@@ -21,9 +21,10 @@
             data-bs-parent="#componentsAccordion"
         >
           <div class="accordion-body container"> <!-- Apply container class here -->
-            <div v-for="component in components" :key="component.name">
-              <i class="material-icons">{{ component.icon }}</i><sup>{{ component.name }}</sup>
-            </div>
+            <button v-for="component in components" :key="component.name" @click="emit('onSelection', component.name)">
+              <!--<img :src="component.icon" alt="icon" />-->
+              {{ component.name }}
+            </button>
           </div>
         </div>
       </div>
@@ -31,74 +32,56 @@
   </div>
 </template>
 
-<script lang="ts">
-import { defineComponent, ref } from 'vue';
+<script lang="ts" setup>
+import {ComponentEvent} from "./protocols/component";
+import {componentTemplates, vueModel} from './model';
 
-class Port {
-  type: string;
-  id: string;
-  description: string;
-  addressable: boolean;
-}
+const name = "Components";
 
-class ComponentType {
-  description: string;
-  icon: string;
-  name: string;
-  subgraph: boolean;
-  inports: Port[];
-  outports: Port[];
-}
+// Protocol Callback methods
+const onComponentComponent = (payload: ComponentEvent) => {
+  console.log("Add component:", payload.name, payload.description, payload.inPorts, payload.outPorts);
+  vueModel.components.value.push(payload);
+  componentTemplates[payload.name] = payload;
+};
 
-export default defineComponent({
-  name: "Components",
-  setup() {
-    const componentCollection = ref<ComponentType[]>([
-    ]);
-
-    const groupComponents = () => {
-      const groups = {};
-      componentCollection.value.forEach(component => {
-        const [section, name] = component.name.split('/');
-        console.log("Niclas____", component.name, section, name);
-        if (!groups[section]) {
-          groups[section] = [];
-        }
-        groups[section].push({ ...component, name });
-      });
-      return groups;
-    };
-
-    const addComponent = (payload: ComponentType) => {
-      console.log("Add component:", payload);
-
-      // Update the collection
-      componentCollection.value.push(payload);
-
-      // Trigger a reactivity update by cloning the array
-      componentCollection.value = [...componentCollection.value];
-    };
-
-    const selectBlocks = () => {
-      // Add your logic for selecting blocks
-    };
-
-    const selectLinks = () => {
-      // Add your logic for selecting links
-    };
-
-    return {
-      groupComponents,
-      addComponent,
-      selectBlocks,
-      selectLinks,
-    };
-  },
-  async mounted() {
-    // editor.selectBlocks()
-  }
+defineExpose({
+  callbacks: [onComponentComponent]
 });
+
+//////////
+
+const selectBlocks = () => {
+  // Add your logic for selecting blocks
+};
+
+const selectLinks = () => {
+  // Add your logic for selecting links
+};
+
+const groupComponents = () => {
+  const groups: Record<string, ComponentEvent[]> = {};
+  vueModel.components.value.forEach(component => {
+    const [section, name] = component.name.split('/');
+    if (!groups[section]) {
+      groups[section] = [];
+    }
+    groups[section].push({...component, name});
+  });
+  return groups;
+};
+
+const emit = defineEmits<{
+  onSelection: [value: string]
+}>();
+
 </script>
 
 <style scoped>
+button {
+  border: 0;
+  font-size: small;
+  display: block;
+  background-color: transparent;
+}
 </style>

@@ -15,6 +15,7 @@ use "./runtime"
 
 class val Fbp 
   let _graphs:Graphs
+  let _secret:String
   let _runtime_protocol:RuntimeProtocol
   let _network_protocol:NetworkProtocol
   let _graph_protocol:GraphProtocol
@@ -23,8 +24,9 @@ class val Fbp
   let _context:SystemContext
   let _link_subscribers:SubscribersProxy
 
-  new val create( uuid:String, graphs:Graphs, blocktypes:BlockTypes, context:SystemContext) =>
+  new val create( uuid:String, secret:String, graphs:Graphs, blocktypes:BlockTypes, context:SystemContext) =>
     _graphs = graphs
+    _secret = secret
     _link_subscribers = SubscribersProxy(graphs)
     _context = context
     let label: String = "Pink2Web - flowbased programming engine written in Pony Language"
@@ -57,14 +59,17 @@ class val Fbp
       let protocol = jdoc("protocol") as String
       let command = jdoc("command") as String
       let payload = jdoc("payload") as JObj
-      match protocol
-      | "runtime" => _runtime_protocol.execute( conn, command, payload )
-      | "network" => _network_protocol.execute( conn, this, command, payload )
-      | "graph" => _graph_protocol.execute( conn, this, command, payload )
-      | "component" => _component_protocol.execute( conn, command, payload )
-      | "trace" => _trace_protocol.execute( conn, command, payload )
-      else
-        ErrorMessage( conn, None, "Unknown protocol: " +  protocol, true )
+      let secret = jdoc("secret") as String
+      if _secret == secret then
+        match protocol
+        | "runtime" => _runtime_protocol.execute( conn, command, payload )
+        | "network" => _network_protocol.execute( conn, this, command, payload )
+        | "graph" => _graph_protocol.execute( conn, this, command, payload )
+        | "component" => _component_protocol.execute( conn, command, payload )
+        | "trace" => _trace_protocol.execute( conn, command, payload )
+        else
+          ErrorMessage( conn, None, "Unknown protocol: " +  protocol, true )
+        end
       end
     else
       ErrorMessage( conn, None, "Badly formatted request: " + text, true )

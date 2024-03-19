@@ -25,9 +25,9 @@ use "../network"
       {
         "route":1
       },
-      "graph":"main",
-      "secret":"1234"
-    }
+      "graph":"main"
+    },
+    "secret":"12346"
   }
 */
 class ChangeEdgeMessage

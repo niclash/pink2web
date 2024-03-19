@@ -27,3 +27,4 @@ trait val GraphNotify is Equatable[GraphNotify]
   fun stopped(graphid: String, time_started:PosixDate val, uptime:I64, started':Bool, running:Bool, debug:Bool)
   
   fun status(graphid: String, name':String, descr':String, uptime:I64, started':Bool, running:Bool, debug:Bool )
+

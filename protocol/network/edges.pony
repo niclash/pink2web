@@ -28,8 +28,8 @@ use ".."
         }
       }
     ],
-    "secret":"1234"
-  }
+  },
+  "secret":"12345"
 }
 */
 
@@ -70,5 +70,5 @@ primitive EdgesMessage
     end
 
   fun reply( connection: WebSocketSender, payload: JObj ) =>
-    connection.send_text( Message( "network", "edges", payload + ("secret", NotSet) ).string() )
+    connection.send_text( Message( "network", "edges", payload ).string() )
 

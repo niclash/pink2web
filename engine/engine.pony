@@ -23,7 +23,8 @@ class RuntimeEngine
     _graphs = Graphs( blocktypes, context )
     let host = config.host
     let port = config.port
-    let fbp = Fbp("619362b3-1aee-4dca-b109-bef38e0e1ca8", _graphs, blocktypes, context)
+    let secret = config.secret
+    let fbp = Fbp("619362b3-1aee-4dca-b109-bef38e0e1ca8", secret, _graphs, blocktypes, context)
     let ws_port:String val = (port+1).string()
 
     let tcplauth: TCPListenAuth = TCPListenAuth(context.auth())
