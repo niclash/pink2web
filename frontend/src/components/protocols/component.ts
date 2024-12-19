@@ -1,7 +1,7 @@
 // noinspection JSUnusedGlobalSymbols
 
-import {Connection} from "@/components/floweditor/protocols/websocket";
-import {Port} from "@/components/floweditor/protocols/protocols";
+import {Connection} from "@/components/protocols/websocket";
+import {Port} from "@/components/protocols/protocols";
 
 export interface ComponentsReadyEvent {}
 
@@ -28,12 +28,12 @@ export interface ComponentErrorEvent {
 }
 
 export class ComponentProtocol {
-    private connection: Connection;
     listeners: {
         onComponentComponent: Function[],
         onComponentsReady: Function[],
         onComponentError: Function[],
     };
+    private connection: Connection;
 
     constructor(connection: Connection) {
         this.connection = connection;
@@ -42,6 +42,13 @@ export class ComponentProtocol {
             onComponentsReady: [],
             onComponentError: [],
         };
+    }
+
+    addListener( method: keyof ComponentProtocol['listeners'], listener: Function ): void {
+        if (!this.listeners[method]) {
+            this.listeners[method] = [];
+        }
+        this.listeners[method].push(listener);
     }
 
     addListeners( protocolListeners: Record<string, Function[]> ): void {

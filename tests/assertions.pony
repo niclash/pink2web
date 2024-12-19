@@ -93,7 +93,7 @@ actor Assertion is Block
   be name( promise: Promise[String] tag ) =>
     promise(_name)
 
-  be change( x:I64, y:I64 ) =>
+  be change( x:F64, y:F64 ) =>
     None
     
   be update(input: String, new_value: (String|I64|F64|Metric|Bool)) =>
@@ -206,7 +206,7 @@ class val AssertionFactory is BlockFactory
   fun val block_type_descriptor() : BlockTypeDescriptor val^ =>
     _descriptor
 
-  fun create_block( instance_name: String, context:SystemContext val, x:I64, y:I64):Block =>
+  fun create_block( instance_name: String, context:SystemContext val, x:F64, y:F64):Block =>
     context(Fine) and context.log(Fine, "create Assertion")
     Assertion( instance_name, _descriptor, context, helper )
 

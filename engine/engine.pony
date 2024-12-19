@@ -43,13 +43,9 @@ class RuntimeEngine
     end
 
     context(Info) and context.log(Info, "Drivers available " )
-    let p2 = Promise[Array[String val] val]
-    p2.next[None]( { (drivers) =>
-      for driver in drivers.values() do
+    for driver in drivers.available().values() do
         context.log( Info, "  " + driver )
-      end
-    })
-    drivers.available(p2)
+    end
     drivers.start()
 
   fun load_graph(filename:String) =>

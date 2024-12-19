@@ -3,7 +3,7 @@ use "metric"
 use "raspi"
 use "../../blocktypes"
 
-class val GpioInputAlgorithm is CyclicAlgorithm
+class val RaspiGpioInputAlgorithm is CyclicAlgorithm
   fun val apply( block:CyclicBlock, inputs:Map[String,(String|I64|F64|Metric|Bool)] val, now:U64, last:U64 ) =>
     try
       let pin = inputs("pin")? as I64
@@ -15,7 +15,7 @@ class val GpioInputAlgorithm is CyclicAlgorithm
       None
     end
 
-class val GpioOutputAlgorithm is Algorithm
+class val RaspiGpioOutputAlgorithm is Algorithm
   fun val apply( block:GenericBlock, inputs:Map[String,(String|I64|F64|Metric|Bool)] val ) =>
     try
       let pin = inputs("pin")? as I64

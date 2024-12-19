@@ -89,6 +89,7 @@ actor Loader
     graph.list_blocks(p)
 
   fun _parse_processes( graph: Graph, connections: JObj box ): Array[String] val =>
+    _context(Info) and _context.log( Info, "_parse_processes() of " + connections.string() )
     let names_to_waitfor:Array[String] iso = recover Array[String] end
     for name in connections.data.keys() do
       try
@@ -96,17 +97,17 @@ actor Loader
         let blocktype = component("component") as String
         let meta = try component("metadata") as JObj else JObj end
         
-        let x:I64 = if meta is None then 
-          50 
+        let x:(F64|I64) = if meta is None then
+          F64(50)
         else 
-          try meta("x") as I64 else 50 end 
+          try meta("x") as (F64|I64) else F64(20) end
         end
-        let y:I64 = if meta is None then 
-          50
+        let y:(F64|I64) = if meta is None then
+          F64(50)
         else 
-          try meta("y") as I64 else 50 end 
+          try meta("y") as (F64|I64) else F64(20) end
         end
-        graph.create_block( blocktype, name, x, y )
+        graph.create_block( blocktype, name, x.f64(), y.f64() )
         names_to_waitfor.push(name)
       else
         _context(Error) and _context.log( Error, "Component '" + name + "' has invalid structure." )

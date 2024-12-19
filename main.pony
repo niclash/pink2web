@@ -55,6 +55,14 @@ actor Main
             let blocktypes:BlockTypes = BlockTypes(context)
             match c.fullname()
             | "pink2web/list/types" => list_types(blocktypes, context)
+            | "pink2web/run/daemon" =>
+                let config = _create_runtime_configuration( c )
+                let engine = RuntimeEngine( config, blocktypes, context )
+                let filenames = _load_process_list(context)
+                for filename in filenames.values() do
+                  context(Fine) and context.log(Fine, "Starting graph " + filename)
+                  engine.load_graph(filename)
+                end
             | "pink2web/run/process" =>
                 let config = _create_runtime_configuration( c )
                 let engine = RuntimeEngine( config, blocktypes, context )
@@ -73,6 +81,23 @@ actor Main
           env.err.print(se.string())
           error
       end
+
+  fun _load_process_list(context':SystemContext):Array[String] =>
+    let result = Array[String]()
+    try
+      var file' = FilePath(FileAuth(context'.auth()), "/var/lib/pink2web/processes.json" )
+      if not file'.exists() then
+        file' = FilePath(FileAuth(context'.auth()), "./docs/processes.json" )
+      end
+      context'(Fine) and context'.log( Fine, "Loading processes from " + file'.path )
+      let content: String = Files.read_text_from_pathname(file'.path, FileAuth(context'.auth()))?
+      let root = JParse.from_string( content )? as JArr
+      for jobj in root.values() do
+        let name = jobj.string()
+        result.push(name)
+      end
+    end
+    result
 
   fun list_command() : CommandSpec ? =>
     CommandSpec.parent("list", "", [

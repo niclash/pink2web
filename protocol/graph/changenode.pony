@@ -11,8 +11,8 @@ primitive ChangeNodeMessage
     try
       let node = payload("id") as String
       let metadata = payload("metadata") as JObj
-      let x = metadata("x") as I64
-      let y = metadata("y") as I64
+      let x = (metadata("x") as (I64 | F64)).f64()
+      let y = (metadata("y") as (I64 | F64)).f64()
       let graph = payload("graph") as String
       let promise = Promise[ Graph ]
       promise.next[None]( { (graph: Graph) =>
@@ -23,7 +23,7 @@ primitive ChangeNodeMessage
       ErrorMessage( connection, None, "Invalid 'changenode' payload: " + payload.string(), true )
     end
 
-  fun reply( connection:WebSocketSender, graph:String, block:String, x:I64, y:I64 ) =>
+  fun reply( connection:WebSocketSender, graph:String, block:String, x:F64, y:F64 ) =>
     let meta = JObj
       + ("x", x )
       + ("y", y )

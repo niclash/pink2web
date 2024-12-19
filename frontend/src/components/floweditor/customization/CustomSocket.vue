@@ -15,7 +15,7 @@ export default {
 .socket {
   display: inline-block;
   cursor: pointer;
-  border: 1px solid grey;
+  border: 1px solid greenyellow;
   width: $socket-size;
   height: $socket-size * 2;
   vertical-align: middle;

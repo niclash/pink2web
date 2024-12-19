@@ -41,7 +41,7 @@ primitive AddNodeMessage
       ErrorMessage( connection, None, "Invalid 'addnode' payload: " + payload.string(), true )
     end
 
-  fun reply( connection: WebSocketSender, graph:String, block:String, component:String, x:I64, y:I64 ) =>
+  fun reply( connection: WebSocketSender, graph:String, block:String, component:String, x:F64, y:F64 ) =>
     let meta = JObj + ("x", x) + ("y", y)
     let json = JObj 
       + ("graph", graph)
@@ -58,11 +58,11 @@ primitive AddNodeMessage
       error
     end
     
-  fun _get_meta( meta': (JObj|None) ): (I64, I64) =>
+  fun _get_meta( meta': (JObj|None) ): (F64, F64) =>
     match meta'
     | let meta:None => (0,0)
     | let meta:JObj =>
-      let x = try meta("x") as I64 else 0 end
-      let y = try meta("y") as I64 else 0 end
+      let x = try meta("x") as F64 else 0 end
+      let y = try meta("y") as F64 else 0 end
       (x,y)
     end

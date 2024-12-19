@@ -1,0 +1,56 @@
+{
+  "version": "1",
+  "driver": "emulator",
+  "bindings": [
+    {
+      "process": {
+        "node": "block1",
+        "port": "in1"
+      },
+      "env": {
+        "port": "analog-in",
+        "index": 1
+      }
+    },
+    {
+      "process": {
+        "node": "block2",
+        "port": "in1"
+      },
+      "env": {
+        "port": "analog-in",
+        "index": 2
+      }
+    },
+    {
+      "process": {
+        "node": "block4",
+        "port": "in1"
+      },
+      "env": {
+        "port": "analog-in",
+        "index": 3
+      }
+    },
+    {
+      "process": {
+        "node": "block5",
+        "port": "in1"
+      },
+      "env": {
+        "port": "analog-in",
+        "index": 4
+      }
+    },
+    {
+      "process": {
+        "node": "block7",
+        "port": "in1"
+      },
+      "env": {
+        "port": "analog-out",
+        "index": 1
+      }
+    }
+  ]
+}

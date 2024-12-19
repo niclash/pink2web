@@ -1,4 +1,4 @@
-import {Connection} from "@/components/floweditor/protocols/websocket";
+import {Connection} from "@/components/protocols/websocket";
 
 export interface GetRuntimeCommand {
 }
@@ -94,6 +94,13 @@ export class RuntimeProtocol {
             onRuntime: [],
             onRuntimePacketSent: [],
         };
+    }
+
+    addListener( method: keyof RuntimeProtocol['listeners'], listener: Function ): void {
+        if (!this.listeners[method]) {
+            this.listeners[method] = [];
+        }
+        this.listeners[method].push(listener);
     }
 
     addListeners( protocolListeners: Record<string, Function[]> ): void {

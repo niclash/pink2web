@@ -2,8 +2,8 @@ use "collections"
 use "metric"
 use "../../system"
 
-actor Link2WebU485 is ExpansionCard
-  let _listeners:List[ExpansionCardListener] = List[ExpansionCardListener]
+actor ColibriPt1000 is ColibriExpansionCard
+  let _listeners:List[ColibriExpansionCardListener] = List[ColibriExpansionCardListener]
   let _context:SystemContext
   let _revision:U16
   let _slot:U8
@@ -13,10 +13,10 @@ actor Link2WebU485 is ExpansionCard
     _context = context
     _revision = revision
 
-  be add_listener( listener:ExpansionCardListener ) =>
+  be add_listener( listener:ColibriExpansionCardListener ) =>
     _listeners.push( listener )
 
-  be remove_listener( listener':ExpansionCardListener ) =>
+  be remove_listener( listener':ColibriExpansionCardListener ) =>
     for listener in _listeners.nodes() do
       try
         if listener()? is listener' then
@@ -32,5 +32,5 @@ actor Link2WebU485 is ExpansionCard
     end
 
   fun _update(): (String|I64|F64|Metric|Bool) =>
-    ""
+    F64(0)
 

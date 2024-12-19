@@ -68,7 +68,7 @@ primitive Link2WebExpansionFactory
         | 7 => None // Link2WebLora(slot,data,context) never got produced
         | 8 => driver.register( slot, Link2WebRtd(slot,revision,data,context))
         | 9 => driver.register( slot, Link2WebDi(slot,revision,data,context))
-        | 10 => driver.register( slot, Link2WebU485(slot,revision,data,context))
+        | 10 => None // driver.register( slot, Link2WebU485(slot,revision,data,context))
         end
       end
     else

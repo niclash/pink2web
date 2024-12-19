@@ -94,7 +94,7 @@ actor Graph
     _graphs._added_block(_descriptor.id, name', blocktype.name(), 0, 0)
     _context(Fine) and _context.log(Fine, "Available Blocks: " + _available_blocks() )
 
-  be create_block(block_type: String, name': String, x:I64, y:I64) =>
+  be create_block(block_type: String, name': String, x:F64, y:F64) =>
     _context(Info) and _context.log(Info, "create_block " + name' + " of type " + block_type )
     let promise = Promise[BlockFactory]
     let thiss:Graph tag = this
@@ -125,7 +125,7 @@ actor Graph
       _graphs.report_error( _descriptor.name, "graph", "Unknown Node: " + block' )
     end
   
-  be change_block( name':String, x:I64, y:I64 ) =>
+  be change_block( name':String, x:F64, y:F64 ) =>
     try
       let block = _blocks( name' )?
       block.change(x, y)

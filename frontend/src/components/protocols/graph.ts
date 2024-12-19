@@ -1,6 +1,7 @@
 // noinspection JSUnusedGlobalSymbols
 
 import {Connection} from "./websocket"
+import {Graph} from "@/components/model";
 
 export interface Endpoint {
     node: string;
@@ -225,6 +226,13 @@ export class GraphProtocol {
             onGraphChangeGroup: [],
         };
     }
+    addListener( method: keyof GraphProtocol['listeners'], listener: Function ): void {
+        if (!this.listeners[method]) {
+            this.listeners[method] = [];
+        }
+        this.listeners[method].push(listener);
+    }
+
 
     addListeners( protocolListeners: Record<string, Function[]> ): void {
         let list = this.listeners;

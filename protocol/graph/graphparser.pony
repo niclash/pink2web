@@ -20,6 +20,7 @@ class GraphParser
     _connection = connection
 
   fun apply(graph: JObj) =>
+    _context(Error) and _context.log(Info, "GraphParser.apply()")
     try
       let name = _get_property( graph, "name")?
       let id = _get_property( graph, "id")?
@@ -30,15 +31,38 @@ class GraphParser
       let blocks = graph("blocks") as JArr
       for b' in blocks.values() do
         let b = b' as JObj
-        let block_id = b("name") as String
-        let component = b("type") as String
-        AddNodeMessage.reply(_connection, id, block_id, component, 100, 100 )
+        (let block_id', let component', let x', let y') = _parseBlock(b)?
+        AddNodeMessage.reply(_connection, id, block_id', component', x'.f64(), y'.f64() )
       end
       let timer = Timer( _Pass2Notify.create(_connection, graph, _context), 500_000_000, 500_000_000)
       _context.timers(consume timer)
     else
       _context(Error) and _context.log(Error, "Unable to send the full 'runtime'")
     end
+
+  fun _parseBlock(b: JObj ): (String, String, F64, F64 )? =>
+    let block_id = try
+      b("name") as String
+    else
+      _context(Error) and _context.log(Error, "Can not parse block.name as a string.")
+      error
+    end
+    let component = try
+      b("type") as String
+    else
+      _context(Error) and _context.log(Error, "Can not parse block.type as a string.")
+      error
+    end
+    (let x, let y) = try
+      let metadata = b("metadata") as JObj
+      let x' = metadata("x") as (F64 | I64)
+      let y' = metadata("y") as (F64 | I64)
+      (x', y')
+    else
+      _context(Error) and _context.log(Error, "Unable to parse node json" + b.string())
+      (F64(10),F64(10))
+    end
+    (block_id, component, x.f64(), y.f64())
 
   fun _get_property( graph:JObj, prop:String): String ? =>
     try
@@ -47,6 +71,7 @@ class GraphParser
       ErrorMessage( _connection, None, "'getruntime' can't find: " + prop, true )
       error
     end
+
 
 class _Pass2Notify is TimerNotify
   let _graph:JObj

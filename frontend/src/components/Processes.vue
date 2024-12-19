@@ -10,12 +10,11 @@ h3 {
 </style>
 
 <script lang="ts" setup>
-import {Connection} from "@/components/floweditor/protocols/websocket";
-import {RuntimeEvent} from "@/components/floweditor/protocols/runtime";
+import {Connection} from "@/components/protocols/websocket";
+import {RuntimeEvent} from "@/components/protocols/runtime";
 import {ref} from "vue";
 import {Ref, UnwrapRef} from "@vue/reactivity";
 import {Graph, vueModel} from './model';
-import {editor} from "@/components/floweditor/viewmodel/default";
 
 const name = "Processes";
 

@@ -6,23 +6,27 @@
         <p>By logging in you agree to the ridiculously long terms that you didn't bother to read.</p>
       </div>
       <div id="form">
-        <form @submit.prevent="doLogin">
+<!--        <form @submit.prevent="doLogin">-->
           <label for="email">Email</label>
-          <input type="text" id="email" v-model="email" placeholder="elon@musk.io" autocomplete="off">
+          <input type="text" id="email" v-model="email" placeholder="" autocomplete="off">
 
           <label for="password">Password</label>&nbsp;
           <i class="fas" :class="[passwordFieldIcon]" @click="hidePassword = !hidePassword"></i>
-          <input :type="passwordFieldType" id="password" v-model="password" placeholder="**********">
+          <input :type="passwordFieldType" id="password" v-model="password" placeholder="">
 
-          <button type="submit">Log in</button>
-        </form>
+          <button type="button" @click="doLogin()">Log in</button>
+<!--        </form>-->
       </div>
     </div>
   </div>
 </template>
 
-<script setup>
+<script setup lang="ts">
 import { computed, ref } from "vue";
+
+const emit = defineEmits<{
+  login: [name: string, pass: string]
+}>();
 
 const email = ref("");
 const hidePassword = ref(true);
@@ -31,7 +35,9 @@ const password = ref("");
 const passwordFieldIcon = computed(() => hidePassword.value ? "fa-eye" : "fa-eye-slash");
 const passwordFieldType = computed(() => hidePassword.value ? "password" : "text");
 
-const doLogin = () => alert("Not implemented yet :O");
+const doLogin = () => {
+  emit('login', email.value, password.value);
+}
 </script>
 
 <style scoped>

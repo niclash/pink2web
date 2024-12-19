@@ -19,13 +19,13 @@ actor IntervalTimerBlock is Block
   let _context:SystemContext
   var timer: (Timer tag|None) = None
   var _started:Bool = false
-  var _x:I64
-  var _y:I64
+  var _x:F64
+  var _y:F64
   var _time_since_last_eventrate_update:I64 = PosixDate.time()
   var _eventcounter: I32 = 0
   var _eventrate: F32 = -1
 
-  new create(name': String, descriptor': BlockTypeDescriptor, context:SystemContext, x:I64, y:I64 ) =>
+  new create(name': String, descriptor': BlockTypeDescriptor, context:SystemContext, x:F64, y:F64 ) =>
     context(Fine) and context.log(Fine, "create("+name'+")")
     _context = context
     _name = name'
@@ -40,7 +40,7 @@ actor IntervalTimerBlock is Block
     _oneshot = InputImpl( _name, _descriptor.input(2) )
     _output = OutputImpl( _name, _descriptor.output(0) )
 
-  be change( x:I64, y:I64 ) =>
+  be change( x:F64, y:F64 ) =>
     _x = x
     _y = y
 
@@ -196,7 +196,7 @@ actor IntervalTimerBlock is Block
     promise(_descriptor)
 
   be describe( promise:Promise[JObj val] tag ) =>
-    BlockDescription(promise, _name, _descriptor.name(), _started, [_interval; _run'; _oneshot; _initial], [_output] )
+    BlockDescription(promise, _name, _descriptor.name(), _x, _y, _started, [_interval; _run'; _oneshot; _initial], [_output] )
 
   be subscribe_link( subscription:LinkSubscription ) =>
     match subscription.dest_port
@@ -281,7 +281,7 @@ class val IntervalTimerBlockFactory is BlockFactory
   fun val block_type_descriptor() : BlockTypeDescriptor val^ =>
     _descriptor
 
-  fun create_block( instance_name: String, context:SystemContext val, x:I64, y:I64):Block =>
+  fun create_block( instance_name: String, context:SystemContext val, x:F64, y:F64):Block =>
     context(Fine) and context.log(Fine, "create IntervalTimer")
     IntervalTimerBlock( instance_name, _descriptor, context, x, y )
 

@@ -15,13 +15,13 @@ actor NestedBlock is Block
   let _blocks: Map[String,Block] = Map[String,Block]
   let _context:SystemContext
   var _started:Bool = false
-  var _x:I64
-  var _y:I64
+  var _x:F64
+  var _y:F64
   var _time_since_last_eventrate_update:I64 = PosixDate.time()
   var _eventcounter: I32 = 0
   var _eventrate: F32 = -1
 
-  new create(name': String, descriptor': NestedBlockDescriptor val, blocktypes:BlockTypes, context:SystemContext, x:I64, y:I64 ) =>
+  new create(name': String, descriptor': NestedBlockDescriptor val, blocktypes:BlockTypes, context:SystemContext, x:F64, y:F64 ) =>
     try
       for (blockname',blockfactory) in descriptor'.factories().pairs() do
         let block1:Block tag = blockfactory.create_block( blockname', context, x, y )
@@ -59,7 +59,7 @@ actor NestedBlock is Block
     _y = y
     _context = context
 
-  be change( x:I64, y:I64 ) =>
+  be change( x:F64, y:F64 ) =>
     _x = x
     _y = y
 
@@ -167,7 +167,7 @@ actor NestedBlock is Block
     for outp in _descriptor.outputs().values() do
       outps.push( OutputImpl( _name, outp ) )
     end
-    BlockDescription(promise, _name, _descriptor.name(), _started, inps, outps )
+    BlockDescription(promise, _name, _descriptor.name(), _x, _y, _started, inps, outps )
 
   be subscribe_link( subscription:LinkSubscription ) =>
     for (n, sub) in _inputs.pairs() do
@@ -191,7 +191,7 @@ class val NestedBlockFactory is BlockFactory
     _descriptor = descriptor'
     _blocktypes = blocktypes'
 
-  fun create_block( instance_name': String, context:SystemContext val, x:I64, y:I64):Block =>
+  fun create_block( instance_name': String, context:SystemContext val, x:F64, y:F64):Block =>
     context(Fine) and context.log(Fine, "create " + instance_name')
     NestedBlock(instance_name', _descriptor, _blocktypes, context, x, y )
 

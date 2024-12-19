@@ -1,7 +1,7 @@
 // noinspection JSUnusedGlobalSymbols
 
-import {Connection} from "@/components/floweditor/protocols/websocket";
-import {Endpoint, Link} from "@/components/floweditor/protocols/graph";
+import {Connection} from "@/components/protocols/websocket";
+import {Endpoint, Link} from "@/components/protocols/graph";
 
 export interface StartCommand {
     graph: string;
@@ -152,6 +152,13 @@ export class NetworkProtocol {
             onNetworkData: [],
             onNetworkEndGroup: [],
         };
+    }
+
+    addListener( method: keyof NetworkProtocol['listeners'], listener: Function ): void {
+        if (!this.listeners[method]) {
+            this.listeners[method] = [];
+        }
+        this.listeners[method].push(listener);
     }
 
     addListeners( protocolListeners: Record<string, Function[]> ): void {

@@ -156,7 +156,7 @@ trait val BlockTypeDescriptor
       + ("outPorts", outps )
 
 primitive BlockDescription
-  fun apply(promise:Promise[JObj], name':String, type':String, started':Bool, inputs': Array[Input], outputs':Array[Output] ) =>
+  fun apply(promise:Promise[JObj], name':String, type':String, x':F64, y':F64, started':Bool, inputs': Array[Input], outputs':Array[Output] ) =>
     var inputs = JArr
     for inp in inputs'.values() do
       inputs = inputs + inp.describe()
@@ -172,6 +172,8 @@ primitive BlockDescription
             let json = JObj
             + ("name", name' )
             + ("type", type' )
+            + ("x", x' )
+            + ("y", y' )
             + ("started", started' )
             + ("inputs", inputs )
             + ("outputs", outputs )

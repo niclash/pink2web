@@ -1,9 +1,10 @@
-import {NetworkProtocol} from "@/components/floweditor/protocols/network";
-import {ComponentProtocol} from "@/components/floweditor/protocols/component";
-import {GraphProtocol} from "@/components/floweditor/protocols/graph";
-import {TraceProtocol} from "@/components/floweditor/protocols/trace";
-import {RuntimeProtocol} from "@/components/floweditor/protocols/runtime";
-import {Connection} from "@/components/floweditor/protocols/websocket";
+import {NetworkProtocol} from "@/components/protocols/network";
+import {ComponentProtocol} from "@/components/protocols/component";
+import {GraphProtocol} from "@/components/protocols/graph";
+import {TraceProtocol} from "@/components/protocols/trace";
+import {RuntimeProtocol} from "@/components/protocols/runtime";
+import {Connection} from "@/components/protocols/websocket";
+import {EnvironmentProtocol} from "@/components/protocols/environment";
 
 export interface Port {
     id: string;
@@ -23,18 +24,19 @@ export class Protocols {
     graph: GraphProtocol;
     runtime: RuntimeProtocol;
     trace: TraceProtocol;
+    environment: EnvironmentProtocol;
 
-    constructor(connection: Connection, secret: String) {
+    constructor(connection: Connection) {
         this.network = new NetworkProtocol(connection);
         this.component = new ComponentProtocol(connection);
         this.graph = new GraphProtocol(connection);
         this.runtime = new RuntimeProtocol(connection);
         this.trace = new TraceProtocol(connection);
+        this.environment = new EnvironmentProtocol(connection);
     }
 
     onMessage(protocol: string, command: string, payload: any) {
-        console.log("Protocols.onMessage()", payload);
-        let secret = payload.secret;
+        console.log("Protocols.onMessage()", protocol, command, payload);
         switch (protocol) {
             case "component":
                 this.component.execute(command, payload);
@@ -50,6 +52,9 @@ export class Protocols {
                 break;
             case "trace":
                 this.trace.execute(command, payload);
+                break;
+            case "environment":
+                this.environment.execute(command, payload);
                 break;
         }
         /*

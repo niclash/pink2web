@@ -110,7 +110,7 @@ actor Graphs
       s.err( type', message ) 
     end
     
-  be _added_block(graph: String, block:String, component:String, x:I64, y:I64) =>
+  be _added_block(graph: String, block:String, component:String, x:F64, y:F64) =>
     _context(Info) and _context.log(Info, "added block: " + graph + " : " + block + " : " + component + " : (" + x.string() + "," + y.string() + ")" )
     for s in _subscribers.values() do
       s.added_block( graph, block, component, x, y )
@@ -128,7 +128,7 @@ actor Graphs
       s.renamed_block( graph, from, to ) 
     end
 
-  be _changed_block(graph: String, block:String, x:I64, y:I64) =>
+  be _changed_block(graph: String, block:String, x:F64, y:F64) =>
     _context(Info) and _context.log(Info, "changed block: " + graph + " : " + block + " : (" + x.string() + "," + y.string() + ")" )
     for s in _subscribers.values() do
       s.changed_block( graph, block, x, y ) 

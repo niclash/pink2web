@@ -13,20 +13,40 @@ use "./graph"
 use "./network"
 use "./runtime"
 
-class val Fbp 
+
+// TODO, just a scaffold to have something operating for now. Need authentication/authorization added.
+class val Authorizer
+  let _secret: String
+
+  new create(secret: String) =>
+    _secret = secret
+
+  fun authorize(user:String, pass:String): String ? =>
+    if((user == "niclas") and (pass == "bfm2679")) then
+      return _secret
+    end
+    error
+
+  fun clearAuthorization() =>
+    None
+
+  fun isValid( secret:String ): Bool =>
+    secret == _secret
+
+class val Fbp
   let _graphs:Graphs
-  let _secret:String
+  let _authorizer:Authorizer
   let _runtime_protocol:RuntimeProtocol
   let _network_protocol:NetworkProtocol
   let _graph_protocol:GraphProtocol
   let _component_protocol:ComponentProtocol
   let _trace_protocol:TraceProtocol
+  let _environment_protocol:EnvironmentProtocol
   let _context:SystemContext
   let _link_subscribers:SubscribersProxy
 
   new val create( uuid:String, secret:String, graphs:Graphs, blocktypes:BlockTypes, context:SystemContext) =>
     _graphs = graphs
-    _secret = secret
     _link_subscribers = SubscribersProxy(graphs)
     _context = context
     let label: String = "Pink2Web - flowbased programming engine written in Pony Language"
@@ -47,11 +67,14 @@ class val Fbp
     let repository_version: String = ""
     let runtime = RuntimeMessage( uuid, label, version, all_capabilities, capabilities, type', namespace, repository, repository_version )
 
+    _authorizer = Authorizer(secret)
+
     _runtime_protocol = RuntimeProtocol(runtime, graphs, blocktypes, context)
     _network_protocol = NetworkProtocol.create(graphs)
     _graph_protocol = GraphProtocol.create(graphs, _context)
     _component_protocol = ComponentProtocol.create(blocktypes)
     _trace_protocol = TraceProtocol
+    _environment_protocol = EnvironmentProtocol(graphs, _authorizer)
 
   fun val execute( conn: WebSocketSender, text: String ) =>
     try
@@ -59,16 +82,22 @@ class val Fbp
       let protocol = jdoc("protocol") as String
       let command = jdoc("command") as String
       let payload = jdoc("payload") as JObj
-      let secret = jdoc("secret") as String
-      if _secret == secret then
-        match protocol
-        | "runtime" => _runtime_protocol.execute( conn, command, payload )
-        | "network" => _network_protocol.execute( conn, this, command, payload )
-        | "graph" => _graph_protocol.execute( conn, this, command, payload )
-        | "component" => _component_protocol.execute( conn, command, payload )
-        | "trace" => _trace_protocol.execute( conn, command, payload )
+      match protocol
+      | "environment" => _environment_protocol.execute( conn, command, payload )
+      else
+        let secret:String = jdoc("secret") as String
+        if _authorizer.isValid(secret) then
+          match protocol
+          | "runtime" => _runtime_protocol.execute( conn, command, payload )
+          | "network" => _network_protocol.execute( conn, this, command, payload )
+          | "graph" => _graph_protocol.execute( conn, this, command, payload )
+          | "component" => _component_protocol.execute( conn, command, payload )
+          | "trace" => _trace_protocol.execute( conn, command, payload )
+          else
+            ErrorMessage( conn, None, "Unknown protocol: " +  protocol, true )
+          end
         else
-          ErrorMessage( conn, None, "Unknown protocol: " +  protocol, true )
+          ErrorMessage( conn, None, "Invalid secret: " + secret, true )
         end
       end
     else
@@ -105,7 +134,7 @@ class val GraphFilterSubscription is GraphNotify
   fun err( type':String, message:String ) =>
     _underlying.err(type', message )
 
-  fun added_block( graph:String, block:String, component:String, x:I64, y:I64 ) =>
+  fun added_block( graph:String, block:String, component:String, x:F64, y:F64 ) =>
     if graph == _graphid then
       _underlying.added_block( graph, block, component, x, y )
     end
@@ -115,7 +144,7 @@ class val GraphFilterSubscription is GraphNotify
       _underlying.renamed_block( graph, from, to )
     end
 
-  fun changed_block( graph:String, block:String, x:I64, y:I64 ) =>
+  fun changed_block( graph:String, block:String, x:F64, y:F64 ) =>
     if graph == _graphid then
       _underlying.changed_block( graph, block, x, y )
     end
@@ -174,13 +203,13 @@ class val Subscription is GraphNotify
   fun err( type':String, message:String ) =>
     ErrorMessage(_connection, None, type' + ": " + message, true )
     
-  fun added_block( graph:String, block:String, component:String, x:I64, y:I64 ) =>
+  fun added_block( graph:String, block:String, component:String, x:F64, y:F64 ) =>
     AddNodeMessage.reply(_connection, graph, block, component, x, y )
   
   fun renamed_block( graph:String, from:String, to:String ) =>
     RenameNodeMessage.reply(_connection, graph, from, to )
 
-  fun changed_block( graph:String, block:String, x:I64, y:I64 ) =>
+  fun changed_block( graph:String, block:String, x:F64, y:F64 ) =>
     ChangeNodeMessage.reply(_connection, graph, block, x, y )
   
   fun removed_block( graph:String, block:String ) =>

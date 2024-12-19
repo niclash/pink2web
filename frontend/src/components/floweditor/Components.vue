@@ -33,8 +33,8 @@
 </template>
 
 <script lang="ts" setup>
-import {ComponentEvent} from "./protocols/component";
-import {componentTemplates, vueModel} from './model';
+import {ComponentEvent} from "@/components/protocols/component";
+import {componentTemplates, vueModel} from '../model';
 
 const name = "Components";
 

@@ -20,13 +20,13 @@ actor Function3Block is Block
   let _context:SystemContext
   let _function:Function3
   var _started:Bool = false
-  var _x:I64
-  var _y:I64
+  var _x:F64
+  var _y:F64
   var _time_since_last_eventrate_update:I64 = PosixDate.time()
   var _eventcounter: I32 = 0
   var _eventrate: F32 = -1
 
-  new create(name': String, descriptor': BlockTypeDescriptor, function':Function3, context:SystemContext, x:I64, y:I64 ) =>
+  new create(name': String, descriptor': BlockTypeDescriptor, function':Function3, context:SystemContext, x:F64, y:F64 ) =>
     context(Fine) and context.log(Fine, "create("+name'+")")
     _context = context
     _function = function'
@@ -40,7 +40,7 @@ actor Function3Block is Block
     _input3 = InputImpl( _name, _descriptor.input(2) )
     _output = OutputImpl( _name, _descriptor.output(0) )
 
-  be change( x:I64, y:I64 ) =>
+  be change( x:F64, y:F64 ) =>
     _x = x
     _y = y
 
@@ -140,7 +140,7 @@ actor Function3Block is Block
     promise(_descriptor)
 
   be describe( promise:Promise[JObj val] tag ) =>
-    BlockDescription(promise, _name, _descriptor.name(), _started, [_input1; _input2; _input3], [_output] )
+    BlockDescription(promise, _name, _descriptor.name(), _x, _y, _started, [_input1; _input2; _input3], [_output] )
 
   be subscribe_link( subscription:LinkSubscription ) =>
     match subscription.dest_port
@@ -274,7 +274,7 @@ class val Function3BlockFactory is BlockFactory
   fun val block_type_descriptor() : BlockTypeDescriptor val^ =>
     _descriptor
 
-  fun create_block( instance_name: String, context:SystemContext val, x:I64, y:I64):Block =>
+  fun create_block( instance_name: String, context:SystemContext val, x:F64, y:F64):Block =>
     context(Fine) and context.log(Fine, "create Add")
     Function3Block( instance_name, _descriptor, _function, context, x, y )
 

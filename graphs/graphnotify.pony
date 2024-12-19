@@ -6,11 +6,11 @@ trait val GraphNotify is Equatable[GraphNotify]
 
   fun err( type':String, message:String )
   
-  fun added_block(graphid:String, block:String, component:String, x:I64, y:I64)
+  fun added_block(graphid:String, block:String, component:String, x:F64, y:F64)
   
   fun renamed_block(graphid:String, from:String, to:String)
 
-  fun changed_block(graphid:String, block:String, x:I64, y:I64)
+  fun changed_block(graphid:String, block:String, x:F64, y:F64)
   
   fun removed_block(graphid:String, block:String)
 

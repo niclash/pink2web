@@ -1,10 +1,10 @@
 import {ClassicPreset as Classic, GetSchemes} from "rete";
-import {ComponentEvent} from "./protocols/component";
-import {Port} from "./protocols/protocols";
+import {ComponentEvent} from "@/components/protocols/component";
+import {Port} from "@/components/protocols/protocols";
 import {Ref, UnwrapRef} from "@vue/reactivity";
 import {ref} from "vue";
-import {Connection as WsConnection} from "@/components/floweditor/protocols/websocket";
-import {ClearEvent} from "@/components/floweditor/protocols/graph";
+import {Connection as WsConnection} from "@/components/protocols/websocket";
+import {ClearEvent} from "@/components/protocols/graph";
 
 const socket = new Classic.Socket('socket');
 
@@ -56,10 +56,10 @@ export class PrimitiveNode extends Classic.Node {
         let outHeight = outports.length * 32;
         this.height = 100 + (inHeight > outHeight ? inHeight : outHeight);
         for (let outport of outports) {
-            this.addOutput(outport.id, new Classic.Input(socket, outport.id, outport.addressable));
+            this.addOutput(outport.id, new Classic.Output(socket, outport.id));
         }
         for (let inport of inports) {
-            this.addInput(inport.id, new Classic.Input(socket, inport.id, inport.addressable));
+            this.addInput(inport.id, new Classic.Input(socket, inport.id ));
         }
     }
 }
@@ -68,7 +68,7 @@ export const vueModel: {
     graphs: Ref<UnwrapRef<Map<string, Graph>>>,
     currentGraph: ClearEvent,
     selectedNodes: Node[],
-    pipeDisabled: boolean,
+    pipesDisabled: boolean,
     components: Ref<UnwrapRef<ComponentEvent[]>>,
     selectedComponent: string,
     connection: Ref<UnwrapRef<WsConnection | undefined>>,
@@ -78,7 +78,7 @@ export const vueModel: {
     graphs: ref(new Map<string, Graph>()),
     currentGraph: {id: "", name: "", icon: "", description: "", library: "", main: false},
     components: ref([]),
-    pipeDisabled: false,
+    pipesDisabled: false,
     selectedNodes: [],
     connection: ref(undefined),
     selectedComponent: "",

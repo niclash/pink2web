@@ -3,7 +3,7 @@
 import {onMounted, ref} from "vue";
 import {createEditor} from './viewmodel';
 import {editor} from './viewmodel/default';
-import {componentTemplates, Connection, Node, PrimitiveNode, vueModel} from "./model";
+import {componentTemplates, Connection, Node, PrimitiveNode, vueModel} from "../model";
 import {
   AddEdgeEvent,
   AddGroupEvent,
@@ -14,7 +14,7 @@ import {
   ChangeEdgeEvent,
   ChangeGroupEvent,
   ChangeNodeEvent,
-  ClearEvent,
+  ClearEvent, GraphProtocol,
   RemoveEdgeEvent,
   RemoveGroupEvent,
   RemoveInitialEvent,
@@ -25,19 +25,25 @@ import {
   RenameInportEvent,
   RenameNodeEvent,
   RenameOutportEvent
-} from "./protocols/graph";
-import {Port} from "@/components/floweditor/protocols/protocols";
+} from "@/components/protocols/graph";
+import {Port} from "@/components/protocols/protocols";
+import {Position} from "rete-area-plugin/_types/types";
+import {ShapeUtils} from "three";
 
 const rete = ref<HTMLElement | null>(null);
 
 const startTransaction = (payload: any, skipGraphIdCheck: boolean = false) => {
-  vueModel.pipeDisabled = true;
+  console.log("Transaction { ");
   if (skipGraphIdCheck && vueModel.currentGraph.id !== payload.graph)   // try to ensure we don't get superfluous messages from old interactions, or from other users.
     throw 'invalid graph id';
+  vueModel.pipesDisabled = true;
 }
 
 const endTransaction = () => {
-  vueModel.pipeDisabled = false;
+  console.log("};");
+  vueModel.pipesDisabled = false;
+  let graph = vueModel.connection.value?.proto.graph;
+  graph?.addListener("onGraphAddNode", onGraphAddNode);
 };
 
 const findNodeByName = (name: string): Node | undefined => {
@@ -80,7 +86,13 @@ const onGraphAddNode = (payload: AddNodeEvent): void => {
   let inp: Port[] = cloneDescriptors(template.inPorts);
   let outp: Port[] = cloneDescriptors(template.outPorts);
   let node = new PrimitiveNode(payload.id, "", payload.component, inp, outp);
-  editor.addNode(node).finally(() => endTransaction());
+  editor.addNode(node).then((b) => {
+    console.log("Niclas___translate()");
+    return editor.area.translate(node.id, payload.metadata);
+  }).finally(() => {
+        endTransaction();
+      }
+  );
 };
 
 const onGraphRemoveNode = (payload: RemoveNodeEvent): void => {
@@ -103,8 +115,11 @@ const onGraphRenameNode = (payload: RenameNodeEvent): void => {
 
 const onGraphChangeNode = (payload: ChangeNodeEvent): void => {
   startTransaction(payload);
-
-  endTransaction();
+  let node = findNodeByName(payload.id);
+  if (node !== undefined)
+    editor.setPosition(node.id, payload.metadata as Position).then(() => endTransaction())
+  else
+    endTransaction();
 };
 
 const onGraphAddEdge = (p: AddEdgeEvent): void => {
@@ -145,20 +160,26 @@ const onGraphRemoveEdge = (payload: RemoveEdgeEvent): void => {
 
 const onGraphChangeEdge = (payload: ChangeEdgeEvent): void => {
   startTransaction(payload);
-
   endTransaction();
 };
 
 const onGraphAddInitial = (payload: AddInitialEvent): void => {
   startTransaction(payload);
-
-  endTransaction();
+  let tgtNode = findNodeByName(payload.tgt.node);
+  if (tgtNode !== undefined) {
+    editor.addInitial(payload.src.data, tgtNode, payload.tgt.port, payload.tgt.index).finally(() => endTransaction());
+  } else {
+    endTransaction();
+  }
 };
 
 const onGraphRemoveInitial = (payload: RemoveInitialEvent): void => {
   startTransaction(payload);
-
-  endTransaction();
+  let tgtNode = findNodeByName(payload.tgt.node);
+  if (tgtNode !== undefined)
+    editor.removeInitial(tgtNode, payload.tgt.port, payload.tgt.index).finally(() => endTransaction());
+  else
+    endTransaction();
 };
 
 const onGraphAddInport = (payload: AddInportEvent): void => {
@@ -216,8 +237,7 @@ const onGraphChangeGroup = (payload: ChangeGroupEvent): void => {
 };
 
 
-defineExpose({
-  callbacks: [
+  const callbacks = [
     onGraphClear,
     onGraphAddNode,
     onGraphRemoveNode,
@@ -238,19 +258,17 @@ defineExpose({
     onGraphRemoveGroup,
     onGraphRenameGroup,
     onGraphChangeGroup,
-  ]
-});
-
+];
 
 onMounted(() => {
   createEditor(rete.value!);
   setTimeout(() => {
     editor.addPipe((ctx) => {
       console.log("Context:", ctx);
-      let graphProtocol = vueModel.connection.value?.proto.graph;
-      if (vueModel.pipeDisabled) {
+      if (vueModel.pipesDisabled) {
         return ctx;
       }
+      let graphProtocol = vueModel.connection.value?.proto.graph;
       switch (ctx.type) {
         case 'nodecreate':
           let nodeName = vueModel.nextName();
@@ -261,22 +279,64 @@ onMounted(() => {
           graphProtocol?.request_removenode(ctx.data.label);
           return undefined;
         case 'connectioncreate':
-          let fromNode: string = editor.getNode(ctx.data.source).label;
+          let fromNode: string | undefined = editor.getNode(ctx.data.source)?.label;
           let fromPort: string = ctx.data.sourceOutput;
           let fromIndex: number = -1;
-          let toNode: string = editor.getNode(ctx.data.target).label;
+          let toNode: string | undefined = editor.getNode(ctx.data.target)?.label;
           let toPort: string = ctx.data.targetInput;
           let toIndex: number = -1;
+          if (fromNode === undefined || toNode === undefined)
+            return undefined;
           graphProtocol?.request_addedge(fromNode, toNode, fromPort, toPort, fromIndex, toIndex, {});
           return undefined;
         case 'connectionremove':
-          let srcNode = editor.getNode(ctx.data.source).label;
-          let tgtNode = editor.getNode(ctx.data.target).label;
+          let srcNode = editor.getNode(ctx.data.source)?.label;
+          let tgtNode = editor.getNode(ctx.data.target)?.label;
+          if (srcNode === undefined || tgtNode === undefined)
+            return undefined;
           graphProtocol?.request_removeedge(srcNode, tgtNode, ctx.data.sourceOutput, ctx.data.targetInput, -1, -1);
           return undefined;
       }
+      return ctx;
+    });
+    editor.area.addPipe((ctx) => {
+      let graphProtocol = vueModel.connection.value?.proto.graph;
+      if (vueModel.pipesDisabled) {
+        return ctx;
+      }
+      if (graphProtocol) {
+        // if( ctx.type !== "pointermove" && ctx.type.indexOf("render") == -1 )
+        //   console.log("Area Context:", ctx);
+        switch (ctx.type) {
+          case 'nodetranslate':
+            let node = editor.getNode(ctx.data.id);
+            if (node !== undefined) {
+              let nodeName = node.label;
+              graphProtocol.request_changenode(nodeName, ctx.data.position);
+            }
+            return undefined;
+          case 'nodetranslated':
+          case 'nodedragged':
+          case 'unmount':
+          case 'pointerup':
+          case 'pointermove':
+          case 'render':
+          case 'rendered':
+            return ctx;
+        }
+      }
+      return ctx;
     });
   }, 100);
+  let conn = vueModel.connection.value;
+  if( conn !== undefined)
+  {
+    let graph = conn.proto.graph;
+    callbacks.forEach( cb => {
+      let name = cb.name;
+      graph.addListener( name as keyof GraphProtocol['listeners'], cb)
+    });
+  }
 });
 
 </script>

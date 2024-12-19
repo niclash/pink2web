@@ -1,7 +1,9 @@
 /pink2web
 /_repos
 /_corral
-*.sh
+/build.sh
+/run.sh
+/line_count.sh
 *.o
 junk.*
 build

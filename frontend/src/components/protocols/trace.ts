@@ -1,4 +1,4 @@
-import {Connection} from "@/components/floweditor/protocols/websocket";
+import {Connection} from "@/components/protocols/websocket";
 
 export interface StartCommand {
     buffersize: number;
@@ -29,6 +29,13 @@ export class TraceProtocol {
     constructor(connection: Connection) {
         this.connection = connection;
         this.listeners = {};
+    }
+
+    addListener( method: keyof TraceProtocol['listeners'], listener: Function ): void {
+        if (!this.listeners[method]) {
+            this.listeners[method] = [];
+        }
+        this.listeners[method].push(listener);
     }
 
     addListeners( protocolListeners: Record<string, Function[]> ): void {
