@@ -1,18 +1,32 @@
-<style scoped>
-.list-group-item {
-  cursor: pointer;
-}
-
-h3 {
-  padding-top: 15px;
-  font-size: large;
-}
-</style>
+<template>
+  <div>
+    <button
+        class="btn btn-primary"
+        type="button"
+        data-bs-toggle="collapse"
+        data-bs-target="#processesCollapse"
+        aria-expanded="false"
+        aria-controls="processesCollapse"
+        @click="toggleCollapse"
+    >
+      ☰
+    </button>
+    <div class="collapse" :class="{ 'show': !view.isCollapsed }" id="processesCollapse">
+      <h3>Processes</h3>
+      <ul class="list-group">
+        <li v-for="[id, graph] in vueModel.graphs.value" :key="graph.graph" @click="$emit('onSelection', graph.graph)" class="list-group-item">
+          {{ graph.name }}
+        </li>
+      </ul>
+      <button class="btn-sm" type="button" @click="newProcess()">New...</button>
+    </div>
+  </div>
+</template>
 
 <script lang="ts" setup>
 import {Connection} from "@/components/protocols/websocket";
 import {RuntimeEvent} from "@/components/protocols/runtime";
-import {ref} from "vue";
+import {onMounted, ref} from "vue";
 import {Ref, UnwrapRef} from "@vue/reactivity";
 import {Graph, vueModel} from './model';
 
@@ -20,6 +34,11 @@ const name = "Processes";
 
 const view = {
   isCollapsed: ref(true),
+}
+
+const newProcess = () => {
+  console.log("newProcess()");
+
 }
 
 const model: { connection: Ref<UnwrapRef<undefined | Connection>> } = {
@@ -64,55 +83,45 @@ const selectProcess = (id: string) => {
 };
 
 ////  Protocol Callbacks
+
 const onRuntime = (runtime: RuntimeEvent) => {
   console.log("Processes.onRuntime", runtime, model);
   view.isCollapsed.value = false;
-  model.connection.value?.proto.graph.request_list_graphs();
-};
+}
+
+const onClosed = (connection: Connection): void => {
+  model.connection.value = undefined;
+}
 
 const onNetworkStatus = (payload: Graph) => {
   console.log("Process status:", payload);
   addGraphToProcessList(payload);
 }
 
-const onOpened = (connection: Connection): void => {
-  model.connection.value = connection;
-};
-
-const onClosed = (connection: Connection): void => {
-  model.connection.value = undefined;
-};
-
 defineExpose({
-  callbacks: [onRuntime, onNetworkStatus]
+  callbacks: [onRuntime]
 });
 
 const emit = defineEmits<{
   onSelection: [value: string] // named tuple syntax
 }>();
 
+onMounted(() => {
+  console.log("Processes.mounted()");
+  let proto = vueModel.connection.value?.proto;
+  proto?.runtime.addListener("onRuntime", onRuntime);
+  proto?.network.addListener("onNetworkStatus", onNetworkStatus);
+});
+
 </script>
 
-<template>
-  <div>
-    <button
-        class="btn btn-primary"
-        type="button"
-        data-bs-toggle="collapse"
-        data-bs-target="#processesCollapse"
-        aria-expanded="false"
-        aria-controls="processesCollapse"
-        @click="toggleCollapse"
-    >
-      ☰
-    </button>
-    <div class="collapse" :class="{ 'show': !view.isCollapsed }" id="processesCollapse">
-      <h3>Processes</h3>
-      <ul class="list-group">
-        <li v-for="[id, graph] in vueModel.graphs.value" :key="graph.graph" @click="$emit('onSelection', graph.graph)" class="list-group-item">
-          {{ graph.name }}
-        </li>
-      </ul>
-    </div>
-  </div>
-</template>
+<style scoped>
+.list-group-item {
+  cursor: pointer;
+}
+
+h3 {
+  padding-top: 15px;
+  font-size: large;
+}
+</style>

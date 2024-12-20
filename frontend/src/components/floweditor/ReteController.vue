@@ -14,7 +14,8 @@ import {
   ChangeEdgeEvent,
   ChangeGroupEvent,
   ChangeNodeEvent,
-  ClearEvent, GraphProtocol,
+  ClearEvent,
+  GraphProtocol,
   RemoveEdgeEvent,
   RemoveGroupEvent,
   RemoveInitialEvent,
@@ -28,7 +29,6 @@ import {
 } from "@/components/protocols/graph";
 import {Port} from "@/components/protocols/protocols";
 import {Position} from "rete-area-plugin/_types/types";
-import {ShapeUtils} from "three";
 
 const rete = ref<HTMLElement | null>(null);
 
@@ -82,17 +82,18 @@ const onGraphClear = (payload: ClearEvent): void => {
 
 const onGraphAddNode = (payload: AddNodeEvent): void => {
   startTransaction(payload);
-  let template = componentTemplates[payload.component];
-  let inp: Port[] = cloneDescriptors(template.inPorts);
-  let outp: Port[] = cloneDescriptors(template.outPorts);
-  let node = new PrimitiveNode(payload.id, "", payload.component, inp, outp);
-  editor.addNode(node).then((b) => {
-    console.log("Niclas___translate()");
-    return editor.area.translate(node.id, payload.metadata);
-  }).finally(() => {
-        endTransaction();
-      }
-  );
+  try {
+    let template = componentTemplates[payload.component];
+    let inp: Port[] = cloneDescriptors(template.inPorts);
+    let outp: Port[] = cloneDescriptors(template.outPorts);
+    let node = new PrimitiveNode(payload.id, "", payload.component, inp, outp);
+    editor.addNode(node).then((n) => {
+      console.log("Niclas___translate()", n);
+      return editor.area.translate(node.id, payload.metadata);
+    });
+  } finally {
+    endTransaction();
+  }
 };
 
 const onGraphRemoveNode = (payload: RemoveNodeEvent): void => {
@@ -237,27 +238,27 @@ const onGraphChangeGroup = (payload: ChangeGroupEvent): void => {
 };
 
 
-  const callbacks = [
-    onGraphClear,
-    onGraphAddNode,
-    onGraphRemoveNode,
-    onGraphRenameNode,
-    onGraphChangeNode,
-    onGraphAddEdge,
-    onGraphRemoveEdge,
-    onGraphChangeEdge,
-    onGraphAddInitial,
-    onGraphRemoveInitial,
-    onGraphAddInport,
-    onGraphRemoveInport,
-    onGraphRenameInport,
-    onGraphAddOutport,
-    onGraphRemoveOutport,
-    onGraphRenameOutport,
-    onGraphAddGroup,
-    onGraphRemoveGroup,
-    onGraphRenameGroup,
-    onGraphChangeGroup,
+const callbacks = [
+  onGraphClear,
+  onGraphAddNode,
+  onGraphRemoveNode,
+  onGraphRenameNode,
+  onGraphChangeNode,
+  onGraphAddEdge,
+  onGraphRemoveEdge,
+  onGraphChangeEdge,
+  onGraphAddInitial,
+  onGraphRemoveInitial,
+  onGraphAddInport,
+  onGraphRemoveInport,
+  onGraphRenameInport,
+  onGraphAddOutport,
+  onGraphRemoveOutport,
+  onGraphRenameOutport,
+  onGraphAddGroup,
+  onGraphRemoveGroup,
+  onGraphRenameGroup,
+  onGraphChangeGroup,
 ];
 
 onMounted(() => {
@@ -329,12 +330,11 @@ onMounted(() => {
     });
   }, 100);
   let conn = vueModel.connection.value;
-  if( conn !== undefined)
-  {
+  if (conn !== undefined) {
     let graph = conn.proto.graph;
-    callbacks.forEach( cb => {
+    callbacks.forEach(cb => {
       let name = cb.name;
-      graph.addListener( name as keyof GraphProtocol['listeners'], cb)
+      graph.addListener(name as keyof GraphProtocol['listeners'], cb)
     });
   }
 });

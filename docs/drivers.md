@@ -8,7 +8,7 @@ Only one driver can be loaded at a time.
 There are 3 runtime drivers planned;
 * emulator - webui and commandline controlled environment
 * raspi - Raspberry Pi driver, for Model 3 B+ and later.
-* colibri-7 - A Raspberry Pi with a refined I/O system.
+* colibri-7pi - A Raspberry Pi with a refined I/O system.
 * modbus-rtu - communications with modbus devices (PLC4X on Pony?) over RS-485
 * modbus-tcp - communications with modbus devices (PLC4X on Pony?) over TCP/IP
 

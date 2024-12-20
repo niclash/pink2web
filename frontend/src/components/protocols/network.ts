@@ -46,11 +46,13 @@ export interface StartedEvent {
 }
 
 export interface StatusEvent {
-    uptime: number;
     started: boolean;
+    description: string;
     running: boolean;
-    debug: boolean;
     graph: string;
+    debug: boolean;
+    uptime: number;
+    name: string;
 }
 
 enum OutputEventType { message, previewurl}
@@ -267,7 +269,7 @@ export class NetworkProtocol {
     status(payload: any) {
         console.log(payload);
         for (let fn of this.listeners.onNetworkStatus) {
-            fn(payload);
+            fn(payload as StatusEvent);
         }
     }
 

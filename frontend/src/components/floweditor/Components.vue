@@ -35,6 +35,7 @@
 <script lang="ts" setup>
 import {ComponentEvent} from "@/components/protocols/component";
 import {componentTemplates, vueModel} from '../model';
+import {onMounted} from "vue";
 
 const name = "Components";
 
@@ -46,10 +47,8 @@ const onComponentComponent = (payload: ComponentEvent) => {
 };
 
 defineExpose({
-  callbacks: [onComponentComponent]
+  callbacks: []
 });
-
-//////////
 
 const selectBlocks = () => {
   // Add your logic for selecting blocks
@@ -74,6 +73,12 @@ const groupComponents = () => {
 const emit = defineEmits<{
   onSelection: [value: string]
 }>();
+
+onMounted(() => {
+  console.log("FlowEditor.mounted()");
+  let proto = vueModel.connection.value?.proto;
+  proto?.component.addListener('onComponentComponent', onComponentComponent);
+});
 
 </script>
 

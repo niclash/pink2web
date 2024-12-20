@@ -10,7 +10,7 @@
           <label for="email">Email</label>
           <input type="text" id="email" v-model="email" placeholder="" autocomplete="off">
 
-          <label for="password">Password</label>&nbsp;
+          <label for="password">Password</label>
           <i class="fas" :class="[passwordFieldIcon]" @click="hidePassword = !hidePassword"></i>
           <input :type="passwordFieldType" id="password" v-model="password" placeholder="">
 
@@ -82,7 +82,7 @@ div#app div#login div#description p {
 div#app div#login div#description p {
   font-size: 0.8em;
   color: #95a5a6;
-  margin-top: 10px;
+  margin-top: 5px;
 }
 
 div#app div#login div#form {
@@ -106,9 +106,9 @@ div#app div#login div#form label {
 }
 
 div#app div#login div#form input {
-  background-color: transparent;
+  background-color: #95a5a6;
   border: none;
-  color: #ecf0f1;
+  color: #34495e;
   font-size: 1em;
   margin-bottom: 20px;
 }

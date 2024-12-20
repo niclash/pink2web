@@ -15,7 +15,7 @@ actor RestServer
     let tcplauth = TCPListenAuth(context.auth())
     let fileauth = FileAuth(context.auth())
     let jennet = Jennet(tcplauth, context.stdout(), host', port'.string())
-    jennet.get("/index.html", _RedirectTo(redirectTo) )
+    // jennet.get("/index.html", _RedirectTo(redirectTo) )
     jennet.post("/contacts", _ContactRequest(Path.cwd() + "/feedback.yaml", basedir + "/acknowledge.html", context) )
     jennet.get("/", _RedirectTo(redirectTo) )
 

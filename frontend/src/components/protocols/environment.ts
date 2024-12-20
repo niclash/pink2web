@@ -70,14 +70,14 @@ export class EnvironmentProtocol {
     onLogin(payload: any) {
         console.log("onLogin", JSON.stringify(payload));
         for (let fn of this.listeners.onLogin) {
-            fn(payload as OnLogin);
+            fn(this.connection, payload as OnLogin);
         }
     }
 
     onLogout(payload: any) {
         console.log("onLogout", JSON.stringify(payload));
         for (let fn of this.listeners.onLogout) {
-            fn(payload as OnLogout);
+            fn(this.connection, payload as OnLogout);
         }
     }
 }

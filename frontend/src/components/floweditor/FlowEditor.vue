@@ -1,10 +1,11 @@
 <script lang="ts" setup>
 import Processes from "@/components/Processes.vue";
 import Components from "@/components/floweditor/Components.vue";
-import {Connection, Packet} from "@/components/protocols/websocket";
+import {Connection as WsConnection, Connection, Packet} from "@/components/protocols/websocket";
 import {onMounted, ref, watch} from "vue";
 import ReteEditor from "@/components/floweditor/ReteController.vue";
 import {vueModel} from "@/components/model";
+import {RuntimeEvent} from "@/components/protocols/runtime";
 
 const name = "FlowEditor";
 const components = {Components, Processes};
@@ -31,6 +32,9 @@ const comps = ref(null);
 const procs = ref(null);
 const editor = ref(null);
 
+defineExpose({
+  callbacks: []
+});
 
 onMounted(() => {
   console.log("FlowEditor.mounted()");
