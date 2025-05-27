@@ -18,12 +18,11 @@ use "websocket"
 actor Main
 
   new create( env: Env ) =>
-    pi.RPi.wiringPiSetup()
     try
-      env.out.print( "CLI:" )
-      for arg in env.args.values() do
-        env.out.print( "  " + arg )
-      end
+//      env.out.print( "CLI:" )
+//      for arg in env.args.values() do
+//        env.out.print( "  " + arg )
+//      end
       handle_cli(env)?
     else
       env.err.print( "Can not handle command line." )
@@ -53,11 +52,12 @@ actor Main
             let basedir:String = c.option("basedir").string()
             let context:SystemContext = SystemContext(auth, env.out, env.err, level, FilePath(FileAuth(auth), basedir))
             let blocktypes:BlockTypes = BlockTypes(context)
+            let authorizer = Authorizer(_load_users(c, context)?, context)
             match c.fullname()
             | "pink2web/list/types" => list_types(blocktypes, context)
             | "pink2web/run/daemon" =>
                 let config = _create_runtime_configuration( c )
-                let engine = RuntimeEngine( config, blocktypes, context )
+                let engine = RuntimeEngine( config, authorizer, blocktypes, context )
                 let filenames = _load_process_list(context)
                 for filename in filenames.values() do
                   context(Fine) and context.log(Fine, "Starting graph " + filename)
@@ -65,7 +65,7 @@ actor Main
                 end
             | "pink2web/run/process" =>
                 let config = _create_runtime_configuration( c )
-                let engine = RuntimeEngine( config, blocktypes, context )
+                let engine = RuntimeEngine( config, authorizer, blocktypes, context )
                 let filenames = c.arg( "filenames" ).string()
                 for filename in filenames.split(":").values() do
                   context(Fine) and context.log(Fine, "Starting graph " + filename)
@@ -118,10 +118,11 @@ actor Main
     
   fun run_command() : CommandSpec ?=>
     CommandSpec.parent("run", "", [
+      OptionSpec.string("id", "Identity of the engine" where default' = "dev-1234")
       OptionSpec.string("webdir", "Directory of web resources" where default' = "")
       OptionSpec.string("startpage", "Start page on the web server" where default' = "")
       OptionSpec.string("host", "Host interface to connect to" where default' = "0.0.0.0")
-      OptionSpec.string("secret", "The secret needed to connect" where default' = "1234")
+      OptionSpec.string("users", "Name of file containing users and their passwords" where default' = "")
       OptionSpec.i64("port", "Port number to listen on" where default' = 3568)
       OptionSpec.string_seq("load-driver", "Driver to be loaded.(may be used many times)")
     ],[
@@ -174,7 +175,6 @@ actor Main
     None
 
   fun _create_runtime_configuration( c: Command ): RuntimeConfiguration =>
-    let secret = c.option("secret").string()
     let host = c.option("host").string()
     let p = c.option("port")
     var port = p.i64().u32()
@@ -185,5 +185,27 @@ actor Main
     var startpage:String = c.option("startpage").string()
     if startpage == "" then startpage = "login" end
     let driversToLoad = c.option("load-driver").string_seq()
-    RuntimeConfiguration( secret, host, port, path, startpage, driversToLoad )
+    var engine_id:String = c.option("id").string()
+    RuntimeConfiguration( engine_id, host, port, path, startpage, driversToLoad )
 
+  fun _load_users( c: Command, context: SystemContext ): Map[String,String] iso^ ? =>
+    var users:Map[String,String] iso = Map[String,String]
+    let users_file = c.option("users").string()
+    if users_file.size() > 0 then
+      let path = FilePath(FileAuth(context.auth()), users_file)
+      match OpenFile(path)
+      | let file: File =>
+        for line in file.lines() do
+          let split:Array[String] = line.split("=")
+          users(split(0)?) = split(1)?
+        end
+      else
+        context(Error) and context.log(Error, "Error opening users file '" + users_file + "'")
+      end
+    else
+      // TODO: Remove soon
+      users("niclas") = "123"
+      // Later FAIL here
+      // error
+    end
+    consume users

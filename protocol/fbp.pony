@@ -13,29 +13,8 @@ use "./graph"
 use "./network"
 use "./runtime"
 
-
-// TODO, just a scaffold to have something operating for now. Need authentication/authorization added.
-class val Authorizer
-  let _secret: String
-
-  new create(secret: String) =>
-    _secret = secret
-
-  fun authorize(user:String, pass:String): String ? =>
-    if((user == "niclas") and (pass == "bfm2679")) then
-      return _secret
-    end
-    error
-
-  fun clearAuthorization() =>
-    None
-
-  fun isValid( secret:String ): Bool =>
-    secret == _secret
-
 class val Fbp
   let _graphs:Graphs
-  let _authorizer:Authorizer
   let _runtime_protocol:RuntimeProtocol
   let _network_protocol:NetworkProtocol
   let _graph_protocol:GraphProtocol
@@ -45,7 +24,7 @@ class val Fbp
   let _context:SystemContext
   let _link_subscribers:SubscribersProxy
 
-  new val create( uuid:String, secret:String, graphs:Graphs, blocktypes:BlockTypes, context:SystemContext) =>
+  new val create( uuid:String, graphs:Graphs, blocktypes:BlockTypes, authorizer': Authorizer, context:SystemContext) =>
     _graphs = graphs
     _link_subscribers = SubscribersProxy(graphs)
     _context = context
@@ -67,14 +46,12 @@ class val Fbp
     let repository_version: String = ""
     let runtime = RuntimeMessage( uuid, label, version, all_capabilities, capabilities, type', namespace, repository, repository_version )
 
-    _authorizer = Authorizer(secret)
-
-    _runtime_protocol = RuntimeProtocol(runtime, graphs, blocktypes, context)
-    _network_protocol = NetworkProtocol.create(graphs)
-    _graph_protocol = GraphProtocol.create(graphs, _context)
-    _component_protocol = ComponentProtocol.create(blocktypes)
-    _trace_protocol = TraceProtocol
-    _environment_protocol = EnvironmentProtocol(graphs, _authorizer)
+    _runtime_protocol = RuntimeProtocol(runtime, graphs, blocktypes, context, authorizer')
+    _network_protocol = NetworkProtocol.create(graphs, authorizer')
+    _graph_protocol = GraphProtocol.create(graphs, _context, authorizer')
+    _component_protocol = ComponentProtocol.create(blocktypes, authorizer')
+    _trace_protocol = TraceProtocol(authorizer')
+    _environment_protocol = EnvironmentProtocol(graphs, authorizer')
 
   fun val execute( conn: WebSocketSender, text: String ) =>
     try
@@ -82,23 +59,16 @@ class val Fbp
       let protocol = jdoc("protocol") as String
       let command = jdoc("command") as String
       let payload = jdoc("payload") as JObj
+      let secret:String = jdoc("secret") as String
       match protocol
-      | "environment" => _environment_protocol.execute( conn, command, payload )
+      | "environment" => _environment_protocol.execute( conn, command, payload, secret )
+      | "runtime" => _runtime_protocol.execute( conn, command, payload, secret )
+      | "network" => _network_protocol.execute( conn, this, command, payload, secret )
+      | "graph" => _graph_protocol.execute( conn, this, command, payload, secret )
+      | "component" => _component_protocol.execute( conn, command, payload, secret )
+      | "trace" => _trace_protocol.execute( conn, command, payload, secret )
       else
-        let secret:String = jdoc("secret") as String
-        if _authorizer.isValid(secret) then
-          match protocol
-          | "runtime" => _runtime_protocol.execute( conn, command, payload )
-          | "network" => _network_protocol.execute( conn, this, command, payload )
-          | "graph" => _graph_protocol.execute( conn, this, command, payload )
-          | "component" => _component_protocol.execute( conn, command, payload )
-          | "trace" => _trace_protocol.execute( conn, command, payload )
-          else
-            ErrorMessage( conn, None, "Unknown protocol: " +  protocol, true )
-          end
-        else
-          ErrorMessage( conn, None, "Invalid secret: " + secret, true )
-        end
+        ErrorMessage( conn, None, "Unknown protocol: " +  protocol, true )
       end
     else
       ErrorMessage( conn, None, "Badly formatted request: " + text, true )

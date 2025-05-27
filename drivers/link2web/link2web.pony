@@ -15,6 +15,7 @@ actor Link2Web is Driver
   let _bus:I2CBus
 
   new create(context':SystemContext, blocktypes':BlockTypes) =>
+    RPi.wiringPiSetup()
     _context = context'
     _blocktypes = blocktypes'
     _bus = I2C.bus(0, FileAuth(context'.auth()) )

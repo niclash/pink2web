@@ -1,6 +1,5 @@
 #!/bin/bash
 
-
 rm -rf build
 if [ "$2." != "--no-frontend." ] ; then
   cd frontend

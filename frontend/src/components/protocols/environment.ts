@@ -49,7 +49,7 @@ export class EnvironmentProtocol {
     }
 
     request_login(user: string, password: string) {
-        this.connection.send_raw({
+        this.connection.send({
             protocol: "environment",
             command: "login",
             payload: {

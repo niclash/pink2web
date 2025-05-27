@@ -6,6 +6,7 @@ use "../protocol"
 use "../system"
 use "../web"
 
+use "collections"
 use "net"
 use "promises"
 use "websocket"
@@ -17,20 +18,19 @@ class RuntimeEngine
   var _rest: (RestServer|None) = None
   var _websocketListener: (WebSocketListener|None) = None
 
-  new create( config: RuntimeConfiguration, blocktypes:BlockTypes, context: SystemContext ) =>
+  new create( config: RuntimeConfiguration, authorizer: Authorizer, blocktypes:BlockTypes, context: SystemContext ) =>
     _context = context
     _blocktypes = blocktypes
     _graphs = Graphs( blocktypes, context )
     let host = config.host
     let port = config.port
-    let secret = config.secret
-    let fbp = Fbp("619362b3-1aee-4dca-b109-bef38e0e1ca8", secret, _graphs, blocktypes, context)
+    let fbp = Fbp(config.engine_id, _graphs, blocktypes, authorizer, context)
     let ws_port:String val = (port+1).string()
 
     let tcplauth: TCPListenAuth = TCPListenAuth(context.auth())
     _websocketListener = WebSocketListener(tcplauth,ListenNotify(fbp,context),host,ws_port)
-    context(Info) and context.log(Info, "Web directory:"+config.webdir)
-    context(Info) and context.log(Info, "Start Page:"+config.startpage)
+    context(Info) and context.log(Info, "Web directory: "+config.webdir)
+    context(Info) and context.log(Info, "Start Page: "+config.startpage)
     context(Info) and context.log(Info, "Started to listen: ws://"+host+":"+ws_port)
     _rest = RestServer(host, port, config.webdir, config.startpage, context )
 

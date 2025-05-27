@@ -59,7 +59,7 @@ class GraphParser
       let y' = metadata("y") as (F64 | I64)
       (x', y')
     else
-      _context(Error) and _context.log(Error, "Unable to parse node json" + b.string())
+      _context(Info) and _context.log(Info, "metadata/position is missing, setting default to 10,10" + b.string())
       (F64(10),F64(10))
     end
     (block_id, component, x.f64(), y.f64())

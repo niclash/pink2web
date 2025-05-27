@@ -169,14 +169,17 @@ primitive BlockDescription
             for out in result.values() do
               outputs = outputs + out
             end
+            let meta = JObj
+            + ("x", x' )
+            + ("y", y' )
+
             let json = JObj
             + ("name", name' )
             + ("type", type' )
-            + ("x", x' )
-            + ("y", y' )
             + ("started", started' )
             + ("inputs", inputs )
             + ("outputs", outputs )
+            + ("metadata", meta )
             promise( json )
         }
     )

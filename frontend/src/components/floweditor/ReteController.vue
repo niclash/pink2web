@@ -33,17 +33,15 @@ import {Position} from "rete-area-plugin/_types/types";
 const rete = ref<HTMLElement | null>(null);
 
 const startTransaction = (payload: any, skipGraphIdCheck: boolean = false) => {
-  console.log("Transaction { ");
-  if (skipGraphIdCheck && vueModel.currentGraph.id !== payload.graph)   // try to ensure we don't get superfluous messages from old interactions, or from other users.
+  if (!skipGraphIdCheck && vueModel.currentGraph.id !== payload.graph)   // try to ensure we don't get superfluous messages from old interactions, or from other users.
     throw 'invalid graph id';
+  console.log("Transaction { ");
   vueModel.pipesDisabled = true;
 }
 
 const endTransaction = () => {
-  console.log("};");
   vueModel.pipesDisabled = false;
-  let graph = vueModel.connection.value?.proto.graph;
-  graph?.addListener("onGraphAddNode", onGraphAddNode);
+  console.log("};");
 };
 
 const findNodeByName = (name: string): Node | undefined => {
@@ -81,6 +79,7 @@ const onGraphClear = (payload: ClearEvent): void => {
 };
 
 const onGraphAddNode = (payload: AddNodeEvent): void => {
+  console.log("NICLAS!!!")
   startTransaction(payload);
   try {
     let template = componentTemplates[payload.component];
@@ -265,7 +264,7 @@ onMounted(() => {
   createEditor(rete.value!);
   setTimeout(() => {
     editor.addPipe((ctx) => {
-      console.log("Context:", ctx);
+      console.log("Pipe Context:", vueModel.pipesDisabled, ctx);
       if (vueModel.pipesDisabled) {
         return ctx;
       }

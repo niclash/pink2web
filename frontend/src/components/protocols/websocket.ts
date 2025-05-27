@@ -95,14 +95,10 @@ export class Connection {
     }
 
     send(packet: Packet): void {
-        if (this.currentSecret === undefined) {
-            console.log("INTERNAL ERROR!!!", packet);
-        } else {
-            packet.secret = this.currentSecret;
-            let data = JSON.stringify(packet);
-            console.log("<==", data);
-            this.underlying?.send(data);
-        }
+        packet.secret = this.currentSecret ? this.currentSecret : "";
+        let data = JSON.stringify(packet);
+        console.log("<==", data);
+        this.underlying?.send(data);
     }
 
     addOpenedListener(listener: (conn: Connection, message: Event) => void) {
