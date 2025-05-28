@@ -1,9 +1,9 @@
 use "collections"
 use "files"
 use "metric"
+use "promises"
 use "raspi"
 use "time"
-use "../../blocktypes"
 use "../../system"
 use ".."
 
@@ -11,13 +11,11 @@ actor Link2Web is Driver
   let _multiplexer:Link2WebMultiplexer
   let _expansions:Map[U8, ExpansionCard] = Map[U8,ExpansionCard]
   let _context:SystemContext
-  let _blocktypes:BlockTypes
   let _bus:I2CBus
 
-  new create(context':SystemContext, blocktypes':BlockTypes) =>
+  new create(context':SystemContext) =>
     RPi.wiringPiSetup()
     _context = context'
-    _blocktypes = blocktypes'
     _bus = I2C.bus(0, FileAuth(context'.auth()) )
     _multiplexer = Link2WebMultiplexer(_bus, context')
 
@@ -50,6 +48,21 @@ actor Link2Web is Driver
 
   be register(slot:U8, expansion:ExpansionCard) =>
     _expansions(slot) = expansion
+
+  be get_physical_ports(promise: Promise[Array[PhysicalPortInfo val] val]) =>
+    None
+
+  be add_physical_port_config_listener(listener: PhysicalPortConfigListener) =>
+    None
+
+  be remove_physical_port_config_listener(listener: PhysicalPortConfigListener) =>
+    None
+
+  be add_physical_port_value_listener(listener: PhysicalPortValueListener) =>
+    None
+
+  be remove_physical_port_value_listener(listener: PhysicalPortValueListener) =>
+    None
 
 
 primitive Link2WebExpansionFactory

@@ -1,6 +1,6 @@
 use "../../graphs"
 
-use "ponytest"
+use "pony_test"
 
 actor Main is TestList
 

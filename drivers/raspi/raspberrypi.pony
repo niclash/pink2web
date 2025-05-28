@@ -1,29 +1,14 @@
 
 use "collections"
+use "promises"
 use "raspi"
-use "../../blocktypes"
-use gr = "../../graphs"
 use "../../system"
 use ".."
 
 actor RaspberryPi is Driver
 
-  new create(context':SystemContext, blocktypes':BlockTypes) =>
+  new create(context':SystemContext) =>
       RPi.wiringPiSetup()
-
-      blocktypes'.add_driver_blocktype( CyclicBlockFactory( "raspi/GpioIn", "", "Reads GPIO pin on the hardware",
-                                          RaspiGpioInputAlgorithm, 100,
-                                          [ gr.InputDescriptor( "pin", "number", "GPIO pin to read" ) ],
-                                          [ gr.OutputDescriptor( "out", "bool", "true when GPIO pin is HIGH, false otherwise" ) ]
-                                      ))
-
-      blocktypes'.add_driver_blocktype( GenericBlockFactory( "raspi/GpioOut", "", "Sets GPIO pin on the hardware",
-                                          RaspiGpioOutputAlgorithm,
-                                          [ gr.InputDescriptor( "pin", "number", "GPIO pin to read" )
-                                            gr.InputDescriptor( "in", "bool", "value to write to GPIO pin. true -> HIGH, false -> LOW" )
-                                          ],
-                                          []
-                                      ))
 
   be start() =>
     None
@@ -31,6 +16,18 @@ actor RaspberryPi is Driver
   be stop() =>
     None
 
-  fun _add_component(factory:gr.BlockFactory, types': Map[String,gr.BlockFactory]) =>
-    types'(factory.block_type_descriptor().name()) = factory
+  be get_physical_ports(promise: Promise[Array[PhysicalPortInfo val] val]) =>
+    None
+
+  be add_physical_port_config_listener(listener: PhysicalPortConfigListener) =>
+    None
+
+  be remove_physical_port_config_listener(listener: PhysicalPortConfigListener) =>
+    None
+
+  be add_physical_port_value_listener(listener: PhysicalPortValueListener) =>
+    None
+
+  be remove_physical_port_value_listener(listener: PhysicalPortValueListener) =>
+    None
 

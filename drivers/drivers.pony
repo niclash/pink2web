@@ -11,19 +11,17 @@ use "./raspi"
 class Drivers
   var _drivers:Map[String,Driver] = Map[String,Driver]()
   let _context:SystemContext
-  let _blocktypes:BlockTypes
 
-  new create(context':SystemContext, blocktypes':BlockTypes) =>
+  new create(context':SystemContext) =>
     _context = context'
-    _blocktypes = blocktypes'
 
   fun ref load( name:String ) =>
-    if name == "link2web" then _drivers(name) = Link2Web(_context, _blocktypes) end
-    if name == "colibri-7" then _drivers(name) = Colibri7(_context, _blocktypes) end
-    if name == "emulator" then _drivers(name) = Emulator(_context, _blocktypes) end
-    if name == "raspi" then _drivers(name) = RaspberryPi(_context, _blocktypes) end
-    if name == "modbus-tcp" then _drivers(name) = ModbusTcp(_context, _blocktypes) end
-    if name == "modbus-rtu" then _drivers(name) = ModbusRtu(_context, _blocktypes) end
+    if name == "link2web" then _drivers(name) = Link2Web(_context) end
+    if name == "colibri-7" then _drivers(name) = Colibri7(_context) end
+    if name == "emulator" then _drivers(name) = Emulator(_context) end
+    if name == "raspi" then _drivers(name) = RaspberryPi(_context) end
+    if name == "modbus-tcp" then _drivers(name) = ModbusTcp(_context) end
+    if name == "modbus-rtu" then _drivers(name) = ModbusRtu(_context) end
 
   fun start() =>
     for driver in _drivers.values() do
@@ -47,6 +45,18 @@ class Drivers
     result
 
 interface tag Driver
-  new tag create(context':SystemContext, blocktypes':BlockTypes)
+  new tag create(context':SystemContext)
   be start()
   be stop()
+  be get_physical_ports(promise: Promise[Array[PhysicalPortInfo val] val])
+  be add_physical_port_config_listener(listener: PhysicalPortConfigListener)
+  be remove_physical_port_config_listener(listener: PhysicalPortConfigListener)
+  be add_physical_port_value_listener(listener: PhysicalPortValueListener)
+  be remove_physical_port_value_listener(listener: PhysicalPortValueListener)
+
+interface tag PhysicalPortConfigListener
+  be ports_config_updated(ports: Array[PhysicalPortInfo val] val)
+
+interface tag PhysicalPortValueListener
+  be port_value_updated(port_id: String, value: Any val)
+

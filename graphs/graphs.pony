@@ -57,8 +57,11 @@ actor Graphs
     end
     promise( consume result )
 
-  be register_graph( id:String, name: String, graph: Graph ) =>
+  be create_graph( id:String, name: String, description:String, icon:String, graph: Graph ) =>
     _graphs_by_id(id) = graph
+    for s in _subscribers.values() do
+      s.created_graph(name, description, id, icon)
+    end
 
   be graph_by_id( id': String, promise: Promise[ Graph ] ) =>
     try
@@ -74,23 +77,23 @@ actor Graphs
       _context(Error) and _context.log(Error, "Graph with id " + id' + " doesn't exist\nAvailable graphs: " + consume graphs + "]" )
     end
     
-  be subscribe( notify:GraphNotify ) =>
+  be subscribe(notify:GraphNotify) =>
     _unsubscribe( notify )
     _subscribers.push(notify)
     Debug.out("SUBSCRIBE: subscribers:" + _subscribers.size().string() )
 
-  be unsubscribe( notify:GraphNotify ) =>
+  be unsubscribe(notify:GraphNotify) =>
     _unsubscribe( notify )
     Debug.out("UNSUBSCRIBE: subscribers:" + _subscribers.size().string() )
 
-  fun ref _unsubscribe( notify:GraphNotify ) =>
+  fun ref _unsubscribe(notify:GraphNotify) =>
     for node in _subscribers.nodes() do
       try if node()? == notify then
         node.remove()
       end end
     end
 
-  be subscribe_links( graph_id:String, subscriptions:Array[LinkSubscription] val) =>
+  be subscribe_links(graph_id:String, subscriptions:Array[LinkSubscription] val) =>
     try
       let graph = _graphs_by_id( graph_id )?
       graph.subscribe_links( subscriptions )
@@ -185,7 +188,7 @@ actor Graphs
 
   be new_graph( id:String, name:String, description:String, icon:String ) =>
     let graph = Graph( this, id, name, description, icon, _blocktypes, _context )
-    register_graph( id, name, graph )
+    create_graph( id, name, description, icon, graph )
 
   be delete_graph( id:String, name:String ) =>
     try
@@ -193,6 +196,9 @@ actor Graphs
       graph.stop()
       graph.destroy()
       _graphs_by_id.remove(id)?
+      for s in _subscribers.values() do
+        s.deleted_graph(id, name)
+      end
     else
       report_error( id, "graph", "Invalid 'id' of graph." )
     end

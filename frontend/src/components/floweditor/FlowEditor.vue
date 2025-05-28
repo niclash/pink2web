@@ -25,7 +25,8 @@ const openProcess = (processId: string) => {
 
 const addComponent = (componentType: string) => {
   console.log("addComponent(" + componentType + ");");
-
+  const newNodeName = vueModel.nextName();
+  vueModel.connection.value?.proto.graph.request_addnode(newNodeName, componentType, 100, 100);
 }
 
 const comps = ref(null);

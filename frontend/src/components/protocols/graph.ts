@@ -286,30 +286,6 @@ export class GraphProtocol {
         });
     }
 
-    request_new_graph(graphName: string, description: string) {
-        console.log("Request new graph:" + graphName);
-        this.connection.send({
-            protocol: "graph",
-            command: "new",
-            payload: {
-                name: graphName,
-                description: description,
-            }
-        });
-    }
-
-    request_delete_graph(graphId: string, graphName: string) {
-        console.log("Request delete graph:" + graphName);
-        this.connection.send({
-            protocol: "graph",
-            command: "delete",
-            payload: {
-                id: graphId,
-                name: graphName
-            }
-        });
-    }
-
     request_rename_graph(graphId: string, oldName: string, newName: string) {
         console.log("Request rename graph:" + oldName + "  --->  " + newName);
         this.connection.send({

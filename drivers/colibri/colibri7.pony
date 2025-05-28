@@ -1,9 +1,9 @@
 use "collections"
 use "files"
 use "metric"
+use "promises"
 use "raspi"
 use "time"
-use "../../blocktypes"
 use "../../system"
 use ".."
 
@@ -14,12 +14,10 @@ actor Colibri7 is Driver
   let _multiplexer:ColibriMultiplexer
   let _expansions:Map[U8, ColibriExpansionCard] = Map[U8,ColibriExpansionCard]
   let _context:SystemContext
-  let _blocktypes:BlockTypes
   let _bus:I2CBus
 
-  new create(context':SystemContext, blocktypes':BlockTypes) =>
+  new create(context':SystemContext) =>
     _context = context'
-    _blocktypes = blocktypes'
     _bus = I2C.bus(0, FileAuth(context'.auth()) )
     _multiplexer = ColibriMultiplexer(_bus, context')
 
@@ -52,6 +50,21 @@ actor Colibri7 is Driver
 
   be register(slot:U8, expansion:ColibriExpansionCard) =>
     _expansions(slot) = expansion
+
+  be get_physical_ports(promise: Promise[Array[PhysicalPortInfo val] val]) =>
+    None
+
+  be add_physical_port_config_listener(listener: PhysicalPortConfigListener) =>
+    None
+
+  be remove_physical_port_config_listener(listener: PhysicalPortConfigListener) =>
+    None
+
+  be add_physical_port_value_listener(listener: PhysicalPortValueListener) =>
+    None
+
+  be remove_physical_port_value_listener(listener: PhysicalPortValueListener) =>
+    None
 
 
 primitive ColibriExpansionFactory

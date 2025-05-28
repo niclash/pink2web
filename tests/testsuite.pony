@@ -13,7 +13,8 @@ use "collections"
 use "debug"
 use "files"
 use "jay"
-use "ponytest"
+use "metric"
+use "pony_test"
 use "promises"
 
 actor Main is TestList
@@ -59,7 +60,9 @@ class iso _BlockTest is UnitTest
 
   fun setup(h: TestHelper): Array[(Array[(String,String)] val,Assertion, Graph)] ?=>
     let env:Env = h.env
-    let context = SystemContext(env, Warn)?
+    let basedir = "./"
+    let auth = env.root
+    let context = SystemContext(auth, env.out, env.err, Warn, FilePath(FileAuth(auth), basedir))?
     let blocktypes = BlockTypes(context)
     let graphs = Graphs( blocktypes, context )
     let loader = Loader(graphs, blocktypes, context)
@@ -70,54 +73,58 @@ class iso _BlockTest is UnitTest
       let topology = unittest("topology") as String
       (let dir, let file) = Path.split(_pathname)
       let testdefinition = Path.join(dir,topology)
-      (let graph_name, let test_graph) = loader.load( testdefinition )?
 
+      let promise = Promise[(String, Graph)]
+      promise.next[None]( { (let graph_name, let test_graph) =>
       let factory = AssertionFactory(h)
       let assertion_block = factory.create_block("assertions", context, 50, 50) as Assertion
       let descriptor = factory.block_type_descriptor()
       test_graph.register_block( assertion_block, "assertions", descriptor )
-      
-      let inputs: JArr val = unittest("inputs") as JArr
-      let feed = recover val 
-        let f = Array[(String,String)]
-        for inp' in inputs.values() do
-          let inp = inp' as JObj
-          let input_name = inp.keys().next()?
-          let input_value = inp(input_name) as String
-          f.push( (input_name, input_value) )
-        end
-        f
-      end
-      let expects: JArr val = unittest("expects") as JArr
-      let assertions = Set[String]
-      for expectation in expects.values() do
-        let exp = expectation as JObj
-        let expectations:Array[(String|I64|F64|Metric|Bool)] val = recover
-          let e = Array[(String|I64|F64|Metric|Bool)]
-          for output_ref in exp.keys() do
-            assertions.set(output_ref)
-            let output_value = exp(output_ref) as JObj
-            let typ:String = output_value("type") as String
-            let expected:String = output_value("value") as String
-            match typ
-            | "nil" => e.push( None )
-            | "number" => e.push( expected.f64()? )
-            | "bool" => e.push( expected.bool()? )
-            | "text" => e.push( expected )
-            else
-              h.fail("Test harness contains unknown type: " + typ )
-            end
+
+        let inputs: JArr val = unittest("inputs") as JArr
+        let feed = recover val
+          let f = Array[(String,String)]
+          for inp' in inputs.values() do
+            let inp = inp' as JObj
+            let input_name = inp.keys().next()?
+            let input_value = inp(input_name) as String
+            f.push( (input_name, input_value) )
           end
-          e
+          f
         end
-        assertion_block.add_expectation( expectations )
-      end
-      for output_name in assertions.values() do
-        (let src_block, let src_output) = BlockName(output_name)?
-        test_graph.connect( src_block, src_output, "assertions", "equality" )
-      end
-      test_graph.start()
-      result.push((feed,assertion_block, test_graph))
+        let expects: JArr val = unittest("expects") as JArr
+        let assertions = Set[String]
+        for expectation in expects.values() do
+          let exp = expectation as JObj
+          let expectations:Array[(String|I64|F64|Metric|Bool)] val = recover
+            let e = Array[(String|I64|F64|Metric|Bool)]
+            for output_ref in exp.keys() do
+              assertions.set(output_ref)
+              let output_value = exp(output_ref) as JObj
+              let typ:String = output_value("type") as String
+              let expected:String = output_value("value") as String
+              match typ
+              | "nil" => e.push( None )
+              | "number" => e.push( expected.f64()? )
+              | "bool" => e.push( expected.bool()? )
+              | "text" => e.push( expected )
+              else
+                h.fail("Test harness contains unknown type: " + typ )
+              end
+            end
+            e
+          end
+          assertion_block.add_expectation( expectations )
+        end
+        for output_name in assertions.values() do
+          (let src_block, let src_output) = BlockName(output_name)?
+          test_graph.connect( src_block, src_output, "assertions", "equality" )
+        end
+        test_graph.start()
+        result.push((feed,assertion_block, test_graph))
+      })
+
+      loader.load_from_file( testdefinition, promise )?
     end
     result
     

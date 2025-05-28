@@ -72,168 +72,229 @@ const cloneDescriptors = (ports: Port[]): Port[] => {
   return clone;
 }
 
-const onGraphClear = (payload: ClearEvent): void => {
+const onGraphClear = async (payload: ClearEvent): Promise<void> => {
   startTransaction(payload, true);
   vueModel.currentGraph = payload;
-  editor.clear().finally(() => endTransaction());
+  try {
+    await editor.clear();
+  } finally {
+    endTransaction();
+  }
 };
 
-const onGraphAddNode = (payload: AddNodeEvent): void => {
-  console.log("NICLAS!!!")
+const onGraphAddNode = async (payload: AddNodeEvent): Promise<void> => {
   startTransaction(payload);
   try {
     let template = componentTemplates[payload.component];
     let inp: Port[] = cloneDescriptors(template.inPorts);
     let outp: Port[] = cloneDescriptors(template.outPorts);
     let node = new PrimitiveNode(payload.id, "", payload.component, inp, outp);
-    editor.addNode(node).then((n) => {
-      console.log("Niclas___translate()", n);
-      return editor.area.translate(node.id, payload.metadata);
-    });
+    await editor.addNode(node);
+    await editor.area.translate(node.id, payload.metadata);
   } finally {
     endTransaction();
   }
 };
 
-const onGraphRemoveNode = (payload: RemoveNodeEvent): void => {
+const onGraphRemoveNode = async (payload: RemoveNodeEvent): Promise<void> => {
   startTransaction(payload);
-  let node = findNodeByName(payload.id)?.id;
-  if (node !== undefined)
-    editor.removeNode(node).finally(() => endTransaction());
-  else
+  try {
+    let node = findNodeByName(payload.id)?.id;
+    if (node !== undefined) {
+      await editor.removeNode(node);
+    }
+  } finally {
     endTransaction();
+  }
 };
 
 const onGraphRenameNode = (payload: RenameNodeEvent): void => {
   startTransaction(payload);
-  let oldName = payload.from;
-  let node = findNodeByName(oldName);
-  if (node !== undefined)
-    node.label = payload.to;
-  endTransaction();
-};
-
-const onGraphChangeNode = (payload: ChangeNodeEvent): void => {
-  startTransaction(payload);
-  let node = findNodeByName(payload.id);
-  if (node !== undefined)
-    editor.setPosition(node.id, payload.metadata as Position).then(() => endTransaction())
-  else
-    endTransaction();
-};
-
-const onGraphAddEdge = (p: AddEdgeEvent): void => {
-  startTransaction(p);
-  let srcNode = findNodeByName(p.src.node);
-  let srcPort = p.src.port;
-  let tgtNode = findNodeByName(p.tgt.node);
-  let tgtPort = p.tgt.port;
-  if (srcNode !== undefined && tgtNode !== undefined) {
-    let link = new Connection(srcNode, srcPort, tgtNode, tgtPort);
-    editor.addConnection(link).then(() => endTransaction());
-  } else {
-    endTransaction();
-  }
-};
-
-const onGraphRemoveEdge = (payload: RemoveEdgeEvent): void => {
-  startTransaction(payload);
-  let notFound = true;
   try {
-    let srcNode = findNodeByName(payload.src.node)?.id;
-    let tgtNode = findNodeByName(payload.tgt.node)?.id;
-    editor.getConnections()
-        .filter(c => c.source === srcNode)
-        .filter(c => c.target === tgtNode)
-        .filter(c => c.sourceOutput === payload.src.port)
-        .filter(c => c.targetInput === payload.tgt.port)
-        .map(c => c.id)
-        .forEach((link) => {
-          notFound = false;
-          editor.removeConnection(link).then(() => endTransaction());
-        });
+    let oldName = payload.from;
+    let node = findNodeByName(oldName);
+    if (node !== undefined) {
+      node.label = payload.to; // This is a synchronous property change
+    }
   } finally {
-    if (notFound)
-      endTransaction();
-  }
-};
-
-const onGraphChangeEdge = (payload: ChangeEdgeEvent): void => {
-  startTransaction(payload);
-  endTransaction();
-};
-
-const onGraphAddInitial = (payload: AddInitialEvent): void => {
-  startTransaction(payload);
-  let tgtNode = findNodeByName(payload.tgt.node);
-  if (tgtNode !== undefined) {
-    editor.addInitial(payload.src.data, tgtNode, payload.tgt.port, payload.tgt.index).finally(() => endTransaction());
-  } else {
     endTransaction();
   }
 };
 
-const onGraphRemoveInitial = (payload: RemoveInitialEvent): void => {
+const onGraphChangeNode = async (payload: ChangeNodeEvent): Promise<void> => {
   startTransaction(payload);
-  let tgtNode = findNodeByName(payload.tgt.node);
-  if (tgtNode !== undefined)
-    editor.removeInitial(tgtNode, payload.tgt.port, payload.tgt.index).finally(() => endTransaction());
-  else
+  try {
+    let node = findNodeByName(payload.id);
+    if (node !== undefined) {
+      await editor.setPosition(node.id, payload.metadata as Position);
+    }
+  } finally {
     endTransaction();
+  }
 };
 
-const onGraphAddInport = (payload: AddInportEvent): void => {
-  startTransaction(payload);
+const onGraphAddEdge = async (p: AddEdgeEvent): Promise<void> => {
+  startTransaction(p);
+  try {
+    let srcNode = findNodeByName(p.src.node); // Ensure these are the Rete Node objects
+    let srcPort = p.src.port; // Ensure these are the string IDs of the ports
+    let tgtNode = findNodeByName(p.tgt.node);
+    let tgtPort = p.tgt.port;
 
-  endTransaction();
+    if (srcNode !== undefined && tgtNode !== undefined) {
+      // The Connection class from model.ts extends Classic.Connection
+      // Its constructor might be: constructor(source: SourceNode, sourceOutput: SourceOutputKey, target: TargetNode, targetInput: TargetInputKey)
+      // Assuming p.src.port and p.tgt.port are the correct key types (string IDs).
+      let link = new Connection(srcNode, srcPort as any, tgtNode, tgtPort as any); // Using 'as any' if type checking is problematic with generic keys
+      await editor.addConnection(link);
+    }
+  } finally {
+    endTransaction();
+  }
 };
 
-const onGraphRemoveInport = (payload: RemoveInportEvent): void => {
+const onGraphRemoveEdge = async (payload: RemoveEdgeEvent): Promise<void> => {
   startTransaction(payload);
+  try {
+    let srcNodeId = findNodeByName(payload.src.node)?.id;
+    let tgtNodeId = findNodeByName(payload.tgt.node)?.id;
 
-  endTransaction();
+    if (srcNodeId && tgtNodeId) {
+      const connections = editor.getConnections();
+      const matchingConnections = connections.filter(c =>
+          c.source === srcNodeId &&
+          c.target === tgtNodeId &&
+          c.sourceOutput === payload.src.port &&
+          c.targetInput === payload.tgt.port
+      );
+
+      if (matchingConnections.length > 0) {
+        await editor.removeConnection(matchingConnections[0].id);
+      }
+    }
+  } finally {
+    endTransaction();
+  }
 };
 
-const onGraphRenameInport = (payload: RenameInportEvent): void => {
+const onGraphChangeEdge = async (payload: ChangeEdgeEvent): Promise<void> => {
   startTransaction(payload);
+  try {
 
-  endTransaction();
+  } finally {
+    endTransaction();
+  }
 };
 
-const onGraphAddOutport = (payload: AddOutportEvent): void => {
+const onGraphAddInitial = async (payload: AddInitialEvent): Promise<void> => {
   startTransaction(payload);
-
-  endTransaction();
+  try {
+    let tgtNode = findNodeByName(payload.tgt.node);
+    if (tgtNode !== undefined) {
+      // Assuming editor.addInitial might be async or trigger piped events
+      await editor.addInitial(payload.src.data, tgtNode, payload.tgt.port, payload.tgt.index);
+    }
+  } finally {
+    endTransaction();
+  }
 };
-const onGraphRemoveOutport = (payload: RemoveOutportEvent): void => {
-  startTransaction(payload);
 
-  endTransaction();
+const onGraphRemoveInitial = async (payload: RemoveInitialEvent): Promise<void> => {
+  startTransaction(payload);
+  try {
+    let tgtNode = findNodeByName(payload.tgt.node);
+    if (tgtNode !== undefined){
+      // Assuming editor.removeInitial might be async or trigger piped events
+      await editor.removeInitial(tgtNode, payload.tgt.port, payload.tgt.index);
+    }
+  } finally {
+    endTransaction();
+  }
 };
-const onGraphRenameOutport = (payload: RenameOutportEvent): void => {
-  startTransaction(payload);
 
-  endTransaction();
+const onGraphAddInport = async (payload: AddInportEvent): Promise<void> => {
+  startTransaction(payload);
+  try {
+
+  } finally {
+    endTransaction();
+  }
 };
-const onGraphAddGroup = (payload: AddGroupEvent): void => {
-  startTransaction(payload);
 
-  endTransaction();
+const onGraphRemoveInport = async (payload: RemoveInportEvent): Promise<void> => {
+  startTransaction(payload);
+  try {
+
+  }finally {
+    endTransaction();
+  }
 };
-const onGraphRemoveGroup = (payload: RemoveGroupEvent): void => {
-  startTransaction(payload);
 
-  endTransaction();
+const onGraphRenameInport = async (payload: RenameInportEvent): Promise<void> => {
+  startTransaction(payload);
+  try {
+
+  } finally {
+    endTransaction();
+  }
 };
-const onGraphRenameGroup = (payload: RenameGroupEvent): void => {
-  startTransaction(payload);
 
-  endTransaction();
+const onGraphAddOutport = async (payload: AddOutportEvent): Promise<void> => {
+  startTransaction(payload);
+  try {
+
+  } finally {
+    endTransaction();
+  }
 };
-const onGraphChangeGroup = (payload: ChangeGroupEvent): void => {
-  startTransaction(payload);
 
-  endTransaction();
+const onGraphRemoveOutport = async (payload: RemoveOutportEvent): Promise<void> => {
+  startTransaction(payload);
+  try {
+
+  } finally {
+    endTransaction();
+  }
+};
+const onGraphRenameOutport = async (payload: RenameOutportEvent): Promise<void> => {
+  startTransaction(payload);
+  try {
+
+  } finally {
+    endTransaction();
+  }
+};
+const onGraphAddGroup = async (payload: AddGroupEvent): Promise<void> => {
+  startTransaction(payload);
+  try {
+
+  } finally {
+    endTransaction();
+  }
+};
+const onGraphRemoveGroup = async (payload: RemoveGroupEvent): Promise<void> => {
+  startTransaction(payload);
+  try {
+
+  } finally {
+    endTransaction();
+  }
+};
+const onGraphRenameGroup = async (payload: RenameGroupEvent): Promise<void> => {
+  startTransaction(payload);
+  try {
+
+  } finally {
+    endTransaction();
+  }
+};
+const onGraphChangeGroup = async (payload: ChangeGroupEvent): Promise<void> => {
+  startTransaction(payload);
+  try {
+
+  } finally {
+    endTransaction();
+  }
 };
 
 
@@ -264,7 +325,6 @@ onMounted(() => {
   createEditor(rete.value!);
   setTimeout(() => {
     editor.addPipe((ctx) => {
-      console.log("Pipe Context:", vueModel.pipesDisabled, ctx);
       if (vueModel.pipesDisabled) {
         return ctx;
       }

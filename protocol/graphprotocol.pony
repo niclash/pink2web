@@ -24,8 +24,6 @@ class val GraphProtocol
       if valid then
         match command
         |   "list" => ListGraphsMessage(connection, _graphs, payload )
-        |   "new" => NewGraphMessage(connection, _graphs, payload )
-        |   "delete" => DeleteGraphMessage(connection, _graphs, payload )
         |   "connect" => ConnectGraphMessage.create(_context,fbp)(connection, _graphs, payload )
         |   "rename" => RenameGraphMessage(connection, _graphs, payload )
         |   "addnode" => AddNodeMessage(connection, _graphs, payload )

@@ -9,13 +9,15 @@ primitive DeleteGraphMessage
 
   fun apply( connection: WebSocketSender, graphs: Graphs, payload: JObj ) =>
     try
-      (let id, let name) = _get_name(payload)?
+      let id = payload( "id" ) as String
+      let name = payload( "name" ) as String
       graphs.delete_graph(id, name)
     else
       ErrorMessage( connection, None, "Invalid 'delete graph' payload: " + payload.string(), true )
     end
 
-  fun _get_name( payload:JObj ): (String,String) ? =>
-    let id = payload( "id" ) as String
-    let name = payload( "name" ) as String
-    (id,name)
+  fun reply( connection: WebSocketSender, graphid:String, name:String ) =>
+    let json = JObj
+      + ("graph", graphid)
+      + ("name", name)
+    connection.send_text( Message( "runtime", "delete_graph", json).string() )

@@ -144,6 +144,12 @@ class val GraphFilterSubscription is GraphNotify
       _underlying.removed_initial(graph, initial_value, to_block, to_input)
     end
 
+  fun created_graph(name:String, description:String, graphid:String, icon:String) =>
+    _underlying.created_graph(name, description, graphid, icon)
+
+  fun deleted_graph(graphid:String, name:String) =>
+    _underlying.deleted_graph(graphid, name)
+
   fun started( graph: String, time_started:PosixDate val, started':Bool, running:Bool, debug:Bool) =>
     if graph == _graphid then
       _underlying.started( graph, time_started, started', running, debug)
@@ -189,22 +195,28 @@ class val Subscription is GraphNotify
     AddEdgeMessage.reply(_connection, graph, from_block, from_output, to_block, to_input )
     
   fun removed_connection(graph:String, from_block:String, from_output:String, to_block:String, to_input:String) =>
-    RemoveEdgeMessage.reply(_connection, graph, from_block, from_output, to_block, to_input )
+    RemoveEdgeMessage.reply(_connection, graph, from_block, from_output, to_block, to_input)
     
   fun added_initial(graph:String, initial_value:(String|I64|F64|Metric|Bool), to_block:String, to_input:String) =>
-    AddInitialMessage.reply(_connection, graph, initial_value, to_block, to_input )
+    AddInitialMessage.reply(_connection, graph, initial_value, to_block, to_input)
 
   fun removed_initial(graph:String, initial_value:(String|I64|F64|Metric|Bool), to_block:String, to_input:String) =>
-    RemoveInitialMessage.reply(_connection, graph, initial_value, to_block, to_input )
+    RemoveInitialMessage.reply(_connection, graph, initial_value, to_block, to_input)
+
+  fun created_graph(name:String, description:String, graphid:String, icon:String) =>
+    NewGraphMessage.reply(_connection, graphid, name, description, icon)
+
+  fun deleted_graph(graphid:String, name:String) =>
+    DeleteGraphMessage.reply(_connection, graphid, name)
 
   fun started( graph: String, time_started:PosixDate val, started':Bool, running:Bool, debug:Bool) =>
-    StartedMessage.reply( _connection, graph, time_started, started', running, debug )
+    StartedMessage.reply( _connection, graph, time_started, started', running, debug)
   
   fun stopped( graph: String, time_started:PosixDate val, uptime:I64, started':Bool, running:Bool, debug:Bool  ) =>
-    StoppedMessage.reply( _connection, graph, time_started, uptime, started', running, debug )
+    StoppedMessage.reply( _connection, graph, time_started, uptime, started', running, debug)
 
   fun status( graphid: String, name':String, descr:String, uptime:I64, started':Bool, running:Bool, debug:Bool ) =>
-    StatusMessage.reply( _connection, graphid, name', descr, uptime, started', running, debug )
+    StatusMessage.reply( _connection, graphid, name', descr, uptime, started', running, debug)
 
   fun box eq(that: GraphNotify): Bool val =>
     if this is that then 

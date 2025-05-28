@@ -78,6 +78,8 @@ export interface Runtime {
 export class RuntimeProtocol {
     private connection: Connection;
     listeners: {
+        onNewGraphPacket: Function[],
+        onDeleteGraphPacket: Function[],
         onRuntimePacket: Function[],
         onRuntimeError: Function[],
         onRuntimePorts: Function[],
@@ -88,6 +90,8 @@ export class RuntimeProtocol {
     constructor(connection: Connection) {
         this.connection = connection;
         this.listeners = {
+            onNewGraphPacket: [],
+            onDeleteGraphPacket: [],
             onRuntimePacket: [],
             onRuntimeError: [],
             onRuntimePorts: [],
@@ -115,6 +119,8 @@ export class RuntimeProtocol {
     execute(command: string, payload: any) {
         switch(command)
         {
+            case "new_graph": this.new_graph(payload); break;
+            case "delete_graph": this.delete_graph(payload); break;
             case "packet": this.packet(payload); break;
             case "error": this.error(payload); break;
             case "ports": this.ports(payload); break;
@@ -130,6 +136,47 @@ export class RuntimeProtocol {
             payload: {
             }
         });
+    }
+
+    request_new_graph(graphName: string, description: string, icon: string) {
+        console.log("Request new graph:" + graphName);
+        this.connection.send({
+            protocol: "runtime",
+            command: "new_graph",
+            payload: {
+                name: graphName,
+                description: description,
+                icon: icon,
+            }
+        });
+    }
+
+    request_delete_graph(graphId: string, graphName: string) {
+        console.log("Request delete graph:" + graphName);
+        this.connection.send({
+            protocol: "runtime",
+            command: "delete_graph",
+            payload: {
+                id: graphId,
+                name: graphName
+            }
+        });
+    }
+
+    new_graph(payload: any) {
+        if (this.listeners.onNewGraphPacket) {
+            for (let fn of this.listeners.onNewGraphPacket) {
+                fn(payload as Packet);
+            }
+        }
+    }
+
+    delete_graph(payload: any) {
+        if (this.listeners.onDeleteGraphPacket) {
+            for (let fn of this.listeners.onDeleteGraphPacket) {
+                fn(payload as Packet);
+            }
+        }
     }
 
     packet(payload: any) {

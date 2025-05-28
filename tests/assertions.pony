@@ -4,7 +4,8 @@ use "../system"
 use "collections"
 use "debug"
 use "jay"
-use "ponytest"
+use "metric"
+use "pony_test"
 use "promises"
 
 actor Assertion is Block
@@ -42,6 +43,30 @@ actor Assertion is Block
     else
       _helper.fail("No inputs in testing protocol")
     end
+
+
+//  be connect( output: String, to_block: Block, to_input: String)
+//  be disconnect_block( to_block: Block, disconnects: LinkRemoveNotify )
+//  be disconnect_edge( output:String, dest_block: Block, dest_input: String, disconnects: LinkRemoveNotify )
+  be set_initial(input: String, initial_value: (String|I64|F64|Metric|Bool|None)) => None
+//  be update(input: String, new_value: (String|I64|F64|Metric|Bool))
+  be get_input(input: String, promise:Promise[(String|I64|F64|Metric|Bool)]) => None
+  be get_output(output: String, promise:Promise[(String|I64|F64|Metric|Bool)]) => None
+//  be rename( new_name: String )
+  be rename_of( block: Block, old_name: String, new_name: String ) => None
+//  be change( x:F64, y:F64 )
+//  be destroy(disconnects: LinkRemoveNotify)
+//  be refresh()
+//  be start()
+//  be stop()
+  be stats_update() => None
+//  be name( promise: Promise[String] tag )
+//  be describe( promise: Promise[JObj] tag )
+//  be descriptor( promise: Promise[BlockTypeDescriptor] tag )
+  be subscribe_link( subscription:LinkSubscription ) => None
+  be unsubscribe_link( subscription:LinkSubscription ) => None
+//
+
 
   fun next_input()? =>
     match _graph
@@ -169,9 +194,11 @@ class val AssertionDescriptor is BlockTypeDescriptor
   let completed:InputDescriptor
 
   new val create() =>
-      equality = InputDescriptor("equality", PNum, "value to assert", false )
-      completed = InputDescriptor("completed", PNum, "signal that testing is done and to be evaluated", false )
+      equality = InputDescriptor("equality", "number", "value to assert", false )
+      completed = InputDescriptor("completed", "number", "signal that testing is done and to be evaluated", false )
 
+  fun val icon(): String => ""
+  
   fun val inputs(): Array[InputDescriptor] val =>
     [ equality; completed ]
 
@@ -183,11 +210,11 @@ class val AssertionDescriptor is BlockTypeDescriptor
       let inputs':Array[InputDescriptor] val = inputs()
       inputs'(index)?
     else
-      InputDescriptor( "INVALID", PNum, "INVALID", false)
+      InputDescriptor( "INVALID", "number", "INVALID", false)
     end
     
   fun val output( index: USize ): OutputDescriptor val =>
-    OutputDescriptor( "INVALID", PNum, "INVALID", false)
+    OutputDescriptor( "INVALID", "number", "INVALID", false)
     
   fun val name(): String =>
     "Assertion"

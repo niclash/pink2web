@@ -6,7 +6,8 @@ import {Port} from "@/components/protocols/protocols";
 export interface ComponentsReadyEvent {}
 
 export interface ComponentEvent {
-    name: string;
+    displayName: string;
+    fullId: string;
     description: string;
     icon: string;
     subgraph: boolean;

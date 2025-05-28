@@ -34,7 +34,7 @@ class RuntimeEngine
     context(Info) and context.log(Info, "Started to listen: ws://"+host+":"+ws_port)
     _rest = RestServer(host, port, config.webdir, config.startpage, context )
 
-    let drivers = Drivers(context, blocktypes)
+    let drivers = Drivers(context)
     for driver in config.drivers.values() do
       context(Info) and context.log(Info, "Loading " + driver )
       drivers.load(driver)

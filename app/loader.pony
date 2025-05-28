@@ -53,7 +53,7 @@ actor Loader
     let description = try root("description") as String else "<unknown>" end
     let icon = try root("icon") as String else "<unknown>" end
     let graph = Graph( _graphs, id, name, description, icon, _blocktypes, _context )
-    _graphs.register_graph( id, name, graph )
+    _graphs.create_graph( id, name, description, icon, graph )
     
     try
       let processes: JObj val = root("blocks") as JObj

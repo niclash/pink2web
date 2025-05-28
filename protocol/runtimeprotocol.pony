@@ -29,6 +29,8 @@ class val RuntimeProtocol
       if valid then
         match command
         |   "getruntime" => _getruntime(connection, _graphs, _blocktypes, _runtime)
+        |   "new_graph" => NewGraphMessage(connection, _graphs, payload )
+        |   "delete_graph" => DeleteGraphMessage(connection, _graphs, payload )
         else
           ErrorMessage( connection, None, "Invalid 'runtime' command: " + command, true )
         end
