@@ -2,7 +2,7 @@ use "metric"
 use "promises"
 use "../system"
 
-primitive Linkable is (String|I64|F64|Metric|Bool)
+type Linkable is (String|I64|F64|Metric|Bool)
 
 class val LinkReference
   let src_block: String val

@@ -43,9 +43,9 @@ class RuntimeEngine
     end
 
     context(Info) and context.log(Info, "Drivers available " )
-    for driver in drivers.available().values() do
-        context.log( Info, "  " + driver )
-    end
+    let p = Promise[String]
+    p.next[None]( { (driver) => context.log( Info, "  " + driver) } )
+    drivers.available(p)
     drivers.start()
 
   fun load_graph(filename:String) =>

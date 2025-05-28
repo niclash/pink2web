@@ -1,6 +1,7 @@
 use "collections"
 use "promises"
 use "../blocktypes"
+use "../graphs"
 use "../system"
 use "./colibri"
 use "./emulator"
@@ -8,14 +9,14 @@ use "./link2web"
 use "./modbus"
 use "./raspi"
 
-class Drivers
+actor Drivers
   var _drivers:Map[String,Driver] = Map[String,Driver]()
   let _context:SystemContext
 
   new create(context':SystemContext) =>
     _context = context'
 
-  fun ref load( name:String ) =>
+  be load( name:String ) =>
     if name == "link2web" then _drivers(name) = Link2Web(_context) end
     if name == "colibri-7" then _drivers(name) = Colibri7(_context) end
     if name == "emulator" then _drivers(name) = Emulator(_context) end
@@ -23,18 +24,20 @@ class Drivers
     if name == "modbus-tcp" then _drivers(name) = ModbusTcp(_context) end
     if name == "modbus-rtu" then _drivers(name) = ModbusRtu(_context) end
 
-  fun start() =>
+  be start() =>
     for driver in _drivers.values() do
       driver.start()
     end
 
-  fun stop() =>
+  be stop() =>
     for driver in _drivers.values() do
       driver.stop()
     end
 
-  fun available(): Array[String val] val =>
-    ["raspi"; "link2web"; "emulator"]
+  be available( p:Promise[String]) =>
+    p("raspi")
+    p("link2web")
+    p("emulator")
 
   fun list(): Array[String val] val =>
     _context(Info) and _context.log(Info, "List drivers" )
@@ -43,6 +46,9 @@ class Drivers
       result.push( drivername )
     end
     result
+
+  be set_output( logical_name:String, value:Linkable) =>
+    None
 
 interface tag Driver
   new tag create(context':SystemContext)

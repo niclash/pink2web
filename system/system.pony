@@ -2,7 +2,6 @@ use "files"
 use "jay"
 use "time"
 use "collections"
-use "../drivers"
 use "../web"
 
 class val SystemContext
@@ -14,9 +13,9 @@ class val SystemContext
   let _logger:_Logger
   let _stdout: OutStream
   let _stderr: OutStream
-  let _io:Io
+  let _io:Io tag
 
-  new val create(auth':AmbientAuth, stdout':OutStream, stderr':OutStream, level:LogLevel, base_dir:FilePath, io':Io, remote_log:Bool = false) =>
+  new val create(auth':AmbientAuth, stdout':OutStream, stderr':OutStream, level:LogLevel, base_dir:FilePath, io':Io tag, remote_log:Bool = false) =>
     _auth = auth'
     _io = io'
     timers = Timers(20) // ~millisecond resolution
@@ -35,26 +34,21 @@ class val SystemContext
   
   fun stderr(): OutStream => _stderr
   
-  fun box to_stdout( text: String ) =>
-    _stdout.print( text )
+  fun box to_stdout( text: String ) => _stdout.print( text )
     
-  fun box to_stderr( text: String ) =>
-    _stderr.print( text )
+  fun box to_stderr( text: String ) => _stderr.print( text )
 
-  fun val filelocations(): FileLocations =>
-    _filelocations
+  fun val filelocations(): FileLocations => _filelocations
 
-  fun box apply(level: LogLevel) : Bool val =>
-    _logger(level)
+  fun val io() => _io
 
-  fun box log( level:LogLevel, value:String, loc:SourceLoc val = __loc): Bool =>
-    _logger.log(level,value, loc)
+  fun box apply(level: LogLevel) : Bool val => _logger(level)
 
-  fun internal_error() =>
-    _logger.log( Error, "INTERNAL ERROR!!!" )
+  fun box log( level:LogLevel, value:String, loc:SourceLoc val = __loc): Bool => _logger.log(level,value, loc)
 
-  fun val auth(): AmbientAuth val =>
-    _auth
+  fun internal_error() => _logger.log( Error, "INTERNAL ERROR!!!" )
+
+  fun val auth(): AmbientAuth val => _auth
 
   fun add_remote( socket:WebSocketSender ) =>
     _remote_out.add_remote( socket )
