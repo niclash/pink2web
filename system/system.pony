@@ -14,9 +14,11 @@ class val SystemContext
   let _logger:_Logger
   let _stdout: OutStream
   let _stderr: OutStream
+  let _io:Io
 
-  new val create(auth':AmbientAuth, stdout':OutStream, stderr':OutStream, level:LogLevel, base_dir:FilePath, remote_log:Bool = false) =>
+  new val create(auth':AmbientAuth, stdout':OutStream, stderr':OutStream, level:LogLevel, base_dir:FilePath, io':Io, remote_log:Bool = false) =>
     _auth = auth'
+    _io = io'
     timers = Timers(20) // ~millisecond resolution
     _stdout = stdout'
     _stderr = stderr'

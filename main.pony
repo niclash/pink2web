@@ -50,7 +50,7 @@ actor Main
                                  else if c.option("warn").bool() then Warn
                                  else Error end end end
             let basedir:String = c.option("basedir").string()
-            let context:SystemContext = SystemContext(auth, env.out, env.err, level, FilePath(FileAuth(auth), basedir))
+            let context:SystemContext = SystemContext(auth, env.out, env.err, level, FilePath(FileAuth(auth), basedir, Io))
             let blocktypes:BlockTypes = BlockTypes(context)
             let authorizer = Authorizer(_load_users(c, context)?, context)
             match c.fullname()
