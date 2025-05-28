@@ -4,7 +4,6 @@ use "../system"
 use "collections"
 use "debug"
 use "jay"
-use "metric"
 use "pony_test"
 use "promises"
 
@@ -15,7 +14,7 @@ actor Assertion is Block
   let _completed: Input
   let _context:SystemContext
   let _helper:TestHelper
-  let _expectations:Array[Array[(String|I64|F64|Metric|Bool)] val] = []
+  let _expectations:Array[Array[Linkable] val] = []
   
   var _success: Bool = true
   var _counter: USize = 0
@@ -48,10 +47,10 @@ actor Assertion is Block
 //  be connect( output: String, to_block: Block, to_input: String)
 //  be disconnect_block( to_block: Block, disconnects: LinkRemoveNotify )
 //  be disconnect_edge( output:String, dest_block: Block, dest_input: String, disconnects: LinkRemoveNotify )
-  be set_initial(input: String, initial_value: (String|I64|F64|Metric|Bool|None)) => None
-//  be update(input: String, new_value: (String|I64|F64|Metric|Bool))
-  be get_input(input: String, promise:Promise[(String|I64|F64|Metric|Bool)]) => None
-  be get_output(output: String, promise:Promise[(String|I64|F64|Metric|Bool)]) => None
+  be set_initial(input: String, initial_value: Linkable) => None
+//  be update(input: String, new_value: Linkable)
+  be get_input(input: String, promise:Promise[Linkable]) => None
+  be get_output(output: String, promise:Promise[Linkable]) => None
 //  be rename( new_name: String )
   be rename_of( block: Block, old_name: String, new_name: String ) => None
 //  be change( x:F64, y:F64 )
@@ -78,7 +77,7 @@ actor Assertion is Block
       None // Ignore as this happens (or may happen) during start up.
     end
     
-  fun ref next_expectation(): (String|I64|F64|Metric|Bool) ? =>
+  fun ref next_expectation(): Linkable ? =>
     let expectation = _expectations(_counter)?
     if( _sub_counter == -1 ) then 
       _sub_counter = 0
@@ -121,7 +120,7 @@ actor Assertion is Block
   be change( x:F64, y:F64 ) =>
     None
     
-  be update(input: String, new_value: (String|I64|F64|Metric|Bool)) =>
+  be update(input: String, new_value: Linkable) =>
     if _graph is None then
       return
     end
@@ -161,7 +160,7 @@ actor Assertion is Block
       end
     end
     
-  fun type_of( value: (String|I64|F64|Metric|Bool) ): String =>
+  fun type_of( value: Linkable ): String =>
     match value
     | let s: None => "nil"
     | let s: Bool => "bool"
@@ -186,7 +185,7 @@ actor Assertion is Block
     _context(Fine) and _context.log(Fine, "Reporting " + m.string() )
     promise(m)
 
-  be add_expectation( expected: Array[(String|I64|F64|Metric|Bool)] val) =>
+  be add_expectation( expected: Array[Linkable] val) =>
     _expectations.push( expected )
 
 class val AssertionDescriptor is BlockTypeDescriptor

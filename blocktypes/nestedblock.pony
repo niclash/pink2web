@@ -1,7 +1,6 @@
 use "collections"
 use "debug"
 use "jay"
-use "metric"
 use "promises"
 use "time"
 use "../graphs"
@@ -63,7 +62,7 @@ actor NestedBlock is Block
     _x = x
     _y = y
 
-  be get_input(inputname: String, promise:Promise[(String|I64|F64|Metric|Bool)]) =>
+  be get_input(inputname: String, promise:Promise[Linkable]) =>
     try
       (let block, let input) = _inputs(inputname)?
       block.get_input(input, promise)
@@ -72,7 +71,7 @@ actor NestedBlock is Block
       false
     end
 
-  be get_output(outputname: String, promise:Promise[(String|I64|F64|Metric|Bool)]) =>
+  be get_output(outputname: String, promise:Promise[Linkable]) =>
     try
       (let block, let output) = _outputs(outputname)?
       block.get_output(output, promise)
@@ -128,7 +127,7 @@ actor NestedBlock is Block
     // TODO!! Rename of Nested Blocks.
     None
 
-  be update(inputname: String, new_value:(String|I64|F64|Metric|Bool)) =>
+  be update(inputname: String, new_value:Linkable) =>
     _eventcounter = _eventcounter + 1
     try
       (let block, let input) = _inputs(inputname)?
@@ -141,7 +140,7 @@ actor NestedBlock is Block
     _eventrate = _eventcounter.f32() / interval_in_seconds.f32()
     _time_since_last_eventrate_update = now
 
-  be set_initial(inputname: String, initial_value:(String|I64|F64|Metric|Bool|None)) =>
+  be set_initial(inputname: String, initial_value:Linkable) =>
     try
       (let block, let input) = _inputs(inputname)?
       block.set_initial(input, initial_value)
@@ -300,7 +299,7 @@ actor NestedBlockTypeBuilder
         let init = i as JObj
         let src = init("src")
         match src
-        | let m:(String|I64|F64|Metric|Bool) =>
+        | let m:Linkable =>
           let tgt = init("tgt").string()
           inits.push( InitialDescriptor(m, tgt)? )
         end

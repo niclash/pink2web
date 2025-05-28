@@ -1,10 +1,10 @@
 use "collections"
-use "metric"
 use "raspi"
 use "../../blocktypes"
+use "../../system"
 
 class val RaspiGpioInputAlgorithm is CyclicAlgorithm
-  fun val apply( block:CyclicBlock, inputs:Map[String,(String|I64|F64|Metric|Bool)] val, now:U64, last:U64 ) =>
+  fun val apply( block:CyclicBlock, inputs:Map[String,Linkable] val, now:U64, last:U64 ) =>
     try
       let pin = inputs("pin")? as I64
       RPi.pinMode(pin.i32(),INPUT)
@@ -16,7 +16,7 @@ class val RaspiGpioInputAlgorithm is CyclicAlgorithm
     end
 
 class val RaspiGpioOutputAlgorithm is Algorithm
-  fun val apply( block:GenericBlock, inputs:Map[String,(String|I64|F64|Metric|Bool)] val ) =>
+  fun val apply( block:GenericBlock, inputs:Map[String,Linkable] val ) =>
     try
       let pin = inputs("pin")? as I64
       RPi.pinMode(pin.i32(),OUTPUT)

@@ -3,13 +3,12 @@ use "collections"
 use "debug"
 use "jay"
 use "promises"
-use "metric"
 use "time"
 use "../graphs"
 use "../system"
 
 interface val Algorithm
-  fun val apply( block:GenericBlock, inputs:Map[String,(String|I64|F64|Metric|Bool)] val )
+  fun val apply( block:GenericBlock, inputs:Map[String,Linkable] val )
 
 actor GenericBlock is Block
   var _name: String
@@ -45,7 +44,7 @@ actor GenericBlock is Block
     _x = x
     _y = y
     
-  be get_input(input: String, promise:Promise[(String|I64|F64|Metric|Bool)]) =>
+  be get_input(input: String, promise:Promise[Linkable]) =>
     try
       let inp = _find_input( input )?
       promise(inp.value())
@@ -54,7 +53,7 @@ actor GenericBlock is Block
       false
     end
 
-  be get_output(output: String, promise:Promise[(String|I64|F64|Metric|Bool)]) =>
+  be get_output(output: String, promise:Promise[Linkable]) =>
     try
       let outp = _find_output( output )?
       promise(outp.value())
@@ -128,7 +127,7 @@ actor GenericBlock is Block
     end
     error
 
-  be update(input: String, new_value:(String|I64|F64|Metric|Bool)) =>
+  be update(input: String, new_value:Linkable) =>
     _context(Fine) and _context.log(Fine, _descriptor.name() + "[ " + _name + "." + input + " = " + new_value.string() + " ]")
     _eventcounter = _eventcounter + 1
     try
@@ -145,7 +144,7 @@ actor GenericBlock is Block
     _eventrate = _eventcounter.f32() / interval_in_seconds.f32()
     _time_since_last_eventrate_update = now
 
-  be set_initial(input: String, initial_value: (String|I64|F64|Metric|Bool|None)) =>
+  be set_initial(input: String, initial_value: Linkable) =>
     _context(Fine) and _context.log(Fine, _descriptor.name() + "[ " + _name + "." + input + " = (initial) = " + initial_value.string() + " ]")
     try
       let inp = _find_input( input )?
@@ -157,7 +156,7 @@ actor GenericBlock is Block
 
   be refresh() =>
     if _started then
-      let inputs' = recover iso Map[String,(String|I64|F64|Metric|Bool)] end
+      let inputs' = recover iso Map[String,Linkable] end
       for inp in _inputs.values() do
         inputs'( inp.name() ) = inp.value()
       end

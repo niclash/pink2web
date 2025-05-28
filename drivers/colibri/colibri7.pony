@@ -1,6 +1,5 @@
 use "collections"
 use "files"
-use "metric"
 use "promises"
 use "raspi"
 use "time"
@@ -91,7 +90,7 @@ primitive ColibriExpansionFactory
     end
 
 interface val ColibriExpansionCardListener
-  fun val notify( value:(String|I64|F64|Metric|Bool) )
+  fun val notify( value:Linkable )
 
 trait tag ColibriExpansionCard
   be update()

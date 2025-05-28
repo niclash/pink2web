@@ -1,5 +1,5 @@
 
-use "metric"
+use "../system"
 use "time"
 
 trait val GraphNotify is Equatable[GraphNotify]
@@ -18,9 +18,9 @@ trait val GraphNotify is Equatable[GraphNotify]
   
   fun removed_connection(graphid:String, from_block:String, from_output:String, to_block:String, to_input:String)
 
-  fun added_initial(graphid:String, initial_value:(String|I64|F64|Metric|Bool), to_block:String, to_input:String)
+  fun added_initial(graphid:String, initial_value:Linkable, to_block:String, to_input:String)
 
-  fun removed_initial(graphid:String, initial_value:(String|I64|F64|Metric|Bool), to_block:String, to_input:String)
+  fun removed_initial(graphid:String, initial_value:Linkable, to_block:String, to_input:String)
 
   fun created_graph(name:String, description:String, graphid:String, icon:String)
 

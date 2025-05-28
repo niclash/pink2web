@@ -1,13 +1,12 @@
 use "collections"
 use "debug"
 use "jay"
-use "metric"
 use "../system"
 
 trait Input is Stringable
-  fun ref set( new_value: (String|I64|F64|Metric|Bool))
-  fun ref set_initial( initial_value: (String|I64|F64|Metric|Bool|None))
-  fun value() : (String|I64|F64|Metric|Bool)
+  fun ref set( new_value: Linkable)
+  fun ref set_initial( initial_value: Linkable)
+  fun value() : Linkable
   fun name() : String
   fun description() : String
   fun descriptor() : InputDescriptor
@@ -19,8 +18,8 @@ trait Input is Stringable
 
 class InputImpl is Input
   let _name: String
-  var _value: (String|I64|F64|Metric|Bool)
-  var _initial: (String|I64|F64|Metric|Bool|None)
+  var _value: Linkable
+  var _initial: Linkable
   var _description: String
   let _descriptor:InputDescriptor
   let _converter:TypeConverter box
@@ -34,24 +33,24 @@ class InputImpl is Input
     _converter = converter
     _initial = None
 
-  fun value() : (String|I64|F64|Metric|Bool) =>
+  fun value() : Linkable =>
     _value
 
   fun name() : String =>
     _name
 
-  fun ref set( new_value: (String|I64|F64|Metric|Bool)) =>
+  fun ref set( new_value: Linkable) =>
     _value = new_value
     for subscr in _subscriptions.values() do
       subscr(new_value)
     end
 
-  fun ref set_initial( initial_value: (String|I64|F64|Metric|Bool|None)) =>
+  fun ref set_initial( initial_value: Linkable) =>
     match initial_value
     | None =>
       _value = DefaultValue(_descriptor.typ)
       _initial = None
-    | let init:(String|I64|F64|Metric|Bool) =>
+    | let init:Linkable =>
       _value = init
       _initial = init
     end

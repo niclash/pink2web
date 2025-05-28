@@ -1,6 +1,5 @@
 use "collections"
 use "jay"
-use "metric"
 use "promises"
 use "time"
 use ".."
@@ -8,7 +7,7 @@ use "../graphs"
 use "../system"
 
 interface val Function2
-  fun val apply( in1:(String|I64|F64|Metric|Bool), in2:(String|I64|F64|Metric|Bool) ):(String|I64|F64|Metric|Bool)
+  fun val apply( in1:Linkable, in2:Linkable ):Linkable
 
 actor Function2Block is Block
   var _name: String
@@ -38,7 +37,7 @@ actor Function2Block is Block
     _input2 = InputImpl( _name, _descriptor.input(1) )
     _output = OutputImpl( _name, _descriptor.output(0) )
 
-  be get_input(input: String, promise:Promise[(String|I64|F64|Metric|Bool)]) =>
+  be get_input(input: String, promise:Promise[Linkable]) =>
     match input
     | "in1" => promise(_input1.value())
     | "in2" => promise(_input2.value())
@@ -47,7 +46,7 @@ actor Function2Block is Block
       false
     end
 
-  be get_output(output: String, promise:Promise[(String|I64|F64|Metric|Bool)]) =>
+  be get_output(output: String, promise:Promise[Linkable]) =>
     if output == "out"  then
       promise(_output.value())
     else
@@ -98,7 +97,7 @@ actor Function2Block is Block
     _input2.rename_of_block( block, old_name, new_name )
     _output.rename_of_block( block, old_name, new_name )
 
-  be update(input: String, new_value:(String|I64|F64|Metric|Bool)) =>
+  be update(input: String, new_value:Linkable) =>
     _context(Fine) and _context.log(Fine, "Function2[ " + _name + "." + input + " = " + new_value.string() + " ]")
     _eventcounter = _eventcounter + 1
     match input
@@ -113,7 +112,7 @@ actor Function2Block is Block
     _eventrate = _eventcounter.f32() / interval_in_seconds.f32()
     _time_since_last_eventrate_update = now
 
-  be set_initial(input: String, initial_value:(String|I64|F64|Metric|Bool|None)) =>
+  be set_initial(input: String, initial_value:Linkable) =>
     _context(Fine) and _context.log(Fine, "Function2[ " + _name + "." + input + " = (initial) = " + initial_value.string() + " ]")
     match input
     | "in1" => _input1.set_initial( initial_value )

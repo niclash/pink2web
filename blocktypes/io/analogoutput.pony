@@ -1,6 +1,5 @@
 use "collections"
 use "jay"
-use "metric"
 use "promises"
 use "time"
 use ".."
@@ -28,7 +27,7 @@ actor AnalogOutput is Block
     _y = y
     _input = InputImpl( _name, _descriptor.input(0) )
 
-  be get_input(input: String, promise:Promise[(String|I64|F64|Metric|Bool)]) =>
+  be get_input(input: String, promise:Promise[Linkable]) =>
     match input
     | "input" => promise(_input.value())
     else
@@ -36,7 +35,7 @@ actor AnalogOutput is Block
       false
     end
 
-  be get_output(output: String, promise:Promise[(String|I64|F64|Metric|Bool)]) =>
+  be get_output(output: String, promise:Promise[Linkable]) =>
     None
 
   be change( x:F64, y:F64 ) =>
@@ -73,7 +72,7 @@ actor AnalogOutput is Block
   be rename_of( block: Block, old_name: String, new_name: String ) =>
     _input.rename_of_block( block, old_name, new_name )
 
-  be update(input: String, new_value:(String|I64|F64|Metric|Bool)) =>
+  be update(input: String, new_value:Linkable) =>
     _context(Fine) and _context.log(Fine, "AnalogOutput[ " + _name + "." + input + " = " + new_value.string() + " ]")
     _eventcounter = _eventcounter + 1
     match input
@@ -87,7 +86,7 @@ actor AnalogOutput is Block
     _eventrate = _eventcounter.f32() / interval_in_seconds.f32()
     _time_since_last_eventrate_update = now
 
-  be set_initial(input: String, initial_value:(String|I64|F64|Metric|Bool|None)) =>
+  be set_initial(input: String, initial_value:Linkable) =>
     _context(Fine) and _context.log(Fine, "AnalogOutput[ " + _name + "." + input + " = (initial) = " + initial_value.string() + " ]")
     match input
     | "input" => _input.set_initial( initial_value )

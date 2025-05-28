@@ -1,8 +1,5 @@
-use "metric"
 use "promises"
 use "../system"
-
-type Linkable is (String|I64|F64|Metric|Bool)
 
 class val LinkReference
   let src_block: String val
@@ -27,7 +24,7 @@ class val Link
     block = dest_block'
     input = dest_input'
 
-  fun update( new_value: (String|I64|F64|Metric|Bool) ) =>
+  fun update( new_value: Linkable ) =>
     block.update(input, new_value )
   
   fun describe( promise: Promise[String] tag ) =>
@@ -38,7 +35,7 @@ class val Link
     block.name(p)
 
 interface val LinkNotify
-  fun val apply( graph:String, subscription:LinkSubscription, new_value:(String|I64|F64|Metric|Bool) )
+  fun val apply( graph:String, subscription:LinkSubscription, new_value:Linkable )
 
 class val LinkSubscription is Stringable
   let src_block_name:String
@@ -59,7 +56,7 @@ class val LinkSubscription is Stringable
     graph = graph'
     callback = callback'
 
-  fun val apply( new_value:(String|I64|F64|Metric|Bool)) =>
+  fun val apply( new_value:Linkable) =>
     callback( graph, this, new_value )
 
   fun box string(): String iso^ =>

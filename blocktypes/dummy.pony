@@ -1,5 +1,4 @@
 use "jay"
-use "metric"
 use "promises"
 use "time"
 use "../graphs"
@@ -55,10 +54,10 @@ actor DummyBlock is Block
     _descriptor = descriptor'
     _context = context
 
-  be get_input(input: String, promise:Promise[(String|I64|F64|Metric|Bool)]) =>
+  be get_input(input: String, promise:Promise[Linkable]) =>
     false
 
-  be get_output(output: String, promise:Promise[(String|I64|F64|Metric|Bool)]) =>
+  be get_output(output: String, promise:Promise[Linkable]) =>
     false
 
 
@@ -83,13 +82,13 @@ actor DummyBlock is Block
   be rename_of( block: Block, old_name: String, new_name: String ) =>
     None
 
-  be update(input: String, new_value: (String|I64|F64|Metric|Bool)) =>
+  be update(input: String, new_value: Linkable) =>
     None
 
   be stats_update() =>
     None
 
-  be set_initial(input: String, new_value: (String|I64|F64|Metric|Bool|None)) =>
+  be set_initial(input: String, new_value: Linkable) =>
     None
 
   be refresh() =>

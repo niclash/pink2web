@@ -13,7 +13,6 @@ use "collections"
 use "debug"
 use "files"
 use "jay"
-use "metric"
 use "pony_test"
 use "promises"
 
@@ -96,8 +95,8 @@ class iso _BlockTest is UnitTest
         let assertions = Set[String]
         for expectation in expects.values() do
           let exp = expectation as JObj
-          let expectations:Array[(String|I64|F64|Metric|Bool)] val = recover
-            let e = Array[(String|I64|F64|Metric|Bool)]
+          let expectations:Array[Linkable] val = recover
+            let e = Array[Linkable]
             for output_ref in exp.keys() do
               assertions.set(output_ref)
               let output_value = exp(output_ref) as JObj

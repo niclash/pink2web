@@ -1,6 +1,5 @@
 use "debug"
 use "jay"
-use "metric"
 use "promises"
 use "../../web"
 use ".."
@@ -28,7 +27,7 @@ primitive RemoveInitialMessage
       ErrorMessage( connection, None, "Invalid 'removeinitial' payload: " + payload.string(), true )
     end
 
-  fun reply(connection:WebSocketSender, graph:String, value:(String|I64|F64|Metric|Bool), block:String, input:String ) =>
+  fun reply(connection:WebSocketSender, graph:String, value:Linkable, block:String, input:String ) =>
     let src = JObj + ("data", value)
     let tgt = JObj + ("node", block) + ("port", input)
     let payload:JObj = JObj + ("graph", graph) + ("src", src ) + ("tgt", tgt)

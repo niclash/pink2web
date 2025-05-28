@@ -1,6 +1,5 @@
 use "collections"
 use "files"
-use "metric"
 use "promises"
 use "raspi"
 use "time"
@@ -90,7 +89,7 @@ primitive Link2WebExpansionFactory
     end
 
 interface val ExpansionCardListener
-  fun val notify( value:(String|I64|F64|Metric|Bool) )
+  fun val notify( value:Linkable )
 
 trait tag ExpansionCard
   be update()

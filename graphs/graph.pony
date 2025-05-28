@@ -2,7 +2,6 @@ use "collections"
 use "debug"
 use "files"
 use "jay"
-use "metric"
 use "promises"
 use "time"
 use "../blocktypes"
@@ -105,16 +104,16 @@ actor Graph
     })
     _types.get(block_type, promise)
 
-  be set_initial( block':String, input:String, initial:(String|I64|F64|Metric|Bool|None)) =>
+  be set_initial( block':String, input:String, initial:Linkable) =>
     try
       let block = _blocks( block' )?
-      let promise = Promise[(String|I64|F64|Metric|Bool)]
-      promise.next[None]( { (old_value:(String|I64|F64|Metric|Bool)) =>
+      let promise = Promise[Linkable]
+      promise.next[None]( { (old_value:Linkable) =>
           match initial
           | None =>
             block.set_initial( input, None )
             _graphs._removed_initial(_descriptor.id, old_value, block', input )
-          | let initial_value:(String|I64|F64|Metric|Bool) =>
+          | let initial_value:Linkable =>
             block.set_initial( input, initial_value )
             _graphs._removed_initial(_descriptor.id, old_value, block', input )
             _graphs._added_initial(_descriptor.id, initial_value, block', input )

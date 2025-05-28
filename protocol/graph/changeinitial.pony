@@ -1,6 +1,5 @@
 use "debug"
 use "jay"
-use "metric"
 use "promises"
 use "../../web"
 use ".."
@@ -26,7 +25,7 @@ primitive ChangeInitialMessage
       ErrorMessage( connection, None, "Invalid 'addinitial' payload: " + payload.string(), true )
     end
 
-  fun reply(connection:WebSocketSender, graph:String, oldvalue:(String|I64|F64|Metric|Bool), newvalue:(String|I64|F64|Metric|Bool), block:String, input:String ) =>
+  fun reply(connection:WebSocketSender, graph:String, oldvalue:Linkable, newvalue:Linkable, block:String, input:String ) =>
     let src = JObj + ("data", oldvalue)
     let tgt = JObj + ("node", block) + ("port", input)
     let payload:JObj = JObj + ("graph", graph) + ("src", src ) + ("tgt", tgt)

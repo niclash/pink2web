@@ -1,7 +1,6 @@
 use "collections"
 use "debug"
 use "jay"
-use "metric"
 use "promises"
 use "time"
 use ".."
@@ -44,7 +43,7 @@ actor IntervalTimerBlock is Block
     _x = x
     _y = y
 
-  be get_input(input: String, promise:Promise[(String|I64|F64|Metric|Bool)]) =>
+  be get_input(input: String, promise:Promise[Linkable]) =>
     match input
     | "interval" => promise(_interval.value())
     | "run" => promise(_run'.value())
@@ -55,7 +54,7 @@ actor IntervalTimerBlock is Block
       false
     end
 
-  be get_output(output: String, promise:Promise[(String|I64|F64|Metric|Bool)]) =>
+  be get_output(output: String, promise:Promise[Linkable]) =>
     if output == "out"  then
       promise(_output.value())
     else
@@ -138,7 +137,7 @@ actor IntervalTimerBlock is Block
     _oneshot.rename_of_block( block, old_name, new_name )
     _output.rename_of_block( block, old_name, new_name )
 
-  be update(input: String, new_value:(String|I64|F64|Metric|Bool)) =>
+  be update(input: String, new_value:Linkable) =>
     _eventcounter = _eventcounter + 1
     match new_value
     | let v:Stringable => _context(Fine) and _context.log(Fine, "IntervalTimer[ " + _name + "." + input + " = " + v.string() + " ]")
@@ -165,7 +164,7 @@ actor IntervalTimerBlock is Block
     _eventrate = _eventcounter.f32() / interval_in_seconds.f32()
     _time_since_last_eventrate_update = now
 
-  be set_initial(input: String, initial_value:(String|I64|F64|Metric|Bool|None)) =>
+  be set_initial(input: String, initial_value:Linkable) =>
     _context(Fine) and _context.log(Fine, "IntervalTimer[ " + _name + "." + input + " = " + initial_value.string() + " ]")
     match initial_value
     | let v: F64 =>

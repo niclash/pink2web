@@ -1,7 +1,6 @@
 
 use "collections"
 use "debug"
-use "metric"
 use "promises"
 use "time"
 use "../blocktypes"
@@ -149,13 +148,13 @@ actor Graphs
       s.removed_connection(graph, from_block, from_output, to_block, to_input) 
     end
 
-  be _added_initial(graph: String, initial_value:(String|I64|F64|Metric|Bool), to_block:String, to_input:String) =>
+  be _added_initial(graph: String, initial_value:Linkable, to_block:String, to_input:String) =>
     _context(Info) and _context.log(Info, "added initial: " + graph + " : "  + initial_value.string() + " ==> " + to_block + "." + to_input )
     for s in _subscribers.values() do
       s.added_initial(graph, initial_value, to_block, to_input)
     end
 
-  be _removed_initial(graph: String, old_value:(String|I64|F64|Metric|Bool), to_block:String, to_input:String) =>
+  be _removed_initial(graph: String, old_value:Linkable, to_block:String, to_input:String) =>
     _context(Info) and _context.log(Info, "removed initial: " + graph + " : "  + old_value.string() + " ==> " + to_block + "." + to_input )
     for s in _subscribers.values() do
       s.removed_initial(graph, old_value, to_block, to_input)

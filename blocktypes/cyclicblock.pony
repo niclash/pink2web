@@ -1,13 +1,12 @@
 use "collections"
 use "jay"
-use "metric"
 use "promises"
 use "time"
 use "../graphs"
 use "../system"
 
 interface val CyclicAlgorithm
-  fun val apply( block:CyclicBlock, inputs:Map[String,(String|I64|F64|Metric|Bool)] val, now:U64, last:U64 )
+  fun val apply( block:CyclicBlock, inputs:Map[String,Linkable] val, now:U64, last:U64 )
 
 actor CyclicBlock is Block
   var _name: String
@@ -44,7 +43,7 @@ actor CyclicBlock is Block
       _outputs.push( OutputImpl( name', outp ) )
     end
 
-  be get_input(input: String, promise:Promise[(String|I64|F64|Metric|Bool)]) =>
+  be get_input(input: String, promise:Promise[Linkable]) =>
     try
       let inp = _find_input( input )?
       promise(inp.value())
@@ -53,7 +52,7 @@ actor CyclicBlock is Block
       false
     end
 
-  be get_output(output: String, promise:Promise[(String|I64|F64|Metric|Bool)]) =>
+  be get_output(output: String, promise:Promise[Linkable]) =>
     try
       let outp = _find_output( output )?
       promise(outp.value())
@@ -139,7 +138,7 @@ actor CyclicBlock is Block
     end
     error
 
-  be update(input: String, new_value:(String|I64|F64|Metric|Bool)) =>
+  be update(input: String, new_value:Linkable) =>
     _context(Fine) and _context.log(Fine, _descriptor.name() + "[ " + _name + "." + input + " = " + new_value.string() + " ]")
     _eventcounter = _eventcounter + 1
     try
@@ -155,7 +154,7 @@ actor CyclicBlock is Block
     _eventrate = _eventcounter.f32() / interval_in_seconds.f32()
     _time_since_last_eventrate_update = now
 
-  be set_initial(input: String, initial_value: (String|I64|F64|Metric|Bool|None)) =>
+  be set_initial(input: String, initial_value: Linkable) =>
     _context(Fine) and _context.log(Fine, _descriptor.name() + "[ " + _name + "." + input + " = (initial) = " + initial_value.string() + " ]")
     try
       let inp = _find_input( input )?
@@ -167,7 +166,7 @@ actor CyclicBlock is Block
   be refresh() =>
     if _started then
       let now = Time.millis()
-      let inputs' = recover iso Map[String,(String|I64|F64|Metric|Bool)] end
+      let inputs' = recover iso Map[String,Linkable] end
       for inp in _inputs.values() do
         inputs'( inp.name() ) = inp.value()
       end

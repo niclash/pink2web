@@ -1,6 +1,5 @@
 use "collections"
 use "jay"
-use "metric"
 use "promises"
 use "time"
 use ".."
@@ -28,10 +27,10 @@ actor DigitalInput is Block
     _y = y
     _output = OutputImpl( _name, _descriptor.output(0) )
 
-  be get_input(input: String, promise:Promise[(String|I64|F64|Metric|Bool)]) =>
+  be get_input(input: String, promise:Promise[Linkable]) =>
     _context(Warn) and _context.log( Warn, "Unknown input: " + _name + "." + input )
 
-  be get_output(output: String, promise:Promise[(String|I64|F64|Metric|Bool)]) =>
+  be get_output(output: String, promise:Promise[Linkable]) =>
     if output == "out"  then
       promise(_output.value())
     else
@@ -80,7 +79,7 @@ actor DigitalInput is Block
   be rename_of( block: Block, old_name: String, new_name: String ) =>
     _output.rename_of_block( block, old_name, new_name )
 
-  be update(input: String, new_value:(String|I64|F64|Metric|Bool)) =>
+  be update(input: String, new_value:Linkable) =>
     _context(Fine) and _context.log(Fine, "DigitalInput[" + _name + "." + input + "].update() --> no effect")
     _eventcounter = _eventcounter + 1
     refresh()
@@ -91,7 +90,7 @@ actor DigitalInput is Block
     _eventrate = _eventcounter.f32() / interval_in_seconds.f32()
     _time_since_last_eventrate_update = now
 
-  be set_initial(input: String, initial_value:(String|I64|F64|Metric|Bool|None)) =>
+  be set_initial(input: String, initial_value:Linkable) =>
     _context(Fine) and _context.log(Fine, "DigitalInput[ " + _name + "." + input + "].setInitial() --> no effect")
     refresh()
 
