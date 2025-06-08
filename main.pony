@@ -11,7 +11,6 @@ use "collections"
 use "files"
 use "jay"
 use "net"
-use pi = "raspi"
 use "promises"
 use "websocket"
 
@@ -19,10 +18,6 @@ actor Main
 
   new create( env: Env ) =>
     try
-//      env.out.print( "CLI:" )
-//      for arg in env.args.values() do
-//        env.out.print( "  " + arg )
-//      end
       handle_cli(env)?
     else
       env.err.print( "Can not handle command line." )
@@ -38,66 +33,62 @@ actor Main
             OptionSpec.bool("info", "Info Logging Level" where default' = false)
             OptionSpec.bool("fine", "Fine Logging Level" where default' = false)
             OptionSpec.string("basedir", "Base directory" where default' = ".")
+            OptionSpec.string("confdir", "Configuration directory" where default' = "/etc/pink2web")
         ],  [
-            list_command()?; run_command()?; describe_command()? 
+            list_command()?; run_command()?; describe_command()?
         ] )? .> add_help()?
 
-    let cmd =
-      match CommandParser(cs).parse(args, vars)
-      | let c: Command =>
-            let level:LogLevel = if c.option("fine").bool() then Fine
-                                 else if c.option("info").bool() then Info
-                                 else if c.option("warn").bool() then Warn
-                                 else Error end end end
-            let basedir = FilePath(FileAuth(auth), c.option("basedir").string() )
-            let context:SystemContext = SystemContext(auth, env.out, env.err, level, basedir, Io)
-            let blocktypes:BlockTypes = BlockTypes(context)
-            let authorizer = Authorizer(_load_users(c, context)?, context)
-            match c.fullname()
-            | "pink2web/list/types" => list_types(blocktypes, context)
-            | "pink2web/run/daemon" =>
-                let config = _create_runtime_configuration( c )
-                let engine = RuntimeEngine( config, authorizer, blocktypes, context )
-                let filenames = _load_process_list(context)
-                for filename in filenames.values() do
-                  context(Fine) and context.log(Fine, "Starting graph " + filename)
-                  engine.load_graph(filename)
-                end
-            | "pink2web/run/process" =>
-                let config = _create_runtime_configuration( c )
-                let engine = RuntimeEngine( config, authorizer, blocktypes, context )
-                let filenames = c.arg( "filenames" ).string()
-                for filename in filenames.split(":").values() do
-                  context(Fine) and context.log(Fine, "Starting graph " + filename)
-                  engine.load_graph(filename)
-                end
-            | "pink2web/describe/type" => describe_type(c.arg("typename" ).string(),blocktypes,context)
-            | "pink2web/describe/topology" => 
-                describe_topology(c.arg("filename").string(),blocktypes,context)
+    let cmd = match CommandParser(cs).parse(args, vars)
+    | let c: Command =>
+        let level:LogLevel = if c.option("fine").bool() then Fine
+                             else if c.option("info").bool() then Info
+                             else if c.option("warn").bool() then Warn
+                             else Error end end end
+        let basedir = FilePath(FileAuth(auth), c.option("basedir").string() )
+        let confdir = FilePath(FileAuth(auth), c.option("confdir").string() )
+        let context:SystemContext = SystemContext(auth, env.out, env.err, level, basedir, confdir, Io)
+        let blocktypes:BlockTypes = BlockTypes(context)
+        let authorizer = Authorizer(_load_users(c, context)?, context)
+        match c.fullname()
+        | "pink2web/list/types" => list_types(blocktypes, context)
+        | "pink2web/run/daemon" =>
+            let config = _create_runtime_configuration( c )
+            let engine = RuntimeEngine( config, authorizer, blocktypes, context )
+            _load_processes(context, engine)
+        | "pink2web/run/process" =>
+            let config = _create_runtime_configuration( c )
+            let engine = RuntimeEngine( config, authorizer, blocktypes, context )
+            let filenames = c.arg( "filenames" ).string()
+            for filename in filenames.split(":").values() do
+              context(Fine) and context.log(Fine, "Starting graph " + filename)
+              engine.load_graph(filename)
             end
-      | let ch: CommandHelp =>
-          ch.print_help(env.out)
-      | let se: SyntaxError =>
-          env.err.print(se.string())
-          error
-      end
-
-  fun _load_process_list(context':SystemContext):Array[String] =>
-    let result = Array[String]()
-    try
-      var file' = FilePath(FileAuth(context'.auth()), "/var/lib/pink2web/processes.json" )
-      if not file'.exists() then
-        file' = FilePath(FileAuth(context'.auth()), "./docs/processes.json" )
-      end
-      context'(Fine) and context'.log( Fine, "Loading processes from " + file'.path )
-      let content: String = Files.read_text_from_pathname(file'.path, FileAuth(context'.auth()))?
-      let root = JParse.from_string( content )? as JArr
-      for jobj in root.values() do
-        let name = jobj.string()
-        result.push(name)
-      end
+        | "pink2web/describe/type" => describe_type(c.arg("typename" ).string(),blocktypes,context)
+        | "pink2web/describe/topology" =>
+          describe_topology(FilePath(FileAuth(context.auth()), c.arg("filename").string()),blocktypes,context)
+        end
+    | let ch: CommandHelp =>
+        ch.print_help(env.out)
+    | let se: SyntaxError =>
+        env.err.print(se.string())
+        error
     end
-    result
+
+  fun _load_processes(context':SystemContext, engine:RuntimeEngine) =>
+    try
+      var dir' = context'.filelocations().base_directory.join("graphs/")?
+      if not dir'.exists() then
+        context'(Error) and context'.log(Error, "Starting graph " + dir'.path)
+        error
+      end
+      context'(Fine) and context'.log( Fine, "Loading processes from " + dir'.path )
+      dir'.walk( {(p,entries) =>
+        for n in entries.values() do
+          engine.load_graph(n)
+          context'(Fine) and context'.log(Fine, "Starting graph " + n)
+        end
+      })
+    end
 
   fun list_command() : CommandSpec ? =>
     CommandSpec.parent("list", "", [
@@ -124,12 +115,10 @@ actor Main
       OptionSpec.string("host", "Host interface to connect to" where default' = "0.0.0.0")
       OptionSpec.string("users", "Name of file containing users and their passwords" where default' = "")
       OptionSpec.i64("port", "Port number to listen on" where default' = 3568)
-      OptionSpec.string_seq("load-driver", "Driver to be loaded.(may be used many times)")
+      OptionSpec.string_seq("load-drivers", "Driver to be loaded. Driver configuration in $CONFDIR/drivers/$driver.conf. If empty, load default.conf")
     ],[
-      CommandSpec.leaf( "process", "Run the process.", [
-      ], [
-        ArgSpec.string("filenames", "List of json files containing the graphs to start.", "" )
-      ] )?
+      CommandSpec.leaf( "process", "Run the process.", [], [ ArgSpec.string("filenames", "List of json files containing the graphs to start.", "" )])?
+      CommandSpec.leaf( "daemon", "Run as daemon.", [], [])?
     ])?
 
   fun list_types(blocktypes:BlockTypes, context:SystemContext) =>
@@ -148,7 +137,7 @@ actor Main
     })
     let json = blocktypes.describe_type( typ, promise )
 
-  fun describe_topology(filename:String, blocktypes:BlockTypes, context:SystemContext) =>
+  fun describe_topology(path:FilePath, blocktypes:BlockTypes, context:SystemContext) =>
     context(Fine) and context.log( Fine, "Describe topology" )
     let graphs = Graphs( blocktypes, context )
     let loader = Loader( graphs, blocktypes, context )
@@ -162,14 +151,14 @@ actor Main
 
     let loadpromise = Promise[(String, Graph|None)]
     loadpromise.next[None]( { (pair) =>
-      (let id:String, let graph:(Graph|None)) = pair
+      (let filename:String, let graph:(Graph|None)) = pair
       match graph
       | let g:Graph => g.describe( promise )
       else
         context(Error) and context.log( Error, "Unable to load " + filename )
       end
     })
-    loader.load_from_file( filename, loadpromise )?
+    loader.load_from_file( path.path, loadpromise )
 
   fun run_application(filename:String, graphs: Graphs, blocktypes:BlockTypes, context:SystemContext, promise:Promise[(String,Graph|None)]) =>
     None
@@ -184,7 +173,7 @@ actor Main
     if path == "" then path = Path.cwd() + "/frontend/src" end
     var startpage:String = c.option("startpage").string()
     if startpage == "" then startpage = "login" end
-    let driversToLoad = c.option("load-driver").string_seq()
+    let driversToLoad = c.option("load-drivers").string_seq()
     var engine_id:String = c.option("id").string()
     RuntimeConfiguration( engine_id, host, port, path, startpage, driversToLoad )
 

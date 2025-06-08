@@ -7,6 +7,7 @@ use "../system"
 use "../web"
 
 use "collections"
+use "files"
 use "net"
 use "promises"
 use "websocket"
@@ -34,7 +35,7 @@ class RuntimeEngine
     context(Info) and context.log(Info, "Started to listen: ws://"+host+":"+ws_port)
     _rest = RestServer(host, port, config.webdir, config.startpage, context )
 
-    let drivers = Drivers(context)
+    let drivers = Drivers(context, _graphs)
     for driver in config.drivers.values() do
       context(Info) and context.log(Info, "Loading " + driver )
       drivers.load(driver)

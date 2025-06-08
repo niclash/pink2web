@@ -15,13 +15,13 @@ class val SystemContext
   let _stderr: OutStream
   let _io:Io tag
 
-  new val create(auth':AmbientAuth, stdout':OutStream, stderr':OutStream, level:LogLevel, base_dir:FilePath, io':Io tag, remote_log:Bool = false) =>
+  new val create(auth':AmbientAuth, stdout':OutStream, stderr':OutStream, level:LogLevel, base_dir:FilePath, conf_dir:FilePath, io':Io tag, remote_log:Bool = false) =>
     _auth = auth'
     _io = io'
     timers = Timers(20) // ~millisecond resolution
     _stdout = stdout'
     _stderr = stderr'
-    _filelocations = recover val FileLocations(base_dir) end
+    _filelocations = recover val FileLocations(base_dir, conf_dir) end
     _remote_out = RemoteOutStream( stdout', false )
     _remote_err = RemoteOutStream( stderr', true )
     if remote_log then
@@ -29,6 +29,8 @@ class val SystemContext
     else
       _logger = _Logger( _stdout, _stderr, level )
     end
+
+  fun name(): String val => "pink2web"
 
   fun stdout(): OutStream => _stdout
   
@@ -58,15 +60,30 @@ class val SystemContext
     _remote_out.remove_remote( socket )
     _remote_err.remove_remote( socket )
 
+  fun formatMap(data:Map[String val,String val] box): String val=>
+    var result = String
+    result.reserve(data.size()*100)
+    for c in data.pairs() do
+      result.append("    " + c._1 +":" + c._2 )
+    end
+    recover val
+      result.string()
+    end
+
 class val FileLocations
   let base_directory:FilePath
+  let config_directory:FilePath
   let graph_directory:FilePath
 
-  new create( base_dir':FilePath ) =>
+  new create( base_dir':FilePath, conf_dir':FilePath ) =>
     base_directory = base_dir'
+    config_directory = conf_dir'
     try
       if not base_directory.exists() then
         base_directory.mkdir()
+      end
+      if not base_directory.exists() then
+        Fail()
       end
       graph_directory = base_dir'.join( "graphs" )?
       if not graph_directory.exists() then

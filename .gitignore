@@ -3,5 +3,5 @@
 /_corral
 /line_count.sh
 *.o
-junk.*
+junk*.*
 build

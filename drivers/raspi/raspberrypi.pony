@@ -1,14 +1,17 @@
 
 use "collections"
 use "promises"
-use "raspi"
+use "gpiod"
 use "../../system"
 use ".."
 
 actor RaspberryPi is Driver
+  let _drivers: Drivers
+  let _config:Map[String,String] val
 
-  new create(context':SystemContext) =>
-      RPi.wiringPiSetup()
+  new create(context':SystemContext, config':Map[String,String] val, drivers: Drivers) =>
+    _config = config'
+    _drivers = drivers
 
   be start() =>
     None
@@ -16,18 +19,18 @@ actor RaspberryPi is Driver
   be stop() =>
     None
 
-  be get_physical_ports(promise: Promise[Array[PhysicalPortInfo val] val]) =>
+  be get_physical_ports(promise: Promise[PhysicalIoPortInfo]) =>
     None
 
-  be add_physical_port_config_listener(listener: PhysicalPortConfigListener) =>
+  be add_physical_port_config_listener(listener: PhysicalPortConfigNotify) =>
     None
 
-  be remove_physical_port_config_listener(listener: PhysicalPortConfigListener) =>
+  be remove_physical_port_config_listener(listener: PhysicalPortConfigNotify) =>
     None
 
-  be add_physical_port_value_listener(listener: PhysicalPortValueListener) =>
+  be add_physical_port_value_listener(listener: PhysicalPortValueNotify) =>
     None
 
-  be remove_physical_port_value_listener(listener: PhysicalPortValueListener) =>
+  be remove_physical_port_value_listener(listener: PhysicalPortValueNotify) =>
     None
 

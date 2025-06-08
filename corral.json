@@ -12,16 +12,20 @@
   ],
   "deps": [
     {
-      "locator": "github.com/niclash/jay.git",
-      "version": "master"
-    },
-    {
       "locator": "github.com/niclash/jennet.git",
       "version": "master"
     },
     {
-      "locator": "github.com/niclash/pony-pi.git",
-      "version": "main"
+      "locator": "github.com/niclash/jay.git",
+      "version": "master"
+    },
+    {
+      "locator": "github.com/niclash/pony-gpiod.git",
+      "version": "master"
+    },
+    {
+      "locator": "github.com/niclash/pony-i2c.git",
+      "version": "master"
     },
     {
       "locator": "github.com/niclash/pony-websocket.git",
@@ -32,7 +36,7 @@
       "version": "master"
     },
     {
-      "locator": "github.com/niclash/http_server.git",
+      "locator": "github.com/ponylang/http_server.git",
       "version": "main"
     },
     {

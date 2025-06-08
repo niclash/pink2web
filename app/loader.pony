@@ -28,7 +28,8 @@ actor Loader
   be load_from_file( pathname: String, promise:Promise[(String, Graph|None)] ) =>
     try
       _context(Fine) and _context.log( Fine, "Loading " + pathname )
-      let content: String = Files.read_text_from_pathname(pathname, FileAuth(_context.auth()))?
+      let file = _context.filelocations().base_directory.join("graphs/" + pathname)?
+      let content: String = Files.read_text_from_path(file)?
       let root = JParse.from_string( content )? as JObj
       _parse_root(root, promise)
     else

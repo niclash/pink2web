@@ -1,11 +1,18 @@
+use "collections"
 use "promises"
 
 use "../../system"
 use ".."
 
 actor ModbusRtu is Driver
-  new create(context':SystemContext) =>
-    None
+  let _drivers:Drivers
+  let _context:SystemContext
+  let _config:Map[String,String] val
+
+  new create(context':SystemContext, config':Map[String,String] val, drivers':Drivers) =>
+    _drivers = drivers'
+    _context = context'
+    _config = config'
 
   be start() =>
     None
@@ -13,17 +20,17 @@ actor ModbusRtu is Driver
   be stop() =>
     None
 
-  be get_physical_ports(promise: Promise[Array[PhysicalPortInfo val] val]) =>
+  be get_physical_ports(promise: Promise[PhysicalIoPortInfo]) =>
     None
 
-  be add_physical_port_config_listener(listener: PhysicalPortConfigListener) =>
+  be add_physical_port_config_listener(listener: PhysicalPortConfigNotify) =>
     None
 
-  be remove_physical_port_config_listener(listener: PhysicalPortConfigListener) =>
+  be remove_physical_port_config_listener(listener: PhysicalPortConfigNotify) =>
     None
 
-  be add_physical_port_value_listener(listener: PhysicalPortValueListener) =>
+  be add_physical_port_value_listener(listener: PhysicalPortValueNotify) =>
     None
 
-  be remove_physical_port_value_listener(listener: PhysicalPortValueListener) =>
+  be remove_physical_port_value_listener(listener: PhysicalPortValueNotify) =>
     None

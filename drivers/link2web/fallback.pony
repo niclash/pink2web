@@ -1,8 +1,8 @@
 use "collections"
 use "../../system"
 
-actor Link2WebFallback is ExpansionCard
-  let _listeners:List[ExpansionCardListener] = List[ExpansionCardListener]
+actor Link2WebFallback is Link2WebExpansionCard
+  let _listeners:List[Link2WebExpansionCardNotify] = List[Link2WebExpansionCardNotify]
   let _context:SystemContext
   let _revision:U16
   let _slot:U8
@@ -12,10 +12,10 @@ actor Link2WebFallback is ExpansionCard
     _context = context
     _revision = revision
 
-  be add_listener( listener:ExpansionCardListener ) =>
+  be add_listener( listener:Link2WebExpansionCardNotify ) =>
     _listeners.push( listener )
 
-  be remove_listener( listener':ExpansionCardListener ) =>
+  be remove_listener( listener':Link2WebExpansionCardNotify ) =>
     for listener in _listeners.nodes() do
       try
         if listener()? is listener' then

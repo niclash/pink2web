@@ -2,7 +2,7 @@ use "collections"
 use "../../system"
 
 actor ColibriPt1000 is ColibriExpansionCard
-  let _listeners:List[ColibriExpansionCardListener] = List[ColibriExpansionCardListener]
+  let _listeners:List[ColibriExpansionCardNotify] = List[ColibriExpansionCardNotify]
   let _context:SystemContext
   let _revision:U16
   let _slot:U8
@@ -12,10 +12,10 @@ actor ColibriPt1000 is ColibriExpansionCard
     _context = context
     _revision = revision
 
-  be add_listener( listener:ColibriExpansionCardListener ) =>
+  be add_listener( listener:ColibriExpansionCardNotify ) =>
     _listeners.push( listener )
 
-  be remove_listener( listener':ColibriExpansionCardListener ) =>
+  be remove_listener( listener':ColibriExpansionCardNotify ) =>
     for listener in _listeners.nodes() do
       try
         if listener()? is listener' then
