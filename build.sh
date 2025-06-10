@@ -9,7 +9,7 @@ fi
 
 if [ "$1." == "arm." ] ; then
   export CC="/usr/bin/arm-linux-gnueabihf-gcc -mfloat-abi=hard -mfpu=fp-armv8 -lwiringPi"
-  corral run -- ponyc -Dwiringpi -Dopenssl_1.1.x --cpu=cortex-a53 --triple="arm-unknown-linux-gnueabihf" --link-arch=armv8-a --linker=clang-17
+  corral run -- ponyc -d -Dopenssl_3.0.x --cpu=cortex-a53 --triple="arm-unknown-linux-gnueabihf" --link-arch=armv8-a --linker=arm-linux-gnueabihf-gcc-14 --path "/home/niclas/dev/pony/ponyc-arm/build/armv8-a/release/"
   if [ "$2." == "release." ] ; then
     export VERSION=`git tag | grep ^v | sort -r | head -1 | sed 's/v//' `
     echo "Building pinkweb_$VERSION"
@@ -71,7 +71,8 @@ WantedBy=multi-user.target" >build/pink2web_$VERSION/usr/local/lib/pink2web/bin/
 fi
 if [ "$1." == "x86_64." ] ; then
   export CC="/usr/bin/clang-11"
-  corral run -- ponyc -d -Dopenssl_3 --linker=clang-17
+  # corral run -- ponyc -d -Dopenssl_3 --linker=clang-17
+  corral run -- ponyc -d -Dopenssl_3.0.x
 
   if [ "$2." == "release." ] ; then
     export VERSION=`git tag | grep ^v | sort -r | head -1 | sed 's/v//' `

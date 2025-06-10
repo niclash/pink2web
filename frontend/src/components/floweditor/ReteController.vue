@@ -83,6 +83,7 @@ const onGraphClear = async (payload: ClearEvent): Promise<void> => {
 };
 
 const onGraphAddNode = async (payload: AddNodeEvent): Promise<void> => {
+  console.log("OnGraphAddNode")
   startTransaction(payload);
   try {
     let template = componentTemplates[payload.component];

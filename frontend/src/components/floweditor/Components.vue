@@ -23,7 +23,7 @@
           <div class="accordion-body container"> <!-- Apply container class here -->
             <button v-for="component in components" :key="component.fullId" @click="emit('onSelection', component.fullId)">
                 <!--<img :src="component.icon" alt="icon" />-->
-              {{ component.displayName }}
+              {{ component.name }}
             </button>
           </div>
         </div>
@@ -65,7 +65,7 @@ const groupComponents = () => {
     if (!groups[section]) {
       groups[section] = [];
     }
-    groups[section].push({...component, displayName: name, fullId: component.name});
+    groups[section].push({...component, name: name, fullId: component.name});
   });
   return groups;
 };

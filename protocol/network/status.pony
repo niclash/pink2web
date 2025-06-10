@@ -3,6 +3,7 @@ use "promises"
 use "../../web"
 use ".."
 use "../../graphs"
+use "debug"
 
 class StatusMessage
 
@@ -15,4 +16,6 @@ class StatusMessage
       + ("running", running)
       + ("started", started)
       + ("debug", debug)
-    connection.send_text( Message("network", "status", json ).string() )
+    let msg = Message("network", "status", json ).string()
+    Debug("Network Status:" + msg.string())
+    connection.send_text( msg )

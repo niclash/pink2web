@@ -33,7 +33,7 @@ class RuntimeEngine
     context(Info) and context.log(Info, "Web directory: "+config.webdir)
     context(Info) and context.log(Info, "Start Page: "+config.startpage)
     context(Info) and context.log(Info, "Started to listen: ws://"+host+":"+ws_port)
-    _rest = RestServer(host, port, config.webdir, config.startpage, context )
+    _rest = RestServer(host, port.string(), config.webdir, config.startpage, context )
 
     let drivers = Drivers(context, _graphs)
     for driver in config.drivers.values() do

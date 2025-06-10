@@ -558,6 +558,7 @@ export class GraphProtocol {
     }
 
     addedge(payload: any) {
+        console.log("changenode", JSON.stringify(payload));
         for (let fn of this.listeners.onGraphAddEdge) {
             fn(payload as AddEdgeEvent);
         }
