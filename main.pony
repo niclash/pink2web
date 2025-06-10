@@ -14,6 +14,10 @@ use "net"
 use "promises"
 use "websocket"
 
+use "debug"
+use "./protocol/network"
+
+
 actor Main
 
   new create( env: Env ) =>
@@ -68,7 +72,18 @@ actor Main
           describe_topology(FilePath(FileAuth(context.auth()), c.arg("filename").string()),blocktypes,context)
         end
     | let ch: CommandHelp =>
-        ch.print_help(env.out)
+      let json = JObj
+        + ("graph", "123")
+        + ("name", "a name")
+        + ("description", "nothing")
+        + ("uptime", I64(123))
+        + ("running", true)
+        + ("started", true)
+        + ("debug", false)
+        let msg = Message("network", "status", json ).string()
+        Debug("Network Status:" + msg.string())
+
+      ch.print_help(env.out)
     | let se: SyntaxError =>
         env.err.print(se.string())
         error
