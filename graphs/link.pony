@@ -17,10 +17,10 @@ interface val LinkRemoveNotify
   fun apply( link: LinkReference val )
 
 class val Link
-  let block:Block
+  let block:Updateable
   let input:String
 
-  new create( dest_block':Block, dest_input':String ) =>
+  new create( dest_block':Updateable, dest_input':String ) =>
     block = dest_block'
     input = dest_input'
 

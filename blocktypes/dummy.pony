@@ -63,9 +63,9 @@ actor DummyBlock is Block
 
   be change( x:F64, y:F64 ) => None
 
-  be disconnect_block( block: Block, disconnects: LinkRemoveNotify ) =>  None
+  be disconnect_block( block: Updateable, disconnects: LinkRemoveNotify ) =>  None
 
-  be disconnect_edge( output:String, dest_block: Block, dest_input: String, disconnects: LinkRemoveNotify ) => None
+  be disconnect_edge( output:String, dest_block: Updateable, dest_input: String, disconnects: LinkRemoveNotify ) => None
   
   be destroy(disconnects: LinkRemoveNotify) => None
   
@@ -73,7 +73,7 @@ actor DummyBlock is Block
   
   be stop() => None  
   
-  be connect( output: String, to_block: Block tag, to_input: String) =>
+  be connect( output: String, to_block: Updateable, to_input: String) =>
     None
 
   be rename( new_name: String ) => 

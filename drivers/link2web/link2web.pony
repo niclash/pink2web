@@ -23,21 +23,27 @@ actor Link2Web is Driver
     let pinnumber:USize = try _config("reset_pin")?.usize()? else 19 end
     let chipname = try _config("gpiochip")? else "gpiochip0" end
     _bus = I2C.bus(0, FileAuth(context'.auth()) )
+    context'.log(Error,"Niclas 1")
     try
       let gpio = recover val GpioChip(chipname)? end
+      context'.log(Error,"Niclas 2")
       let reset_pin = recover val
         let cfg = GpioLineConfig.create()?
+      context'.log(Error,"Niclas 3")
 
         let settings = GpioLineSettings.create()
         settings.set_direction(GpioLineDirectionOutput)
+      context'.log(Error,"Niclas 4")
         if cfg.add_line_settings([pinnumber], settings) == -1 then error end
 
         let request = GpioRequestConfig.create()?
         request.set_event_buffer_size(0)
+      context'.log(Error,"Niclas 5")
         request.set_consumer(_context.name())
         gpio.request_lines(request, cfg)?
       end
       _gpio = gpio
+      context'.log(Error,"Niclas 6")
       _multiplexer = Link2WebMultiplexer(_bus, reset_pin, context')
     else
       context'(Error) and context'.log(Error, "Unable to instantiate driver: " + context'.formatMap(config')  )
@@ -148,16 +154,20 @@ class Link2WebMultiplexer
   let _reset_pin:GpioLineRequest val
 
   new create( bus':I2CBus, reset_pin':GpioLineRequest val, context':SystemContext ) =>
+    context'.log(Error,"Niclas 10")
     _bus = bus'
     _context = context'
     _reset_pin = reset_pin'
     _device = I2CDevice(0x70, _bus)
+    context'.log(Error,"Niclas 11")
 
   fun select(slot:U8) =>
+    _context.log(Error,"Niclas 12")
     let mask:U8 = 1 << slot
     _device.write_byte( mask )
 
   fun reset() =>
+    _context.log(Error,"Niclas 13")
     _reset_pin.set_value(0,GpioLineValueInactive)
     let t':Timer iso = Timer( _RestoreNotify(_reset_pin), 5, 5)
     _context.timers(consume t')

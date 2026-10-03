@@ -4,7 +4,7 @@ use "promises"
 interface val Collectable[IN:Any #alias, OUT:Any #share]
   fun apply( c:IN, p:Promise[OUT] )
 
-type Reducable[OUT:Any #share] is Fulfill[Array[OUT] val, None val]
+type Reducable[OUT:Any #share] is Fulfill[Array[OUT] val, OUT]
 
 primitive Collector[IN:Any #alias, OUT:Any #share]
   fun apply( collection':Iterator[IN], fetch:Collectable[IN,OUT], reduce:Reducable[OUT] iso ) =>
@@ -15,7 +15,7 @@ primitive Collector[IN:Any #alias, OUT:Any #share]
       promises.push(p)
     end
     let p = Promises[OUT].join(promises.values())
-    p.next[None]( consume reduce )
+    p.next[OUT]( consume reduce )
 
 interface StringCollector
   fun apply( s:String val )

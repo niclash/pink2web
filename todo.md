@@ -1,14 +1,16 @@
 # Things to do before 1.0
 
+* New name
+  * Dokkas (outside Gällivare)
+  * Flowty
+  * Angdala/Pilvalla/Torsnas
+
 * Export/Import Process to allow programs to be copied from one to another place. (GitHub integration?)
 
 * Show Link values in real-time in Web UI.
 
 * Undo/Redo
 
-* Metrics library? This needs to be changed a lot from the approach in Java, since types are not available in
-  the same way in Pony. Perhaps `Linkable` should become a class, which may carry a number and a unit.
-  
 * Save programs that are altered over the websocket.
 
 * Timeseries capture and storage, preferably on every Linkable. RRDtool?
@@ -20,6 +22,15 @@
 * Authentication/Authorization
 
 * Make a Group (addgroup, addinport, addoutport), make group into a new component, save/share.
+
+## How the IO/Environment system should work
+
+1. Each Environment runs as a separate Pink2Web Process, i.e. Graph
+1. Each Environment can have both hardcoded (can't be added/removed seprately) and user-added logic is possible.
+1. User defines In-ports and Out-ports to bind Environment process to other processes.
+1. Ports can be grouped and groups can be started/stopped. This allows the user to easily swap out part of the physical
+   environment and enable the emulator when testing something.
+
 
 ## BlockTypes Library
 The following block types are needed
@@ -58,6 +69,7 @@ The following block types are needed
   * Clock
   * Timer
   * Delay (1)
+  * DailySchedule
   * WeekSchedule
   * YearSchedule
   * Calendar (1)
@@ -91,29 +103,46 @@ The following block types are needed
   * EnergyMeter (1)
   * WaterMeter (1)
   * IndoorRegulator (1)
+  * HvacController
 
 * Monitoring/
   * AlarmPoint (1)
   * Statistics (1)
   * Reporting (1)
 
-* Hardware
-    1. Link2Web Triac
-    1. Link2Web Pt1000
-    1. Link2Web AQ
-    1. Link2Web Fallback
-    1. Colibri 7pi
-       1. Colibri AIV 
-       1. Colibri AIC 
-       1. Colibri AQV 
-       1. Colibri Pt1000 
-       1. Colibri PID1 
-       1. Colibri SSR 
-       1. Colibri Triac1
-       1. Colibri FET 
-       1. Colibri DIU 
-       1. Colibri DII 
-       1. Colibri RS485U/Modbus 
+* IO/
+  * Analog Input  
+  * Analog Output  
+  * Digital Input  
+  * Digital Output
+
+* Environment/
+  * Emulator
+    * Slider Input
+    * Knob Input
+    * Spinbox Input
+    * Numeric Text Input
+    * Random Input
+    * Text Output
+    * Meter Output
+  * Link2Web
+    * Triac
+    * Pt1000
+    * AQ
+    * Fallback
+  * Colibri
+    * AIV 
+    * AIC 
+    * AQV 
+    * Pt1000 
+    * PID1 
+    * SSR 
+    * Triac1
+    * FET 
+    * DIU 
+    * DII 
+    * DIO1 
+    * RS485U/Modbus 
     
 * ModBus Master
 

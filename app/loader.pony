@@ -88,6 +88,20 @@ actor Loader
       promise((id,graph))
     })
     graph.list_blocks(p)
+    try
+      // In-ports and Out-ports declare exported ports from blocks to the "outside" world.
+      thiss._parse_ports( root("inports") as JArr, { (name,node,port) =>
+        _context(Fine) and _context.log( Fine, "Inport: " + name + " -> " + node + "." + port )
+        graph.add_inport(name,node,port)
+      })
+      thiss._parse_ports( root("outports") as JArr, { (name,node,port) =>
+        _context(Fine) and _context.log( Fine, "Outport: " + name + " -> " + node + "." + port )
+        graph.add_outport(name,node,port)
+      })
+    else
+      _context(Info) and _context.log( Info, "No inports or no outports sections have been declared." )
+    end
+
 
   fun _parse_processes( graph: Graph, connections: JObj box ): Array[String] val =>
     _context(Info) and _context.log( Info, "_parse_processes() of " + connections.string() )
@@ -121,38 +135,51 @@ actor Loader
     for value in connections.data.values() do
       try
         let conn:JObj = value as JObj
-        (let src_process:(String|NotSet),let src_port:(String|NotSet),let src_data:(J|NotSet)) = _parse_endpoint(conn, "src" )
-        (let tgt_process:(String|NotSet),let tgt_port:(String|NotSet),let tgt_dummy:(J|NotSet)) = _parse_endpoint(conn, "tgt" )
+        (let src_node:(String|NotSet),let src_port:(String|NotSet),let src_data:(J|NotSet)) = _parse_endpoint(conn, "src" )
+        (let tgt_node:(String|NotSet),let tgt_port:(String|NotSet),let tgt_dummy:(J|NotSet)) = _parse_endpoint(conn, "tgt" )
         match src_data
         | NotSet =>
-          graph.connect( src_process as String, src_port as String, tgt_process as String, tgt_port as String )
+          graph.connect( src_node as String, src_port as String, tgt_node as String, tgt_port as String )
         | let d:String =>
-          graph.set_initial( tgt_process as String, tgt_port as String, d )
+          graph.set_initial( tgt_node as String, tgt_port as String, d )
         | let d:Bool =>
-          graph.set_initial( tgt_process as String, tgt_port as String, d )
+          graph.set_initial( tgt_node as String, tgt_port as String, d )
         | let d:I64 =>
-          graph.set_initial( tgt_process as String, tgt_port as String, d )
+          graph.set_initial( tgt_node as String, tgt_port as String, d )
         | let d:F64 =>
-          graph.set_initial( tgt_process as String, tgt_port as String, d )
+          graph.set_initial( tgt_node as String, tgt_port as String, d )
         else
           _context(Error) and _context.log( Error, "Bad 'data' type. Objects and Arrays are not supported." )
         end
       else
         try
           let c:Stringable = value as Stringable
-          _context(Error) and _context.log( Error, "Connection "+c.string()+"has invalid structure." )
+          _context(Error) and _context.log( Error, "Connection "+c.string()+" has invalid structure." )
         end
       end
     end
-    
+
+  fun tag _parse_ports(ports: JArr val, notify:_PortNotify) =>
+    for value in ports.data.values() do
+      try
+        let conn:JObj = value as JObj
+        let name = conn("name") as String
+        let node = conn("node") as String
+        let port = conn("port") as String
+        notify(name, node, port)
+      end
+    end
+
   fun _parse_endpoint( conn: JObj box, endp: String ) : ( (String|NotSet), (String|NotSet), (J|NotSet) ) =>
     try
       let point = conn(endp) as JObj
-      let process = point("process") as (String|NotSet)
+      let node = point("node") as (String|NotSet)
       let port = point("port") as (String|NotSet)
       let data = point("data")
-      (process,port,data)
+      (node,port,data)
     else
       ("","","")
     end
 
+interface _PortNotify
+  fun apply(name: String, node: String, port: String)

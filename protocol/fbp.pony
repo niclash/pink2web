@@ -133,6 +133,36 @@ class val GraphFilterSubscription is GraphNotify
       _underlying.removed_connection(graph, from_block, from_output, to_block, to_input)
     end
 
+  fun added_inport(graphid:String, port_name:String, block_name:String, block_port:String) =>
+    if graphid == _graphid then
+      _underlying.added_inport(graphid, port_name, block_name, block_port)
+    end
+
+  fun removed_inport(graphid:String, port_name:String) =>
+    if graphid == _graphid then
+      _underlying.removed_inport(graphid, port_name)
+    end
+
+  fun renamed_inport(graphid:String, from:String, to:String) =>
+    if graphid == _graphid then
+      _underlying.renamed_inport(graphid, from, to)
+    end
+
+  fun added_outport(graphid:String, port_name:String, block_name:String, block_port:String) =>
+    if graphid == _graphid then
+      _underlying.added_outport(graphid, port_name, block_name, block_port)
+    end
+
+  fun removed_outport(graphid:String, port_name:String) =>
+    if graphid == _graphid then
+      _underlying.removed_outport(graphid, port_name)
+    end
+
+  fun renamed_outport(graphid:String, from:String, to:String) =>
+    if graphid == _graphid then
+      _underlying.renamed_outport(graphid, from, to)
+    end
+
   fun added_initial(graph:String, initial_value:Linkable, to_block:String, to_input:String) =>
     if graph == _graphid then
       _underlying.added_initial(graph, initial_value, to_block, to_input)
@@ -196,6 +226,25 @@ class val Subscription is GraphNotify
   fun removed_connection(graph:String, from_block:String, from_output:String, to_block:String, to_input:String) =>
     RemoveEdgeMessage.reply(_connection, graph, from_block, from_output, to_block, to_input)
     
+  fun added_inport(graphid:String, port_name:String, block_name:String, block_port:String) =>
+    AddInportMessage.reply(_connection, graphid, port_name, block_name, block_port )
+
+  fun removed_inport(graphid:String, port_name:String) =>
+    RemoveInportMessage.reply(_connection, graphid, port_name)
+
+  fun renamed_inport(graphid:String, from:String, to:String) =>
+    RenameInportMessage.reply(_connection, graphid, from, to)
+
+  fun added_outport(graphid:String, port_name:String, block_name:String, block_port:String) =>
+    AddOutportMessage.reply(_connection, graphid, port_name, block_name, block_port )
+
+  fun removed_outport(graphid:String, port_name:String) =>
+    RemoveOutportMessage.reply(_connection, graphid, port_name)
+
+  fun renamed_outport(graphid:String, from:String, to:String) =>
+    RenameOutportMessage.reply(_connection, graphid, from, to)
+
+
   fun added_initial(graph:String, initial_value:Linkable, to_block:String, to_input:String) =>
     AddInitialMessage.reply(_connection, graph, initial_value, to_block, to_input)
 

@@ -44,9 +44,9 @@ actor Assertion is Block
     end
 
 
-//  be connect( output: String, to_block: Block, to_input: String)
-//  be disconnect_block( to_block: Block, disconnects: LinkRemoveNotify )
-//  be disconnect_edge( output:String, dest_block: Block, dest_input: String, disconnects: LinkRemoveNotify )
+//  be connect( output: String, to_block: Updateable, to_input: String)
+//  be disconnect_block( to_block: Updateable, disconnects: LinkRemoveNotify )
+//  be disconnect_edge( output:String, dest_block: Updateable, dest_input: String, disconnects: LinkRemoveNotify )
   be set_initial(input: String, initial_value: Linkable) => None
 //  be update(input: String, new_value: Linkable)
   be get_input(input: String, promise:Promise[Linkable]) => None
@@ -98,13 +98,13 @@ actor Assertion is Block
     _started = false  
     _context(Fine) and _context.log(Fine, "stop()")
     
-  be connect( output: String, to_block: Block, to_input: String) =>
+  be connect( output: String, to_block: Updateable, to_input: String) =>
     None
     
-  be disconnect_block( block: Block, disconnects: LinkRemoveNotify ) =>
+  be disconnect_block( block: Updateable, disconnects: LinkRemoveNotify ) =>
     None
 
-  be disconnect_edge( output:String, dest_block: Block, dest_input: String, disconnects: LinkRemoveNotify ) =>
+  be disconnect_edge( output:String, dest_block: Updateable, dest_input: String, disconnects: LinkRemoveNotify ) =>
     None
 
   be destroy() =>

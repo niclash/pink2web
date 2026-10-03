@@ -526,9 +526,11 @@ export class GraphProtocol {
     }
 
     addnode(payload: any) {
-        console.log("addnode", JSON.stringify(payload));
+        console.log("addnode:", JSON.stringify(payload));
+        console.log("listeners: ", this.listeners);
         for (let fn of this.listeners.onGraphAddNode) {
             try {
+                console.log("Calling: ", fn);
                 fn(payload as AddNodeEvent);
             } catch (e){
                 console.log("Error in addnode: ", e);

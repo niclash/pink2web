@@ -10,6 +10,6 @@ actor Io
 
   be set_output( logical_name:String, value:Linkable) =>
     match _drivers
-    | let d: Drivers => d.set_output( logical_name, value )
+    | let d: Drivers => None
     end
 

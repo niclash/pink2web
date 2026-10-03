@@ -7,9 +7,9 @@ use "../system"
 trait Output is Stringable
   fun ref set( newValue: Linkable )
   fun value() : Linkable
-  fun ref connect( dest: Block tag, input: String )
-  fun ref disconnect_block( dest: Block tag, disconnects: LinkRemoveNotify )
-  fun ref disconnect_edge( dest: Block tag, input: String, disconnects: LinkRemoveNotify )
+  fun ref connect( dest: Updateable, input: String )
+  fun ref disconnect_block( dest: Updateable, disconnects: LinkRemoveNotify )
+  fun ref disconnect_edge( dest: Updateable, input: String, disconnects: LinkRemoveNotify )
   fun ref disconnect_all(disconnects: LinkRemoveNotify)
   fun ref rename_of_block( block: Block, old_name: String, new_name: String )
   fun name(): String val
@@ -46,7 +46,7 @@ class OutputImpl is Output
     end
     _value = new_value
 
-  fun ref connect(dest_block: Block tag, input: String) =>
+  fun ref connect(dest_block: Updateable, input: String) =>
     var link:Link val = recover Link(dest_block, input) end
     _dest.push(link)
 
@@ -64,7 +64,7 @@ class OutputImpl is Output
       end
     end
 
-  fun ref disconnect_block( dest: Block, disconnects: LinkRemoveNotify ) =>
+  fun ref disconnect_block( dest: Updateable, disconnects: LinkRemoveNotify ) =>
     for node in _dest.nodes() do
       try
         let link = node()?
@@ -110,7 +110,7 @@ class OutputImpl is Output
       Debug.out( "Output.disconnect_all: No destinations!" )
     end
 
-  fun ref disconnect_edge( dest: Block, input: String, disconnects: LinkRemoveNotify ) =>
+  fun ref disconnect_edge( dest: Updateable, input: String, disconnects: LinkRemoveNotify ) =>
     Debug.out( _name + ".disconnect_edge( dest" + "," + input + ")" )
     for node in _dest.nodes() do
       try

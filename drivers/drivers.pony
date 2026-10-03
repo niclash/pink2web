@@ -72,12 +72,6 @@ actor Drivers
       promise( drivername )
     end
 
-  be input_value( port:PhysicalIoPortInfo, value: Any ) =>
-    None
-
-  be set_output( logical_name:String, value:Linkable) =>
-    None
-
 primitive Present
   fun is_present() => true
   fun is_absent() => false

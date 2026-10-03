@@ -92,20 +92,20 @@ actor NestedBlock is Block
       _started = false
     end
 
-  be connect( outputname: String, to_block: Block, to_input: String) =>
+  be connect( outputname: String, to_block: Updateable, to_input: String) =>
     try
       (let block, let output) = _outputs(outputname)?
       block.connect(output, to_block, to_input )
       refresh()
     end
 
-  be disconnect_block( block: Block, disconnects: LinkRemoveNotify ) =>
+  be disconnect_block( block: Updateable, disconnects: LinkRemoveNotify ) =>
     for (b, output) in _outputs.values() do
       b.disconnect_block(block, disconnects)
     end
     refresh()
 
-  be disconnect_edge( outputname:String, dest_block: Block, dest_input: String, disconnects: LinkRemoveNotify ) =>
+  be disconnect_edge( outputname:String, dest_block: Updateable, dest_input: String, disconnects: LinkRemoveNotify ) =>
     try
       (let block, let output) = _outputs(outputname)?
       block.disconnect_edge(output, dest_block, dest_input, disconnects )

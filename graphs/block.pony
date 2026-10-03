@@ -8,51 +8,33 @@ use "../blocktypes"
 
 trait val BlockFactory
   fun create_block( name': String, context:SystemContext val, x:F64, y:F64): Block tag
-  
   fun val block_type_descriptor(): BlockTypeDescriptor
-  
   fun val describe(): JObj val
 
-trait tag Block
-
-  be connect( output: String, to_block: Block, to_input: String)
-  
-  be disconnect_block( to_block: Block, disconnects: LinkRemoveNotify )
-  
-  be disconnect_edge( output:String, dest_block: Block, dest_input: String, disconnects: LinkRemoveNotify )
-
-  be set_initial(input: String, initial_value: Linkable)
-
+trait tag Updateable
+  be name( promise: Promise[String] tag )
   be update(input: String, new_value: Linkable)
 
+trait tag Connectable
+  be connect( output: String, to_block: Updateable, to_input: String)
+  be disconnect_edge( output:String, dest_block: Updateable, dest_input: String, disconnects: LinkRemoveNotify )
+  be disconnect_block( to_block: Updateable, disconnects: LinkRemoveNotify )
+
+trait tag Block is (Updateable & Connectable)
+  be set_initial(input: String, initial_value: Linkable)
   be get_input(input: String, promise:Promise[Linkable])
-
   be get_output(output: String, promise:Promise[Linkable])
-
   be rename( new_name: String )
-
   be rename_of( block: Block, old_name: String, new_name: String )
-
   be change( x:F64, y:F64 )
-  
   be destroy(disconnects: LinkRemoveNotify)
-  
   be refresh()
-
   be start()
-
   be stop()
-
   be stats_update()
-
-  be name( promise: Promise[String] tag )
-  
   be describe( promise: Promise[JObj] tag )
-  
   be descriptor( promise: Promise[BlockTypeDescriptor] tag )
-
   be subscribe_link( subscription:LinkSubscription )
-
   be unsubscribe_link( subscription:LinkSubscription )
 
 primitive BlockName

@@ -148,6 +148,44 @@ actor Graphs
       s.removed_connection(graph, from_block, from_output, to_block, to_input) 
     end
 
+  be _added_inport(graph_name:String, port_name:String, block_name:String, block_port:String) =>
+    _context(Info) and _context.log(Info, "added inport: " + graph_name + " : "  + port_name + " ==> " + block_name + "." + block_port )
+    for s in _subscribers.values() do
+      s.added_inport(graph_name, port_name, block_name, block_port )
+    end
+    None
+
+  be _removed_inport(graph_name:String, port_name:String) =>
+    _context(Info) and _context.log(Info, "removed inport: " + graph_name + " : "  + port_name )
+    for s in _subscribers.values() do
+      s.removed_inport(graph_name, port_name)
+    end
+
+  be _renamed_inport(graph_name:String, from:String, to:String) =>
+    _context(Info) and _context.log(Info, "renamed inport: " + graph_name + " : " + from + " -> " + to )
+    for s in _subscribers.values() do
+      s.renamed_inport( graph_name, from, to )
+    end
+
+  be _added_outport(graph_name:String, port_name:String, block_name:String, block_port:String) =>
+    _context(Info) and _context.log(Info, "added outport: " + graph_name + " : "  + port_name + " ==> " + block_name + "." + block_port )
+    for s in _subscribers.values() do
+      s.added_outport(graph_name, port_name, block_name, block_port )
+    end
+    None
+
+  be _removed_outport(graph_name:String, port_name:String) =>
+    _context(Info) and _context.log(Info, "removed outport: " + graph_name + " : "  + port_name )
+    for s in _subscribers.values() do
+      s.removed_outport(graph_name, port_name)
+    end
+
+  be _renamed_outport(graph_name:String, from:String, to:String) =>
+    _context(Info) and _context.log(Info, "renamed outport: " + graph_name + " : " + from + " -> " + to )
+    for s in _subscribers.values() do
+      s.renamed_outport(graph_name, from, to )
+    end
+
   be _added_initial(graph: String, initial_value:Linkable, to_block:String, to_input:String) =>
     _context(Info) and _context.log(Info, "added initial: " + graph + " : "  + initial_value.string() + " ==> " + to_block + "." + to_input )
     for s in _subscribers.values() do

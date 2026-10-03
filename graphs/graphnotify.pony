@@ -18,6 +18,18 @@ trait val GraphNotify is Equatable[GraphNotify]
   
   fun removed_connection(graphid:String, from_block:String, from_output:String, to_block:String, to_input:String)
 
+  fun added_inport(graphid:String, port_name:String, block_name:String, block_port:String)
+
+  fun removed_inport(graphid:String, port_name:String)
+
+  fun renamed_inport(graphid:String, from:String, to:String)
+
+  fun added_outport(graphid:String, port_name:String, block_name:String, block_port:String)
+
+  fun removed_outport(graphid:String, port_name:String)
+
+  fun renamed_outport(graphid:String, from:String, to:String)
+
   fun added_initial(graphid:String, initial_value:Linkable, to_block:String, to_input:String)
 
   fun removed_initial(graphid:String, initial_value:Linkable, to_block:String, to_input:String)

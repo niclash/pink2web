@@ -124,19 +124,12 @@ class val InitialDescriptor
   fun val source(): Linkable => _source
 
 trait val BlockTypeDescriptor
-
   fun val name(): String
-
   fun val icon(): String
-
   fun val description(): String
-
   fun val inputs(): Array[InputDescriptor] val
-  
   fun val outputs(): Array[OutputDescriptor] val
-  
   fun val input( index: USize ): InputDescriptor val
-
   fun val output( index: USize ): OutputDescriptor val
 
   fun val describe(): JObj val =>
@@ -182,6 +175,7 @@ primitive BlockDescription
             + ("outputs", outputs)
             + ("metadata", meta)
             promise( json )
+            json
         }
     )
 

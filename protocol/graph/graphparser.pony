@@ -34,6 +34,24 @@ class GraphParser
         (let block_id', let component', let x', let y') = _parseBlock(b)?
         AddNodeMessage.reply(_connection, id, block_id', component', x'.f64(), y'.f64() )
       end
+      let inports = graph("inports") as JArr
+      for p' in inports.values() do
+        try
+          (let port_name, let port_node, let port_port) = _parse_port(p' as JObj)?
+          AddInportMessage.reply(_connection, id, port_name, port_node, port_port)
+        else
+          _context(Error) and _context.log(Error, "Unable to read inport of " + name + " [" + id +"]")
+        end
+      end
+      let outports = graph("outports") as JArr
+      for p' in outports.values() do
+        try
+          (let port_name, let port_node, let port_port) = _parse_port(p' as JObj)?
+          AddOutportMessage.reply(_connection, id, port_name, port_node, port_port)
+        else
+          _context(Error) and _context.log(Error, "Unable to read outport of " + name + " [" + id +"]")
+        end
+      end
       let timer = Timer( _Pass2Notify.create(_connection, graph, _context), 500_000_000, 500_000_000)
       _context.timers(consume timer)
     else
@@ -63,6 +81,20 @@ class GraphParser
       (F64(10),F64(10))
     end
     (block_id, component, x.f64(), y.f64())
+
+  fun _fetch(p: JObj, key:String): String ? =>
+    match p(key)
+    | let v: String => v
+    else
+      _context(Error) and _context.log(Error, "Can not parse port." + key + " as a string.")
+      error
+    end
+
+  fun _parse_port(p: JObj): (String, String, String) ? =>
+    let name = _fetch( p, "name")?
+    let node = _fetch( p, "node")?
+    let port = _fetch( p, "port")?
+    (name, node, port)
 
   fun _get_property( graph:JObj, prop:String): String ? =>
     try

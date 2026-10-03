@@ -12,7 +12,9 @@ actor Graph
   let _context: SystemContext
   let _types: BlockTypes
   let _graphs:Graphs
-  let _blocks: Map[String,Block tag] 
+  let _inports: Map[String,Port]
+  let _outports: Map[String,Port]
+  let _blocks: Map[String,Block tag]
   let _block_types: MapIs[Block tag, BlockTypeDescriptor val] 
 
   var _descriptor: GraphDescriptor
@@ -30,6 +32,8 @@ actor Graph
     _types = types
     _blocks = Map[String,Block tag]
     _block_types = MapIs[Block tag, BlockTypeDescriptor val]
+    _inports = Map[String,Port]
+    _outports = Map[String,Port]
 
   be start() =>
     _context(Info) and _context.log(Info, "Starting graph: " + _descriptor.name )
@@ -48,9 +52,7 @@ actor Graph
     try
       let path:FilePath = _context.filelocations().graph_directory.join(_descriptor.id)?
       let promise = Promise[JObj]
-      promise.next[None]( { (json: JObj) =>
-        Files.write_text_to_path(path, json.string())
-      } )
+      promise.next[None]({(json: JObj) => Files.write_text_to_path(path, json.string())} )
       describe( promise )
     else
       let msg: String val = "Unable to save graph: " + _descriptor.name + " (" + _descriptor.id + ")"
@@ -210,6 +212,61 @@ actor Graph
     // else  TODO: if the block doesn't exist, should we do nothing or send ta Dummy block???
     end
 
+  be add_outport(name:String, node:String, port:String) =>
+    let outPort = Port(name, _context, F64(0), F64(0))
+    _outports(name) = outPort
+    let p = Promise[Block]
+    try
+      let block = _blocks(node)?
+      block.connect(port, outPort, "in")
+      _graphs._added_outport(_descriptor.id, name, node, port )
+    end
+
+  be remove_outport(name:String) =>
+    try
+      let port = _outports(name)?
+      _outports.remove(name)?
+      let disconnects:LinkRemoveNotify = { (link) =>
+        _graphs._removed_connection(_descriptor.id, link.src_block, link.src_port, link.dest_block, link.dest_port)
+      }
+      port.disconnect_edge_raw(disconnects)
+    end
+
+  be rename_outport(from:String,to:String) =>
+    try
+      (let key:String, let outport:Port) = _outports.remove(from)?
+      outport.rename_to(to)
+      _outports(to) = outport
+      _graphs._renamed_outport(_descriptor.id, from, to)
+    end
+
+  be add_inport(name:String, node:String, port:String) =>
+    let inPort = Port(name, _context, F64(0), F64(0))
+    _inports(name) = inPort
+    try
+      let block = _blocks(node)?
+      inPort.connect("out", block, port)
+      _graphs._added_inport(_descriptor.id, name, node, port )
+    end
+
+  be remove_inport(name:String) =>
+    try
+      let inport = _inports(name)?
+      _inports.remove(name)?
+      let disconnects:LinkRemoveNotify = { (link) =>
+        _graphs._removed_inport(_descriptor.id, name)
+      }
+      inport.disconnect_edge_raw(disconnects)
+    end
+
+  be rename_inport(from:String,to:String) =>
+    try
+      (let old_name, let inport)  = _inports.remove(from)?
+      inport.rename_to(to)
+      _inports(to) = inport
+      _graphs._renamed_inport(_descriptor.id, from, to)
+    end
+
   fun _get_block( name': String ):Block ? =>
     try
         _blocks(name')?
@@ -256,15 +313,42 @@ actor Graph
     
   be describe( promise: Promise[JObj] tag ) =>
     _context(Fine) and _context.log(Fine, "Graph.describe()")
-    Collector[Block,JObj]( _blocks.values(), { (blk,prom) => blk.describe(prom) }, { (arr_of_jobjs_of_blocks) =>
+    let inports_promise: Promise[JObj] = _ports_to_json(_inports.values(), "inports")
+    let outports_promise: Promise[JObj] = _ports_to_json(_outports.values(), "outports")
+    let blocks_promise = Promise[JObj]
+    Collector[Block, JObj]( _blocks.values(), { (blk,promise') => blk.describe(promise') }, { (arr_of_jobjs_of_blocks) =>
       var result = JArr
       for s in arr_of_jobjs_of_blocks.values() do
         result = result + s
       end
-      var block' = _descriptor.to_json()
-      block' = block' + ("blocks", result)
-      promise(block')
+      JObj + ("blocks", result)
     })
+    let graph_promise = Promise[JObj]
+    graph_promise.join([blocks_promise; inports_promise; outports_promise].values())
+        .next[None]( {(jarrs:Array[JObj val] val) =>
+            var description' = _descriptor.to_json()
+            for jobj in jarrs.values() do
+              try
+                let pairs = jobj.pairs()
+                if pairs.has_next() then
+                  (let name, let jexpr) = pairs.next()?
+                  description' = description' + (name, jexpr)
+                end
+              end
+            end
+            promise(description')
+        })
+
+  fun _ports_to_json( ports:Iterator[Port], jobj_name:String ): Promise[JObj] =>
+    let promise = Promise[JObj]
+    Collector[Port,JObj]( ports, { (port',promise') => port'.describe(promise') }, { (arr_of_jobjs_of_ports) =>
+      var result = JArr
+      for s in arr_of_jobjs_of_ports.values() do
+        result = result + s
+      end
+      JObj + (jobj_name, result)
+    })
+    promise
 
   be subscribe_links( subscriptions:Array[LinkSubscription] val) =>
     for subscr in subscriptions.values() do

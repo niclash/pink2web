@@ -106,16 +106,16 @@ actor IntervalTimerBlock is Block
     _stop()
     _start()
 
-  be connect( output: String, to_block: Block, to_input: String) =>
+  be connect( output: String, to_block: Updateable, to_input: String) =>
     if output == "out"  then
       _output.connect(to_block, to_input)
     end
     _refresh()
 
-  be disconnect_block( block: Block, disconnects: LinkRemoveNotify ) =>
+  be disconnect_block( block: Updateable, disconnects: LinkRemoveNotify ) =>
     _output.disconnect_block( block, disconnects )
 
-  be disconnect_edge( output:String, dest_block: Block, dest_input: String, disconnects: LinkRemoveNotify ) =>
+  be disconnect_edge( output:String, dest_block: Updateable, dest_input: String, disconnects: LinkRemoveNotify ) =>
     match output
     | "out" => _output.disconnect_edge( dest_block, dest_input, disconnects )
     end
